@@ -3,10 +3,6 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { addOrderToDB, editOrderInDB, getOrderFromDB } from "../api/order";
 import { PaymentInfo } from "./paymentSlice";
 
-// export interface User {
-//   id: string; // skapas vid betalning?
-// }
-
 export interface Order {
   id: string;
   reference: string;
