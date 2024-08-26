@@ -3,7 +3,6 @@ import { NavLink } from "react-router-dom";
 import { Product } from "../slices/productSlice";
 
 export default function Index() {
-  // Din lista av produkter
   const products: Product[] = [
     {
       id: "123",
