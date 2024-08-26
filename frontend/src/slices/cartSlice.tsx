@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-// import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4 } from "uuid";
+import { Product } from "./productSlice";
 
 export interface Cart {
   id: string;
@@ -11,7 +12,7 @@ export interface CartItem {
   id: string;
   cart_id: string;
   product_id: string;
-  size: string;
+  // size: string;
   quantity: number;
   price: number;
 }
@@ -39,8 +40,10 @@ const getInitialCartState = (): CartState => {
     return { cart: newCart, isCheckVisible: false };
   }
 };
+
 const initialState: CartState = getInitialCartState();
 
+// Create the cart slice
 const cartSlice = createSlice({
   name: "cart",
   initialState,
@@ -51,7 +54,16 @@ const cartSlice = createSlice({
     },
     addItem: (state, action: PayloadAction<CartItem>) => {
       if (state.cart) {
-        state.cart.items.push(action.payload);
+        const existingItem = state.cart.items.find(
+          (item) => item.product_id === action.payload.product_id
+        );
+
+        if (existingItem) {
+          existingItem.quantity += action.payload.quantity;
+        } else {
+          state.cart.items.push(action.payload);
+        }
+
         localStorage.setItem("cart", JSON.stringify(state.cart));
         state.isCheckVisible = true;
       }
@@ -87,6 +99,30 @@ const cartSlice = createSlice({
     setVisible: (state, action: PayloadAction<boolean>) => {
       state.isCheckVisible = action.payload;
     },
+    addToCart: (state, action: PayloadAction<Product>) => {
+      if (state.cart) {
+        const product = action.payload;
+        const existingItem = state.cart.items.find(
+          (item) => item.product_id === product.id
+        );
+
+        if (existingItem) {
+          existingItem.quantity += 1;
+        } else {
+          const newCartItem: CartItem = {
+            id: uuidv4(),
+            cart_id: state.cart.id,
+            product_id: product.id,
+            quantity: 1,
+            price: product.price,
+          };
+          state.cart.items.push(newCartItem);
+        }
+
+        localStorage.setItem("cart", JSON.stringify(state.cart));
+        state.isCheckVisible = true;
+      }
+    },
   },
 });
 
@@ -97,9 +133,6 @@ export const {
   clearCart,
   updateItem,
   setVisible,
+  addToCart,
 } = cartSlice.actions;
 export const CartReducer = cartSlice.reducer;
-function uuidv4(): string {
-    throw new Error("Function not implemented.");
-}
-

@@ -19,13 +19,14 @@ export interface Product {
   name: string;
   description: string;
   price: number;
+  category: string;
   in_store: boolean;
   weight: number;
   length: number;
   width: number;
   height: number;
   color: string;
-  sizes: Size[];
+  // sizes: Size[];
   material: string;
   rabatt: number;
   launch_date: string;

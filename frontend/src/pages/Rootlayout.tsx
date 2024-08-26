@@ -1,7 +1,8 @@
 import { Box, Typography } from "@mui/material";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 
 export default function Rootlayout() {
+  const navigate = useNavigate();
   return (
     <Box
       sx={{
@@ -25,6 +26,10 @@ export default function Rootlayout() {
           src="https://i.imgur.com/kQZSgyD.jpeg"
           alt="Denthu logo"
           height={"120px"}
+          onClick={() => {
+            navigate("/");
+          }}
+          style={{ cursor: "pointer" }}
         />
       </Box>
       <Box
