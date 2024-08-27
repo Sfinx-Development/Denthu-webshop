@@ -26,11 +26,11 @@ export interface Product {
   width: number;
   height: number;
   color: string;
-  // sizes: Size[];
   material: string;
-  rabatt: number;
+  discount: number;
   launch_date: string;
   imageUrl: string;
+  amount: number;
 }
 
 const storedProducts = localStorage.getItem("products");
