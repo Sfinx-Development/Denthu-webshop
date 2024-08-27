@@ -1,44 +1,21 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
-// import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: "",
-  measurementId: ""
+  apiKey: "AIzaSyC3biDDLJ6a2NtRnw7ncWWvGwNMPNAmGOI",
+  authDomain: "denthu-webshop.firebaseapp.com",
+  projectId: "denthu-webshop",
+  storageBucket: "denthu-webshop.appspot.com",
+  messagingSenderId: "228010490117",
+  appId: "1:228010490117:web:42e90dc476691516f4df6c",
+  measurementId: "G-RMX490WWSZ",
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
 export { app, auth, db, storage };
-
-// rules_version = '2';
-
-// service cloud.firestore {
-//   match /databases/{database}/documents {
-//     match /{document=**} {
-//       allow read, write: if false;
-//     }
-//   }
-// } använd denna sen och ändra till true
-
-// const analytics = getAnalytics(app);
-
-
-
-// db, auth
