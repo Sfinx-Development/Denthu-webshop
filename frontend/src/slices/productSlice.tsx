@@ -157,6 +157,7 @@ const ProductSlice = createSlice({
       })
       .addCase(getProductsAsync.fulfilled, (state, action) => {
         if (action.payload) {
+          localStorage.setItem("products", JSON.stringify(action.payload));
           state.products = action.payload;
           state.error = null;
         }
