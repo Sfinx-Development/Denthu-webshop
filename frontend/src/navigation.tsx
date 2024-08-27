@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Product from "./pages/Product";
 import RootLayout from "./pages/Rootlayout";
 import Error from "./pages/Error";
+import CategoryProductPage from "./pages/CategoryProducts";
 
 const Navigation = () => {
   return (
@@ -17,6 +18,7 @@ const Navigation = () => {
         <Route path="product" element={<Product />}></Route>
         <Route path="checkout" element={<Checkout />}></Route>
         <Route path="confirmation" element={<Confirmation />}></Route>
+        <Route path="/category/:category" element={<CategoryProductPage />} />
         {/* <Route path="admin/signin" element={<AdminSignIn />}></Route>
         <Route path="admin" element={<AdminProducts />}></Route>
         <Route
