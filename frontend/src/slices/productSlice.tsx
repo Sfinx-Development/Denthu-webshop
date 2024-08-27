@@ -15,6 +15,7 @@ export interface Size {
 }
 
 export interface Product {
+  sizes: any;
   id: string;
   name: string;
   description: string;
