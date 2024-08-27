@@ -1,15 +1,55 @@
+import { useEffect, useState } from "react";
 import { Box, Grid, Typography, Card, CardMedia } from "@mui/material";
 import { useParams } from "react-router-dom";
-import { useAppSelector } from "../slices/store";
-import { Product } from "../slices/productSlice";
+import { collection, query, where, getDocs } from "firebase/firestore";
+
+import { db } from "../api/config";
+
+// import { db } from "../firebaseConfig"; // Se till att detta är rätt importväg till din firebaseConfig
+
+interface Product {
+  id: string;
+  name: string;
+  imageUrl: string;
+  category: string;
+}
 
 export default function CategoryProducts() {
   const { categoryName } = useParams<{ categoryName: string }>();
-  const products = useAppSelector((state) => state.productSlice.products);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredProducts = products.filter(
-    (product: Product) => product.category === categoryName
-  );
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        // Query som hämtar produkter som tillhör en viss kategori
+        const q = query(
+          collection(db, "products"),
+          where("category", "==", categoryName)  // Filtrera på kategori
+        );
+        const querySnapshot = await getDocs(q);
+        const fetchedProducts: Product[] = [];
+        querySnapshot.forEach((doc) => {
+          fetchedProducts.push({ id: doc.id, ...doc.data() } as Product);
+        });
+        setProducts(fetchedProducts);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching products: ", error);
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [categoryName]);
+
+  if (loading) {
+    return <Typography>Loading...</Typography>;
+  }
+
+  if (products.length === 0) {
+    return <Typography>No products found for this category.</Typography>;
+  }
 
   return (
     <Box sx={{ width: "100%", padding: 4, backgroundColor: "#f4f4f4" }}>
@@ -21,7 +61,7 @@ export default function CategoryProducts() {
         {categoryName}
       </Typography>
       <Grid container spacing={4}>
-        {filteredProducts.map((product) => (
+        {products.map((product) => (
           <Grid item xs={12} sm={6} md={4} key={product.id}>
             <Card
               sx={{
