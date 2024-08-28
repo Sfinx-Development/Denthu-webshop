@@ -1,211 +1,226 @@
-// import { zodResolver } from "@hookform/resolvers/zod";
-// import { Box, Paper, TextField, Typography } from "@mui/material";
-// import { useForm } from "react-hook-form";
-// import { useNavigate, useParams } from "react-router-dom";
-// import { z } from "zod";
-// import { Product } from "../../data/types";
-// import AddAndEditAdminButton from "../components/AddAndEditAdminButton";
-// import { useProductContext } from "../contexts/ProductContext";
+import {
+  Box,
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  addcategoryAsync,
+  Category,
+  getCategorysAsync,
+  setActiveCategory,
+} from "../slices/categorySlice";
+import {
+  addProductAsync,
+  Product,
+  updateProductAsync,
+} from "../slices/productSlice";
+import { useAppDispatch, useAppSelector } from "../slices/store";
 
-// const FormSchema = z.object({
-//   title: z.string().min(1, { message: "Titel är obligatoriskt." }),
-//   description: z
-//     .string()
-//     .min(1, { message: "Beskrivning måste vara 5 siffror." }),
-//   price: z
-//     .string()
-//     .min(1, { message: "Pris är obligatoriskt." })
-//     .refine(
-//       (value) => {
-//         const parsedPrice = parseFloat(value);
-//         return !isNaN(parsedPrice) && parsedPrice > 0;
-//       },
-//       { message: "Ogiltigt pris." }
-//     ),
-//   image: z.string().url({ message: "Bild ska vara en url" }),
-//   inStock: z
-//     .string()
-//     .min(1, { message: "Antal är obligatoriskt." })
-//     .refine(
-//       (value) => {
-//         const parsedPrice = parseFloat(value);
-//         return !isNaN(parsedPrice) && parsedPrice > 0;
-//       },
-//       { message: "Antal måste vara en giltig siffra och mer än 0." }
-//     ),
-// });
+export default function AdminAddAndEdit() {
+  const navigate = useNavigate();
+  const { param } = useParams();
+  const dispatch = useAppDispatch();
 
-// export default function AdminAddAndEdit() {
-//   const { allProducts, editProduct, addProduct } = useProductContext();
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState(0);
+  const [amount, setAmount] = useState(0);
+  const [imageUrl, setImageUrl] = useState("");
+  const [discount, setDiscount] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newCategoryImageUrl, setNewCategoryImageUrl] = useState("");
 
-//   const navigate = useNavigate();
+  const products = useAppSelector((state) => state.productSlice.products);
+  const categories = useAppSelector((state) => state.categorySlice.categorys);
+  const category = useAppSelector(
+    (state) => state.categorySlice.activeCategory
+  );
+  const productToEdit = products.find((p) => p.id === param);
 
-//   const { param } = useParams();
+  const isNewProductMode = param === "ny";
 
-//   const productToEdit = allProducts.find((p) => p.id == param);
+  if (!productToEdit && !isNewProductMode) {
+    return <Typography variant="h6">Ojdå, produkten hittades inte.</Typography>;
+  }
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    dispatch(getCategorysAsync());
+  }, []);
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    if (category) {
+      const product: Product = {
+        id: productToEdit ? productToEdit.id : "default",
+        name,
+        description,
+        price,
+        imageUrl,
+        amount,
+        categoryId: category.id,
+        discount,
+        launch_date: new Date().toISOString(),
+      };
 
-//   const isNewProductMode = param === "ny";
+      if (productToEdit) {
+        dispatch(updateProductAsync(product));
+      } else if (isNewProductMode) {
+        dispatch(addProductAsync(product));
+      }
 
-//   if (!productToEdit && !isNewProductMode) {
-//     return <Typography variant="h6">Ojdå, produkten hittades inte.</Typography>;
-//   }
+      setName("");
+      setDescription("");
+      setPrice(0);
+      setAmount(0);
+      setDiscount(0);
+      setImageUrl("");
+      setSelectedCategory("");
+      setNewCategoryName("");
+      setNewCategoryImageUrl("");
 
-//   const { register, handleSubmit, formState, getValues, reset } =
-//     useForm<Product>({
-//       resolver: zodResolver(FormSchema),
-//     });
+      navigate("/admin");
+    }
+  }, [category]);
 
-//   const handleOnSubmit = async () => {
-//     const product: Product = {
-//       id: productToEdit ? productToEdit.id : "default",
-//       title: getValues("title"),
-//       description: getValues("description"),
-//       price: getValues("price"),
-//       image: getValues("image"),
-//       inStock: getValues("inStock"),
-//     };
+  const handleOnSubmit = async (e) => {
+    e.preventDefault();
+    if (newCategoryName && newCategoryImageUrl) {
+      const createdCategory: Category = {
+        id: "123",
+        category: newCategoryName,
+        imageUrl: newCategoryImageUrl,
+      };
+      dispatch(addcategoryAsync(createdCategory));
+    } else if (selectedCategory) {
+      dispatch(setActiveCategory(selectedCategory));
+    }
+  };
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    console.log("KATEGORIER: ", categories);
+  });
 
-//     productToEdit
-//       ? editProduct(product)
-//       : isNewProductMode
-//       ? addProduct(product)
-//       : "";
+  return (
+    <Paper
+      sx={{
+        padding: 3,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        width: "100%",
+      }}
+    >
+      <Typography variant="h4" gutterBottom>
+        {productToEdit ? "Redigera produkt" : "Lägg till ny produkt"}
+      </Typography>
 
-//     reset();
+      <form onSubmit={handleOnSubmit} style={{ width: "100%", maxWidth: 600 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <TextField
+            label="Namn"
+            variant="outlined"
+            fullWidth
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
 
-//     navigate("/admin");
-//   };
+          <TextField
+            label="Beskrivning"
+            variant="outlined"
+            fullWidth
+            multiline
+            rows={4}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
 
-//   return (
-//     <Paper sx={{ display: "flex", flexDirection: "column" }}>
-//       <Paper
-//         sx={{
-//           display: "flex",
-//           flex: "1",
-//           flexDirection: "column",
-//           alignItems: "center",
-//         }}
-//       >
-//         <Typography variant="h6" padding={2} data-cy="product-form">
-//           {productToEdit ? "Redigera produkt" : "Lägg till ny produkt"}
-//         </Typography>
+          <TextField
+            label="Pris"
+            variant="outlined"
+            fullWidth
+            type="number"
+            value={price}
+            onChange={(e) => setPrice(Number(e.target.value))}
+          />
 
-//         <form
-//           onSubmit={handleSubmit(handleOnSubmit)}
-//           data-cy="product-form"
-//           className="flex flex-1 flex-col items-center"
-//         >
-//           <Box
-//             sx={{
-//               display: "flex",
-//               flexDirection: "column",
-//               alignItems: "center",
-//               width: "100%",
-//             }}
-//           >
-//             <TextField
-//               label="Titel"
-//               {...register("title")}
-//               inputProps={{
-//                 "data-cy": "product-title",
-//               }}
-//               variant="standard"
-//               defaultValue={productToEdit?.title}
-//               helperText={
-//                 formState.errors.title ? (
-//                   <Typography
-//                     variant="caption"
-//                     data-cy="product-title-error"
-//                     sx={{ color: "red" }}
-//                   >
-//                     {formState.errors.title?.message}
-//                   </Typography>
-//                 ) : null
-//               }
-//               error={Boolean(formState.errors.title)}
-//             />
+          <TextField
+            label="Bild URL"
+            variant="outlined"
+            fullWidth
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
+          />
 
-//             <TextField
-//               label="Beskrivning"
-//               {...register("description")}
-//               inputProps={{
-//                 "data-cy": "product-description",
-//               }}
-//               variant="standard"
-//               defaultValue={productToEdit?.description}
-//               helperText={
-//                 formState.errors.description ? (
-//                   <Typography
-//                     variant="caption"
-//                     data-cy="product-description-error"
-//                     sx={{ color: "red" }}
-//                   >
-//                     {formState.errors.description?.message}
-//                   </Typography>
-//                 ) : null
-//               }
-//               error={Boolean(formState.errors.description)}
-//             />
+          <TextField
+            label="Antal"
+            variant="outlined"
+            fullWidth
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(Number(e.target.value))}
+          />
 
-//             <TextField
-//               label="Pris"
-//               {...register("price")}
-//               variant="standard"
-//               inputProps={{
-//                 "data-cy": "product-price",
-//               }}
-//               defaultValue={productToEdit?.price}
-//               helperText={
-//                 formState.errors.price ? (
-//                   <Typography
-//                     variant="caption"
-//                     data-cy="product-price-error"
-//                     sx={{ color: "red" }}
-//                   >
-//                     {formState.errors.price?.message}
-//                   </Typography>
-//                 ) : null
-//               }
-//               error={Boolean(formState.errors.price)}
-//             />
+          <TextField
+            label="Rabatt"
+            variant="outlined"
+            fullWidth
+            type="number"
+            value={discount}
+            onChange={(e) => setDiscount(Number(e.target.value))}
+          />
 
-//             <TextField
-//               label="Bild (url)"
-//               {...register("image")}
-//               variant="standard"
-//               inputProps={{
-//                 "data-cy": "product-image",
-//               }}
-//               defaultValue={productToEdit?.image}
-//               helperText={
-//                 formState.errors.image ? (
-//                   <Typography
-//                     variant="caption"
-//                     data-cy="product-image-error"
-//                     sx={{ color: "red" }}
-//                   >
-//                     {formState.errors.image?.message}
-//                   </Typography>
-//                 ) : null
-//               }
-//               error={Boolean(formState.errors.image)}
-//             />
+          <FormControl fullWidth>
+            <InputLabel>Kategori</InputLabel>
+            <Select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              label="Kategori"
+            >
+              {categories.map((cat: Category) => (
+                <MenuItem key={cat.id} value={cat.category}>
+                  <Typography sx={{ color: "black", fontSize: 14 }}>
+                    {cat.category}
+                  </Typography>
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-//             <TextField
-//               label="Antal"
-//               {...register("inStock")}
-//               variant="standard"
-//               defaultValue={productToEdit ? productToEdit.inStock : 1}
-//             />
+          {selectedCategory === "" && (
+            <>
+              <Typography>Ny kategori</Typography>
+              <TextField
+                label="Kategorinamn"
+                variant="outlined"
+                fullWidth
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+              />
+              <TextField
+                label="Kategoribild"
+                variant="outlined"
+                fullWidth
+                value={newCategoryImageUrl}
+                onChange={(e) => setNewCategoryImageUrl(e.target.value)}
+              />
+            </>
+          )}
 
-//             <Box mt={2} mb={2}>
-//               <AddAndEditAdminButton
-//                 titel={productToEdit ? "Redigera" : "Lägg till"}
-//               />
-//             </Box>
-//           </Box>
-//         </form>
-//       </Paper>
-//     </Paper>
-//   );
-// }
+          <Box mt={3} display="flex" justifyContent="center">
+            <Button type="submit" variant="contained" color="primary">
+              {productToEdit ? "Spara ändringar" : "Lägg till produkt"}
+            </Button>
+          </Box>
+        </Box>
+      </form>
+    </Paper>
+  );
+}

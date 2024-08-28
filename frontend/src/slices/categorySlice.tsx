@@ -9,31 +9,10 @@ import {
   getCategorysFromDB,
 } from "../api/category";
 
-
-
-export interface Size {
-  label: string;
-  amount: number;
-}
-
 export interface Category {
-  sizes: any;
   id: string;
-  name: string;
-  description: string;
-  price: number;
   category: string;
-  in_store: boolean;
-  weight: number;
-  length: number;
-  width: number;
-  height: number;
-  color: string;
-  material: string;
-  discount: number;
-  launch_date: string;
   imageUrl: string;
-  amount: number;
 }
 
 const storedCategorys = localStorage.getItem("categorys");
@@ -74,7 +53,7 @@ export const updateCategoryAsync = createAsyncThunk<
   Category,
   Category,
   { rejectValue: string }
->(" categorys/updateCategory", async ( category, thunkAPI) => {
+>(" categorys/updateCategory", async (category, thunkAPI) => {
   try {
     const updatedCategory = await editCategoryInDB(category);
     if (updatedCategory) {
@@ -88,13 +67,14 @@ export const updateCategoryAsync = createAsyncThunk<
 });
 
 export const getCategorysAsync = createAsyncThunk<
-Category[],
+  Category[],
   void,
   { rejectValue: string }
 >("categorys/getCategorys", async (_, thunkAPI) => {
   try {
     const categorys = await getCategorysFromDB();
     if (categorys) {
+      localStorage.setItem("categorys", JSON.stringify(categorys));
       return categorys;
     } else {
       return thunkAPI.rejectWithValue("failed to fetch Categorys");
@@ -125,15 +105,16 @@ const Categoryslice = createSlice({
   name: "Category",
   initialState,
   reducers: {
-    // setActiveCategory: (state, action) => {
-    //   state.activeCategory = action.payload;
-    // },
+    setActiveCategory: (state, action) => {
+      state.activeCategory = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
       .addCase(addcategoryAsync.fulfilled, (state, action) => {
         if (action.payload) {
           state.categorys.push(action.payload);
+          state.activeCategory = action.payload;
           state.error = null;
         }
       })
@@ -183,4 +164,4 @@ const Categoryslice = createSlice({
 
 export const CategoryReduces = Categoryslice.reducer;
 export type { CategoryState };
-// export const { setActiveCategory } = Categoryslice.actions;
+export const { setActiveCategory } = Categoryslice.actions;

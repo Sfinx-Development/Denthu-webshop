@@ -5,37 +5,22 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
   addProductToDB,
   editProductInDB,
-  getProductFromDB,
+  getProductFromDBById,
   getProductsFromDB,
 } from "../api/product";
 
-export interface Size {
-  label: string;
-  amount: number;
-}
-
 export interface Product {
-  sizes: any;
   id: string;
   name: string;
   description: string;
   price: number;
-  category: string;
-  in_store: boolean;
-  weight: number;
-  length: number;
-  width: number;
-  height: number;
-  color: string;
-  material: string;
+  categoryId: string;
   discount: number;
   launch_date: string;
   imageUrl: string;
   amount: number;
 }
 
-const storedProducts = localStorage.getItem("products");
-const storedActiveProduct = localStorage.getItem("activeProduct");
 
 interface ProductState {
   products: Product[];
@@ -43,6 +28,8 @@ interface ProductState {
   error: string | null;
 }
 
+const storedProducts = localStorage.getItem("products");
+const storedActiveProduct = localStorage.getItem("activeProduct");
 export const initialState: ProductState = {
   products: storedProducts ? JSON.parse(storedProducts) : [],
   activeProduct: storedActiveProduct
@@ -102,13 +89,13 @@ export const getProductsAsync = createAsyncThunk<
   }
 });
 
-export const getProductAsync = createAsyncThunk<
+export const getProductByIdAsync = createAsyncThunk<
   Product,
   string,
   { rejectValue: string }
->("products/getProduct", async (id, thunkAPI) => {
+>("products/getProductsById", async (id, thunkAPI) => {
   try {
-    const products = await getProductFromDB(id);
+    const products = await getProductFromDBById(id);
     if (products) {
       return products;
     } else {
@@ -158,6 +145,7 @@ const ProductSlice = createSlice({
       })
       .addCase(getProductsAsync.fulfilled, (state, action) => {
         if (action.payload) {
+          localStorage.setItem("products", JSON.stringify(action.payload));
           state.products = action.payload;
           state.error = null;
         }
@@ -166,13 +154,13 @@ const ProductSlice = createSlice({
         state.error =
           "Något gick fel när produkter hämtades. Försök igen senare.";
       })
-      .addCase(getProductAsync.fulfilled, (state, action) => {
+      .addCase(getProductByIdAsync.fulfilled, (state, action) => {
         if (action.payload) {
           state.activeProduct = action.payload;
           state.error = null;
         }
       })
-      .addCase(getProductAsync.rejected, (state) => {
+      .addCase(getProductByIdAsync.rejected, (state) => {
         state.error =
           "Något gick fel när produkten hämtades. Försök igen senare.";
       });

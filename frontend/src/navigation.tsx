@@ -2,14 +2,18 @@ import { Route, Routes } from "react-router-dom";
 // import AdminAddAndEdit from "./pages/AdminAddAndEdit";
 // import AdminProducts from "./pages/AdminProducts";
 // import AdminSignIn from "./pages/AdminSignIn";
+import AdminAddAndEdit from "./pages/AdminAddAndEdit";
+import AdminProducts from "./pages/AdminProducts";
+import CategoryProducts from "./pages/CategoryProducts";
 import Checkout from "./pages/Checkout";
 import Confirmation from "./pages/Confirmation";
-import Index from "./pages/Index";
-import Product from "./pages/ProductDetail";
-import RootLayout from "./pages/Rootlayout";
 import Error from "./pages/Error";
-import CategoryProducts from "./pages/CategoryProducts";
-import ProductDetails from "./pages/ProductDetail";
+import Index from "./pages/Index";
+import {
+  default as Product,
+  default as ProductDetails,
+} from "./pages/ProductDetail";
+import RootLayout from "./pages/Rootlayout";
 
 const Navigation = () => {
   return (
@@ -19,16 +23,24 @@ const Navigation = () => {
         <Route path="product" element={<Product />}></Route>
         <Route path="checkout" element={<Checkout />}></Route>
         <Route path="confirmation" element={<Confirmation />}></Route>
-        
-        <Route path="/category/:categoryName" element={<CategoryProducts />}></Route>
-        
-        <Route path="/product/:productId" element={<ProductDetails />} /> 
-        {/* <Route path="admin/signin" element={<AdminSignIn />}></Route>
+
+        <Route
+          path="/category/:categoryName"
+          element={<CategoryProducts />}
+        ></Route>
+
+        {/* ÄNDRA SEN SÅ INTE VI SKICKAR ID, UTAN SÄTTER ACTIVEPRODUCT? : */}
+        <Route path="/product/:productId" element={<ProductDetails />} />
         <Route path="admin" element={<AdminProducts />}></Route>
+
+        {/* <Route path="admin/signin" element={<AdminSignIn />}></Route>
+        {/* <Route path="admin/signin" element={<AdminSignIn />}></Route>
+        //
+      */}
         <Route
           path="admin/product/:param"
           element={<AdminAddAndEdit />}
-        ></Route> */}
+        ></Route>
         <Route path="*" element={<Error />}></Route>
       </Route>
     </Routes>
