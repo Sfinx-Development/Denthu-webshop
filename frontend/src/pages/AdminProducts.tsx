@@ -3,11 +3,7 @@ import { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 // import { Product } from "../../data/types";
 import TableMUI from "../components/TableMUIComponent";
-import {
-  getProductAsync,
-  getProductsAsync,
-  Product,
-} from "../slices/productSlice";
+import { getProductsAsync, Product } from "../slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
 // import { useProductContext } from "../contexts/ProductContext";
 // import { useAppDispatch } from "../store/store";
@@ -26,7 +22,6 @@ export default function AdminProducts() {
   }
 
   function handleRemoveProduct(product: Product) {
-    // dispatch(remov);
     setIsPopupOpen(false);
   }
 
@@ -140,8 +135,8 @@ export default function AdminProducts() {
         <DialogTitle>Product Details</DialogTitle>
         <DialogContent sx={{ display: "flex" }}>
           {selectedProduct && (
-            <Box data-cy="product">
-              <p data-cy="product-title" className="flex-1">
+            <Box>
+              <p>
                 ID: {selectedProduct.id}
               </p>
               <p>Title: {selectedProduct.name}</p>
