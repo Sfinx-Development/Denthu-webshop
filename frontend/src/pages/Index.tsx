@@ -1,20 +1,28 @@
 import { Box, Card, CardMedia, Grid, Typography } from "@mui/material";
 import { useEffect } from "react";
 import { NavLink } from "react-router-dom";
-import { getProductsAsync, Product } from "../slices/productSlice";
+// import { getProductsAsync, Product } from "../slices/productSlice";
+import { getCategorysAsync, Category } from "../slices/categorySlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
 
-export default function Index() {
-  const products = useAppSelector((state) => state.productSlice.products);
-  const dispatch = useAppDispatch();
-  useEffect(() => {
-    dispatch(getProductsAsync());
-  }, [dispatch]);
+// export default function Index() {
+//   const products = useAppSelector((state) => state.productSlice.products);
+//   const dispatch = useAppDispatch();
+//   useEffect(() => {
+//     dispatch(getProductsAsync());
+//   }, [dispatch]);
 
-  const groupedProducts = Object.values(
-    products.reduce((acc: { [key: string]: Product }, product) => {
-      if (!acc[product.category]) {
-        acc[product.category] = product;
+  export default function Index() {
+    const categorys = useAppSelector((state) => state.categorySlice.categorys);
+    const dispatch = useAppDispatch();
+    useEffect(() => {
+      dispatch(getCategorysAsync());
+    }, [dispatch]);
+
+  const groupedCategorys = Object.values(
+    categorys.reduce((acc: { [key: string]: Category }, category) => {
+      if (!acc[category.category]) {
+        acc[category.category] = category;
       }
       return acc;
     }, {})
@@ -23,8 +31,8 @@ export default function Index() {
   return (
     <Box sx={{ width: "100%", padding: 4, backgroundColor: "#f4f4f4" }}>
       <Grid container spacing={4}>
-        {groupedProducts.map((product) => (
-          <Grid item xs={12} sm={6} md={4} key={product.id}>
+        {groupedCategorys.map((category) => (
+          <Grid item xs={12} sm={6} md={4} key={category.id}>
             <Card
               sx={{
                 boxShadow: "0px 10px 20px rgba(0,0,0,0.1)",
@@ -37,13 +45,13 @@ export default function Index() {
               }}
             >
               <NavLink
-                to={`/category/${product.category}`}
+                to={`/category/${category.category}`}
                 style={{ textDecoration: "none" }}
               >
                 <CardMedia
                   component="img"
-                  alt={product.name}
-                  image={product.imageUrl}
+                  alt={category.name}
+                  image={category.imageUrl}
                   sx={{
                     height: { xs: "200px", md: "300px" },
                     objectFit: "contain",
@@ -68,7 +76,7 @@ export default function Index() {
                       textOverflow: "ellipsis", // Lägger till "..." om texten är för lång
                     }}
                   >
-                    {product.category}
+                    {category.category}
                   </Typography>
                   <Typography
                     variant="body1"
@@ -80,7 +88,7 @@ export default function Index() {
                       lineHeight: 1.4,
                     }}
                   >
-                    {product.name}
+                    {category.name}
                   </Typography>
                 </Box>
               </NavLink>
