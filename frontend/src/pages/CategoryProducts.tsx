@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Box, Grid, Typography, Card, CardMedia } from "@mui/material";
 import { useParams } from "react-router-dom";
 import { collection, query, where, getDocs } from "firebase/firestore";
-
+import { Link } from "react-router-dom"; 
 import { db } from "../api/config";
 
 // import { db } from "../firebaseConfig"; // Se till att detta är rätt importväg till din firebaseConfig
@@ -63,6 +63,7 @@ export default function CategoryProducts() {
       <Grid container spacing={4}>
         {products.map((product) => (
           <Grid item xs={12} sm={6} md={4} key={product.id}>
+               <Link to={`/product/${product.id}`} style={{ textDecoration: "none" }}>
             <Card
               sx={{
                 boxShadow: "0px 10px 20px rgba(0,0,0,0.1)",
@@ -106,8 +107,11 @@ export default function CategoryProducts() {
                 </Typography>
               </Box>
             </Card>
+            </Link>
           </Grid>
+          
         ))}
+        
       </Grid>
     </Box>
   );

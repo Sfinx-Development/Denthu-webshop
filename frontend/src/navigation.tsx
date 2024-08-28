@@ -5,10 +5,11 @@ import { Route, Routes } from "react-router-dom";
 import Checkout from "./pages/Checkout";
 import Confirmation from "./pages/Confirmation";
 import Index from "./pages/Index";
-import Product from "./pages/Product";
+import Product from "./pages/ProductDetail";
 import RootLayout from "./pages/Rootlayout";
 import Error from "./pages/Error";
 import CategoryProducts from "./pages/CategoryProducts";
+import ProductDetails from "./pages/ProductDetail";
 
 const Navigation = () => {
   return (
@@ -19,7 +20,9 @@ const Navigation = () => {
         <Route path="checkout" element={<Checkout />}></Route>
         <Route path="confirmation" element={<Confirmation />}></Route>
         
-        <Route path="/category/:categoryName" element={<CategoryProducts />}></Route> 
+        <Route path="/category/:categoryName" element={<CategoryProducts />}></Route>
+        
+        <Route path="/product/:productId" element={<ProductDetails />} /> 
         {/* <Route path="admin/signin" element={<AdminSignIn />}></Route>
         <Route path="admin" element={<AdminProducts />}></Route>
         <Route
