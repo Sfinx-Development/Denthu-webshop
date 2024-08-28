@@ -6,12 +6,14 @@ import { CartReducer } from "./cartSlice";
 import { OrderReducer } from "./orderSlice";
 // import { PaymentReducer } from "./paymentSlice";
 import { ProductReduces } from "./productSlice";
+import { CategoryReduces } from "./categorySlice";
 
 const store = configureStore({
   reducer: {
     productSlice: ProductReduces,
     cartSlice: CartReducer,
     orderSlice: OrderReducer,
+    categorySlice: CategoryReduces
     // paymentSlice: PaymentReducer,
   },
 //   middleware: (getDefaultMiddleware) =>
