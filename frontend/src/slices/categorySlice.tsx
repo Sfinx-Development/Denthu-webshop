@@ -10,6 +10,7 @@ import {
 } from "../api/category";
 
 export interface Category {
+  sizes: any;
   id: string;
   category: string;
   imageUrl: string;

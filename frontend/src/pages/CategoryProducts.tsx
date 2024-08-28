@@ -1,38 +1,20 @@
 import { Box, Card, CardMedia, Grid, Typography } from "@mui/material";
-import { collection, getDocs, query, where } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import { db } from "../api/config";
-import { Product } from "../slices/productSlice";
+import { useAppDispatch, useAppSelector } from "../slices/store";
+import { getProductsByCategoryAsync } from "../slices/productSlice";
 
 export default function CategoryProducts() {
-  const { categoryName } = useParams<{ categoryName: string }>();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { categoryId } = useParams<{ categoryId: string }>();
+  const dispatch = useAppDispatch();
+  const products = useAppSelector((state) => state.productSlice.products);
+  const loading = useAppSelector((state) => state.productSlice.loading);
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        // Query som hämtar produkter som tillhör en viss kategori
-        const q = query(
-          collection(db, "products"),
-          where("category", "==", categoryName) // Filtrera på kategori
-        );
-        const querySnapshot = await getDocs(q);
-        const fetchedProducts: Product[] = [];
-        querySnapshot.forEach((doc) => {
-          fetchedProducts.push({ id: doc.id, ...doc.data() } as Product);
-        });
-        setProducts(fetchedProducts);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching products: ", error);
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, [categoryName]);
+    if (categoryId) {
+      dispatch(getProductsByCategoryAsync(categoryId)); // Anropar thunk för att hämta produkter baserat på kategori
+    }
+  }, [categoryId, dispatch]);
 
   if (loading) {
     return <Typography>Loading...</Typography>;
@@ -53,7 +35,7 @@ export default function CategoryProducts() {
           textAlign: "center",
         }}
       >
-        {categoryName}
+        {categoryId}
       </Typography>
       <Grid container spacing={4}>
         {products.map((product) => (

@@ -11,6 +11,32 @@ import {
 import { Product } from "../slices/productSlice";
 import { db } from "./config";
 
+
+export const getProductsByCategoryFromDB = async (categoryId: string): Promise<Product[]> => {
+  if (!categoryId) {
+    throw new Error("Category ID is undefined or empty.");
+  }
+
+  try {
+    const q = query(
+      collection(db, "products"),
+      where("categoryId", "==", categoryId) // Filtrering sker här
+    );
+    const querySnapshot = await getDocs(q);
+    const fetchedProducts: Product[] = [];
+    querySnapshot.forEach((doc) => {
+      fetchedProducts.push({ id: doc.id, ...doc.data() } as Product);
+    });
+    return fetchedProducts; // Returnerar endast produkter för den specifika kategorin
+  } catch (error) {
+    console.error("Error fetching products by category: ", error);
+    throw new Error("Failed to fetch products by category");
+  }
+};
+
+
+
+
 export const addProductToDB = async (product: Product) => {
   try {
     const todoCollectionRef = collection(db, "products");
