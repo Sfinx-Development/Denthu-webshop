@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import ImageUploader from "../components/ImageUploader";
 import {
   addcategoryAsync,
   Category,
@@ -28,85 +29,91 @@ export default function AdminAddAndEdit() {
   const navigate = useNavigate();
   const { param } = useParams();
   const dispatch = useAppDispatch();
-
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState(0);
-  const [amount, setAmount] = useState(0);
-  const [imageUrl, setImageUrl] = useState("");
-  const [discount, setDiscount] = useState(0);
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [newCategoryName, setNewCategoryName] = useState("");
-  const [newCategoryImageUrl, setNewCategoryImageUrl] = useState("");
-
   const products = useAppSelector((state) => state.productSlice.products);
   const categories = useAppSelector((state) => state.categorySlice.categorys);
-  const category = useAppSelector(
-    (state) => state.categorySlice.activeCategory
-  );
   const productToEdit = products.find((p) => p.id === param);
 
   const isNewProductMode = param === "ny";
 
-  if (!productToEdit && !isNewProductMode) {
-    return <Typography variant="h6">Ojdå, produkten hittades inte.</Typography>;
-  }
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const [name, setName] = useState(productToEdit ? productToEdit.name : "");
+  const [description, setDescription] = useState(
+    productToEdit ? productToEdit.description : ""
+  );
+  const [price, setPrice] = useState(productToEdit ? productToEdit.price : "");
+  const [amount, setAmount] = useState(
+    productToEdit ? productToEdit.amount : ""
+  );
+  const [imageUrl, setImageUrl] = useState<string | null>(
+    productToEdit ? productToEdit.imageUrl : null
+  );
+
+  const [discount, setDiscount] = useState(
+    productToEdit ? productToEdit.discount : ""
+  );
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+    productToEdit
+      ? categories.find((c) => c.id === productToEdit.categoryId) || null
+      : null
+  );
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newCategoryImageUrl, setNewCategoryImageUrl] = useState("");
+
   useEffect(() => {
     dispatch(getCategorysAsync());
-  }, []);
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  useEffect(() => {
-    if (category) {
+  }, [dispatch]);
+
+  const handleOnSubmit = async (e) => {
+    e.preventDefault();
+
+    if (newCategoryName && newCategoryImageUrl) {
+      const newCategory: Category = {
+        id: "tempId",
+        category: newCategoryName,
+        imageUrl: newCategoryImageUrl,
+      };
+      await dispatch(addcategoryAsync(newCategory));
+    }
+
+    const categoryId = selectedCategory ? selectedCategory.id : newCategoryName;
+    if (imageUrl && price && amount && discount) {
       const product: Product = {
         id: productToEdit ? productToEdit.id : "default",
         name,
         description,
-        price,
+        price: Number(price),
         imageUrl,
-        amount,
-        categoryId: category.id,
-        discount,
+        amount: Number(amount),
+        categoryId,
+        discount: Number(discount),
         launch_date: new Date().toISOString(),
       };
 
       if (productToEdit) {
-        dispatch(updateProductAsync(product));
+        await dispatch(updateProductAsync(product));
       } else if (isNewProductMode) {
-        dispatch(addProductAsync(product));
+        await dispatch(addProductAsync(product));
       }
 
+      // Reset form fields
       setName("");
       setDescription("");
       setPrice(0);
       setAmount(0);
       setDiscount(0);
       setImageUrl("");
-      setSelectedCategory("");
+      setSelectedCategory(null);
       setNewCategoryName("");
       setNewCategoryImageUrl("");
 
       navigate("/admin");
     }
-  }, [category]);
-
-  const handleOnSubmit = async (e) => {
-    e.preventDefault();
-    if (newCategoryName && newCategoryImageUrl) {
-      const createdCategory: Category = {
-        id: "123",
-        category: newCategoryName,
-        imageUrl: newCategoryImageUrl,
-      };
-      dispatch(addcategoryAsync(createdCategory));
-    } else if (selectedCategory) {
-      dispatch(setActiveCategory(selectedCategory));
-    }
   };
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+
   useEffect(() => {
-    console.log("KATEGORIER: ", categories);
-  });
+    if (categories.length > 0 && !selectedCategory && !newCategoryName) {
+      dispatch(setActiveCategory(categories[0]));
+    }
+  }, [categories, selectedCategory, newCategoryName, dispatch]);
 
   return (
     <Paper
@@ -148,16 +155,20 @@ export default function AdminAddAndEdit() {
             fullWidth
             type="number"
             value={price}
-            onChange={(e) => setPrice(Number(e.target.value))}
+            sx={{
+              "& input[type=number]": {
+                "-moz-appearance": "textfield",
+              },
+              "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
+                {
+                  "-webkit-appearance": "none",
+                  margin: 0,
+                },
+            }}
+            onChange={(e) => setPrice(e.target.value)}
           />
 
-          <TextField
-            label="Bild URL"
-            variant="outlined"
-            fullWidth
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-          />
+          <ImageUploader imageUrl={imageUrl} setImageUrl={setImageUrl} />
 
           <TextField
             label="Antal"
@@ -165,7 +176,17 @@ export default function AdminAddAndEdit() {
             fullWidth
             type="number"
             value={amount}
-            onChange={(e) => setAmount(Number(e.target.value))}
+            sx={{
+              "& input[type=number]": {
+                "-moz-appearance": "textfield",
+              },
+              "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
+                {
+                  "-webkit-appearance": "none",
+                  margin: 0,
+                },
+            }}
+            onChange={(e) => setAmount(e.target.value)}
           />
 
           <TextField
@@ -174,27 +195,45 @@ export default function AdminAddAndEdit() {
             fullWidth
             type="number"
             value={discount}
-            onChange={(e) => setDiscount(Number(e.target.value))}
+            sx={{
+              "& input[type=number]": {
+                "-moz-appearance": "textfield",
+              },
+              "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
+                {
+                  "-webkit-appearance": "none",
+                  margin: 0,
+                },
+            }}
+            onChange={(e) => setDiscount(e.target.value)}
           />
 
           <FormControl fullWidth>
             <InputLabel>Kategori</InputLabel>
             <Select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              value={selectedCategory?.id || ""}
+              onChange={(e) => {
+                const selected = categories.find(
+                  (cat) => cat.id === e.target.value
+                );
+                setSelectedCategory(selected || null);
+              }}
               label="Kategori"
             >
               {categories.map((cat: Category) => (
-                <MenuItem key={cat.id} value={cat.category}>
+                <MenuItem key={cat.id} value={cat.id}>
                   <Typography sx={{ color: "black", fontSize: 14 }}>
                     {cat.category}
                   </Typography>
                 </MenuItem>
               ))}
+              <MenuItem value="">
+                <em>Ny kategori</em>
+              </MenuItem>
             </Select>
           </FormControl>
 
-          {selectedCategory === "" && (
+          {selectedCategory == null && (
             <>
               <Typography>Ny kategori</Typography>
               <TextField

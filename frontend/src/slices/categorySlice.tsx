@@ -107,6 +107,7 @@ const Categoryslice = createSlice({
   reducers: {
     setActiveCategory: (state, action) => {
       state.activeCategory = action.payload;
+      localStorage.setItem("activeCategory", JSON.stringify(action.payload));
     },
   },
   extraReducers: (builder) => {
