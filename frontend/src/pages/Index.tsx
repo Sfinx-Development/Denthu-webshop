@@ -50,7 +50,7 @@ import { useAppDispatch, useAppSelector } from "../slices/store";
               >
                 <CardMedia
                   component="img"
-                  alt={category.name}
+                  alt={category.category}
                   image={category.imageUrl}
                   sx={{
                     height: { xs: "200px", md: "300px" },
@@ -88,7 +88,7 @@ import { useAppDispatch, useAppSelector } from "../slices/store";
                       lineHeight: 1.4,
                     }}
                   >
-                    {category.name}
+                    {category.category}
                   </Typography>
                 </Box>
               </NavLink>

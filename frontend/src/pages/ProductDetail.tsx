@@ -8,12 +8,12 @@ import { db } from "../api/config";
 import AddtoCartButton from "../components/AddToCartButton";
 
 interface Product {
-  sizes: unknown;
+  // sizes: unknown;
   id: string;
   name: string;
   description: string;
   price: number;
-  category: string;
+  categoryId: string;
   in_store: boolean;
   weight: number;
   length: number;

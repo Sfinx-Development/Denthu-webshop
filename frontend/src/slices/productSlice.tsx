@@ -7,6 +7,7 @@ import {
   editProductInDB,
   getProductFromDBById,
   getProductsFromDB,
+  getProductsByCategoryFromDB,
 } from "../api/product";
 
 export interface Product {
@@ -34,6 +35,7 @@ export interface ProductWithDate {
 }
 
 interface ProductState {
+  loading: any;
   products: Product[];
   activeProduct: Product | undefined;
   error: string | null;
@@ -47,7 +49,28 @@ export const initialState: ProductState = {
     ? JSON.parse(storedActiveProduct)
     : undefined,
   error: null,
+  loading: undefined
 };
+
+export const getProductsByCategoryAsync = createAsyncThunk<
+  Product[],
+  string,
+  { rejectValue: string }
+>("products/getProductsByCategory", async (categoryId, thunkAPI) => {
+  try {
+    const products = await getProductsByCategoryFromDB(categoryId);
+    if (products) {
+      return products;
+    } else {
+      return thunkAPI.rejectWithValue("Failed to fetch products by category");
+    }
+  } catch (error) {
+    console.error("Error fetching products by category: ", error);
+    return thunkAPI.rejectWithValue("Error fetching products by category");
+  }
+});
+
+
 
 export const addProductAsync = createAsyncThunk<
   Product,
@@ -127,6 +150,15 @@ const ProductSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+    .addCase(getProductsByCategoryAsync.fulfilled, (state, action) => {
+      if (action.payload) {
+        state.products = action.payload;
+        state.error = null;
+      }
+    })
+    .addCase(getProductsByCategoryAsync.rejected, (state, action) => {
+      state.error = action.payload || "Failed to fetch products by category";
+    })
       .addCase(addProductAsync.fulfilled, (state, action) => {
         if (action.payload) {
           state.products.push(action.payload);
@@ -177,6 +209,8 @@ const ProductSlice = createSlice({
       });
   },
 });
+
+
 
 export const ProductReduces = ProductSlice.reducer;
 export type { ProductState };
