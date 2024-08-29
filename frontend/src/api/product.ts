@@ -8,17 +8,18 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { Product } from "../slices/productSlice";
+import { Product, ProductWithDate } from "../slices/productSlice";
 import { db } from "./config";
 
 export const addProductToDB = async (product: Product) => {
   try {
     const todoCollectionRef = collection(db, "products");
+    const productWithDate: ProductWithDate = {
+      ...product,
+      launch_date: new Date(product.launch_date),
+    };
 
-    // Ensure launch_date is set to the current date
-    product.launch_date = new Date().toISOString();
-
-    const docRef = await addDoc(todoCollectionRef, product);
+    const docRef = await addDoc(todoCollectionRef, productWithDate);
 
     product.id = docRef.id;
     await updateDoc(docRef, { id: product.id });
@@ -40,9 +41,14 @@ export const editProductInDB = async (product: Product) => {
   try {
     const productCollectionRef = collection(db, "products");
     const productRef = doc(productCollectionRef, product.id);
-    const updatedProductData = {
+
+    const productWithDate: ProductWithDate = {
       ...product,
-      launch_date: new Date(product.launch_date).toISOString(),
+      launch_date: new Date(product.launch_date),
+    };
+
+    const updatedProductData = {
+      ...productWithDate,
     };
 
     await updateDoc(productRef, updatedProductData);
@@ -64,11 +70,9 @@ export const getProductsFromDB = async () => {
     const products: Product[] = [];
 
     querySnapshot.forEach((doc) => {
-      const todoData = doc.data();
-      if (todoData.launch_date instanceof Date) {
-        todoData.launch_date = todoData.launch_date.toISOString();
-      }
-      products.push(todoData as Product);
+      const docData = doc.data() as Product;
+      docData.launch_date = docData.launch_date.toString();
+      products.push(docData as Product);
     });
 
     return products;
@@ -87,10 +91,8 @@ export const getProductFromDBById = async (id: string) => {
     const docSnapshot = querySnapshot.docs[0];
 
     if (docSnapshot.exists()) {
-      const docData = docSnapshot.data();
-      if (docData.launch_date instanceof Date) {
-        docData.launch_date = docData.launch_date.toISOString();
-      }
+      const docData = docSnapshot.data() as Product;
+      docData.launch_date = docData.launch_date.toString();
       return docData as Product;
     } else {
       return null;

@@ -21,6 +21,17 @@ export interface Product {
   amount: number;
 }
 
+export interface ProductWithDate {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  categoryId: string;
+  discount: number;
+  launch_date: Date;
+  imageUrl: string;
+  amount: number;
+}
 
 interface ProductState {
   products: Product[];
