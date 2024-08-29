@@ -39,17 +39,20 @@ interface ProductState {
   products: Product[];
   activeProduct: Product | undefined;
   error: string | null;
+  filteredProducts: Product[];
 }
 
 const storedProducts = localStorage.getItem("products");
 const storedActiveProduct = localStorage.getItem("activeProduct");
+const filteredProducts = localStorage.getItem("filteredProducts");
 export const initialState: ProductState = {
   products: storedProducts ? JSON.parse(storedProducts) : [],
+  filteredProducts: filteredProducts ? JSON.parse(filteredProducts) : [],
   activeProduct: storedActiveProduct
     ? JSON.parse(storedActiveProduct)
     : undefined,
   error: null,
-  loading: undefined
+  loading: undefined,
 };
 
 export const getProductsByCategoryAsync = createAsyncThunk<
@@ -69,8 +72,6 @@ export const getProductsByCategoryAsync = createAsyncThunk<
     return thunkAPI.rejectWithValue("Error fetching products by category");
   }
 });
-
-
 
 export const addProductAsync = createAsyncThunk<
   Product,
@@ -150,15 +151,20 @@ const ProductSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-    .addCase(getProductsByCategoryAsync.fulfilled, (state, action) => {
-      if (action.payload) {
-        state.products = action.payload;
-        state.error = null;
-      }
-    })
-    .addCase(getProductsByCategoryAsync.rejected, (state, action) => {
-      state.error = action.payload || "Failed to fetch products by category";
-    })
+      .addCase(getProductsByCategoryAsync.fulfilled, (state, action) => {
+        if (action.payload) {
+          localStorage.setItem(
+            "filteredProducts",
+            JSON.stringify(action.payload)
+          );
+          state.filteredProducts = action.payload;
+          state.error = null;
+        }
+      })
+      .addCase(getProductsByCategoryAsync.rejected, (state, action) => {
+        state.error = action.payload || "Failed to fetch products by category";
+        state.filteredProducts = [];
+      })
       .addCase(addProductAsync.fulfilled, (state, action) => {
         if (action.payload) {
           state.products.push(action.payload);
@@ -209,8 +215,6 @@ const ProductSlice = createSlice({
       });
   },
 });
-
-
 
 export const ProductReduces = ProductSlice.reducer;
 export type { ProductState };

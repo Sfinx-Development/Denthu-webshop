@@ -24,10 +24,7 @@ const Navigation = () => {
         <Route path="checkout" element={<Checkout />}></Route>
         <Route path="confirmation" element={<Confirmation />}></Route>
 
-        <Route
-          path="/category/:categoryName"
-          element={<CategoryProducts />}
-        ></Route>
+        <Route path="/category/:id" element={<CategoryProducts />}></Route>
 
         {/* ÄNDRA SEN SÅ INTE VI SKICKAR ID, UTAN SÄTTER ACTIVEPRODUCT? : */}
         <Route path="/product/:productId" element={<ProductDetails />} />

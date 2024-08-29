@@ -5,22 +5,25 @@ import { useAppDispatch, useAppSelector } from "../slices/store";
 import { getProductsByCategoryAsync } from "../slices/productSlice";
 
 export default function CategoryProducts() {
-  const { categoryId } = useParams<{ categoryId: string }>();
+  const { id } = useParams<{ id: string }>();
   const dispatch = useAppDispatch();
-  const products = useAppSelector((state) => state.productSlice.products);
+  const filteredProducts = useAppSelector(
+    (state) => state.productSlice.filteredProducts
+  );
   const loading = useAppSelector((state) => state.productSlice.loading);
 
   useEffect(() => {
-    if (categoryId) {
-      dispatch(getProductsByCategoryAsync(categoryId)); // Anropar thunk för att hämta produkter baserat på kategori
+    console.log("ID: ", id);
+    if (id) {
+      dispatch(getProductsByCategoryAsync(id)); // Anropar thunk för att hämta produkter baserat på kategori
     }
-  }, [categoryId, dispatch]);
+  }, [id]);
 
   if (loading) {
     return <Typography>Loading...</Typography>;
   }
 
-  if (products.length === 0) {
+  if (filteredProducts.length === 0) {
     return <Typography>No products found for this category.</Typography>;
   }
 
@@ -35,10 +38,10 @@ export default function CategoryProducts() {
           textAlign: "center",
         }}
       >
-        {categoryId}
+        {id}
       </Typography>
       <Grid container spacing={4}>
-        {products.map((product) => (
+        {filteredProducts.map((product) => (
           <Grid item xs={12} sm={6} md={4} key={product.id}>
             <Link
               to={`/product/${product.id}`}

@@ -2,7 +2,7 @@ import { Box, Card, CardMedia, Grid, Typography } from "@mui/material";
 import { useEffect } from "react";
 import { NavLink } from "react-router-dom";
 // import { getProductsAsync, Product } from "../slices/productSlice";
-import { getCategorysAsync, Category } from "../slices/categorySlice";
+import { Category, getCategorysAsync } from "../slices/categorySlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
 
 // export default function Index() {
@@ -12,12 +12,12 @@ import { useAppDispatch, useAppSelector } from "../slices/store";
 //     dispatch(getProductsAsync());
 //   }, [dispatch]);
 
-  export default function Index() {
-    const categorys = useAppSelector((state) => state.categorySlice.categorys);
-    const dispatch = useAppDispatch();
-    useEffect(() => {
-      dispatch(getCategorysAsync());
-    }, [dispatch]);
+export default function Index() {
+  const categorys = useAppSelector((state) => state.categorySlice.categorys);
+  const dispatch = useAppDispatch();
+  useEffect(() => {
+    dispatch(getCategorysAsync());
+  }, [dispatch]);
 
   const groupedCategorys = Object.values(
     categorys.reduce((acc: { [key: string]: Category }, category) => {
@@ -45,7 +45,7 @@ import { useAppDispatch, useAppSelector } from "../slices/store";
               }}
             >
               <NavLink
-                to={`/category/${category.category}`}
+                to={`/category/${category.id}`}
                 style={{ textDecoration: "none" }}
               >
                 <CardMedia
