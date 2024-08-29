@@ -6,4 +6,5 @@ export interface Admin {
 export interface LogIn {
   email: string;
   password: string;
+  keepAlive: boolean;
 }
