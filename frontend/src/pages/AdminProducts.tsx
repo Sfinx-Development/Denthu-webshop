@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 // import { Product } from "../../data/types";
 import TableMUI from "../components/TableMUIComponent";
+import { logOutUserAsync } from "../slices/adminSlice";
 import { getProductsAsync, Product } from "../slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
 // import { useProductContext } from "../contexts/ProductContext";
@@ -29,12 +30,10 @@ export default function AdminProducts() {
     dispatch(getProductsAsync());
   }, []);
 
-  //   const handleLogOut = () => {
-  //     //dispatcha
-  //     dispatch(logOutUserAsync);
-  //     //till första sidan
-  //     navigate("/");
-  //   };
+  const handleLogOut = () => {
+    dispatch(logOutUserAsync());
+    navigate("/");
+  };
 
   const titleRows = ["Produkt", "Id", "Titel", "Pris", "Radera", "Redigera "];
 
@@ -110,7 +109,7 @@ export default function AdminProducts() {
           </Button>
         </NavLink>
 
-        {/* <Button
+        <Button
           variant="contained"
           sx={{
             backgroundColor: "#009688",
@@ -121,7 +120,7 @@ export default function AdminProducts() {
           onClick={handleLogOut}
         >
           Logga ut
-        </Button> */}
+        </Button>
       </Box>
 
       <TableMUI
@@ -136,9 +135,7 @@ export default function AdminProducts() {
         <DialogContent sx={{ display: "flex" }}>
           {selectedProduct && (
             <Box>
-              <p>
-                ID: {selectedProduct.id}
-              </p>
+              <p>ID: {selectedProduct.id}</p>
               <p>Title: {selectedProduct.name}</p>
               <p>Description: {selectedProduct.description}</p>
               <p>Price: {selectedProduct.price}</p>

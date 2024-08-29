@@ -4,6 +4,7 @@ import { Route, Routes } from "react-router-dom";
 // import AdminSignIn from "./pages/AdminSignIn";
 import AdminAddAndEdit from "./pages/AdminAddAndEdit";
 import AdminProducts from "./pages/AdminProducts";
+import AdminSignIn from "./pages/AdminSignIn";
 import CategoryProducts from "./pages/CategoryProducts";
 import Checkout from "./pages/Checkout";
 import Confirmation from "./pages/Confirmation";
@@ -14,6 +15,7 @@ import {
   default as ProductDetails,
 } from "./pages/ProductDetail";
 import RootLayout from "./pages/Rootlayout";
+import ProtectedRoute from "./protectedRoute";
 
 const Navigation = () => {
   return (
@@ -28,16 +30,18 @@ const Navigation = () => {
 
         {/* ÄNDRA SEN SÅ INTE VI SKICKAR ID, UTAN SÄTTER ACTIVEPRODUCT? : */}
         <Route path="/product/:productId" element={<ProductDetails />} />
-        <Route path="admin" element={<AdminProducts />}></Route>
-
-        {/* <Route path="admin/signin" element={<AdminSignIn />}></Route>
-        {/* <Route path="admin/signin" element={<AdminSignIn />}></Route>
-        //
-      */}
+        {/* ADMINS NAVIGATION ENDAST */}
+        <Route
+          path="admin"
+          element={<ProtectedRoute element={AdminProducts} />}
+        />
         <Route
           path="admin/product/:param"
-          element={<AdminAddAndEdit />}
-        ></Route>
+          element={<ProtectedRoute element={AdminAddAndEdit} />}
+        />
+
+        <Route path="admin/signin" element={<AdminSignIn />}></Route>
+
         <Route path="*" element={<Error />}></Route>
       </Route>
     </Routes>
