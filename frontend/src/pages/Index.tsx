@@ -2,6 +2,7 @@ import { Box, Card, CardMedia, Grid, Typography } from "@mui/material";
 import { useEffect } from "react";
 import { NavLink } from "react-router-dom";
 // import { getProductsAsync, Product } from "../slices/productSlice";
+import SearchBar from "../components/SearchBar";
 import { Category, getCategorysAsync } from "../slices/categorySlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
 
@@ -29,8 +30,9 @@ export default function Index() {
   );
 
   return (
-    <Box sx={{ width: "100%", padding: 4, backgroundColor: "#f4f4f4" }}>
-      <Grid container spacing={4}>
+    <Box sx={{ width: "100%", backgroundColor: "#f4f4f4" }}>
+      <SearchBar />
+      <Grid container spacing={4} sx={{ padding: 4 }}>
         {groupedCategorys.map((category) => (
           <Grid item xs={12} sm={6} md={4} key={category.id}>
             <Card
