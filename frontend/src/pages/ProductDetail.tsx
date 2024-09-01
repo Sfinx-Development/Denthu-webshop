@@ -1,31 +1,10 @@
-
-
+import { Box, CardMedia, Typography } from "@mui/material";
+import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { Box, Typography, CardMedia } from "@mui/material";
 import { useParams } from "react-router-dom";
-import { doc, getDoc, } from "firebase/firestore";
 import { db } from "../api/config";
 import AddtoCartButton from "../components/AddToCartButton";
-
-interface Product {
-  // sizes: unknown;
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  categoryId: string;
-  in_store: boolean;
-  weight: number;
-  length: number;
-  width: number;
-  height: number;
-  color: string;
-  material: string;
-  discount: number;
-  launch_date: string;
-  imageUrl: string;
-  amount: number;
-}
+import { Product } from "../slices/productSlice";
 
 export default function ProductDetails() {
   const { productId } = useParams<{ productId: string }>();
@@ -71,20 +50,16 @@ export default function ProductDetails() {
         image={product.imageUrl}
         sx={{ height: "300px", objectFit: "contain", marginBottom: 2 }}
       />
-      <Typography variant="body1" component="p">
+      <Typography variant="body1" component="p" sx={{ whiteSpace: "pre-wrap" }}>
         {product.description}
       </Typography>
       <Typography variant="body1" component="p">
         {product.price} SEK
       </Typography>
-     
-        
-        <AddtoCartButton product={product} />
-      
+
+      <AddtoCartButton product={product} />
+
       {/* Lägg till andra produktdetaljer här */}
     </Box>
   );
 }
-
-
-
