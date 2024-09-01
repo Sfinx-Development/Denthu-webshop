@@ -9,14 +9,14 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { MouseEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ImageUploader from "../components/ImageUploader";
+import ProductPreview from "../components/ProductPreview";
 import {
   addcategoryAsync,
   Category,
   getCategorysAsync,
-  setActiveCategory,
 } from "../slices/categorySlice";
 import {
   addProductAsync,
@@ -57,12 +57,15 @@ export default function AdminAddAndEdit() {
   );
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryImageUrl, setNewCategoryImageUrl] = useState("");
+  const [preview, setPreview] = useState(false);
 
   useEffect(() => {
     dispatch(getCategorysAsync());
   }, [dispatch]);
 
-  const handleOnSubmit = async (e) => {
+  const handleOnSubmit = async (
+    e: MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
     e.preventDefault();
 
     if (newCategoryName && newCategoryImageUrl) {
@@ -75,7 +78,7 @@ export default function AdminAddAndEdit() {
     }
 
     const categoryId = selectedCategory ? selectedCategory.id : newCategoryName;
-    if (imageUrl && price && amount && discount) {
+    if (imageUrl && price && amount) {
       const product: Product = {
         id: productToEdit ? productToEdit.id : "default",
         name,
@@ -93,27 +96,15 @@ export default function AdminAddAndEdit() {
       } else if (isNewProductMode) {
         await dispatch(addProductAsync(product));
       }
-
-      // Reset form fields
-      setName("");
-      setDescription("");
-      setPrice(0);
-      setAmount(0);
-      setDiscount(0);
-      setImageUrl("");
-      setSelectedCategory(null);
-      setNewCategoryName("");
-      setNewCategoryImageUrl("");
-
       navigate("/admin");
     }
   };
 
   useEffect(() => {
     if (categories.length > 0 && !selectedCategory && !newCategoryName) {
-      dispatch(setActiveCategory(categories[0]));
+      setSelectedCategory(categories[0]);
     }
-  }, [categories, selectedCategory, newCategoryName, dispatch]);
+  }, [categories]);
 
   return (
     <Paper
@@ -125,140 +116,187 @@ export default function AdminAddAndEdit() {
         width: "100%",
       }}
     >
-      <Typography variant="h4" gutterBottom>
-        {productToEdit ? "Redigera produkt" : "Lägg till ny produkt"}
-      </Typography>
-
-      <form onSubmit={handleOnSubmit} style={{ width: "100%", maxWidth: 600 }}>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <TextField
-            label="Namn"
-            variant="outlined"
-            fullWidth
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-
-          <TextField
-            label="Beskrivning"
-            variant="outlined"
-            fullWidth
-            multiline
-            rows={4}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-
-          <TextField
-            label="Pris"
-            variant="outlined"
-            fullWidth
-            type="number"
-            value={price}
+      <form
+        // onSubmit={handleOnSubmit}
+        style={{
+          width: "100%",
+          maxWidth: 600,
+          display: "flex",
+          flex: 1,
+          flexDirection: "column",
+        }}
+      >
+        <Typography variant="h4" gutterBottom>
+          {productToEdit ? "Redigera produkt" : "Lägg till ny produkt"}
+        </Typography>
+        {!preview && (
+          <Box
             sx={{
-              "& input[type=number]": {
-                "-moz-appearance": "textfield",
-              },
-              "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
-                {
-                  "-webkit-appearance": "none",
-                  margin: 0,
-                },
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
+              flex: 1,
             }}
-            onChange={(e) => setPrice(e.target.value)}
-          />
+          >
+            <TextField
+              label="Namn"
+              variant="outlined"
+              fullWidth
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
 
-          <ImageUploader imageUrl={imageUrl} setImageUrl={setImageUrl} />
+            <TextField
+              label="Beskrivning"
+              variant="outlined"
+              fullWidth
+              multiline
+              rows={4}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
 
-          <TextField
-            label="Antal"
-            variant="outlined"
-            fullWidth
-            type="number"
-            value={amount}
-            sx={{
-              "& input[type=number]": {
-                "-moz-appearance": "textfield",
-              },
-              "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
-                {
-                  "-webkit-appearance": "none",
-                  margin: 0,
+            <TextField
+              label="Pris"
+              variant="outlined"
+              fullWidth
+              type="number"
+              value={price}
+              sx={{
+                "& input[type=number]": {
+                  "-moz-appearance": "textfield",
                 },
-            }}
-            onChange={(e) => setAmount(e.target.value)}
-          />
-
-          <TextField
-            label="Rabatt"
-            variant="outlined"
-            fullWidth
-            type="number"
-            value={discount}
-            sx={{
-              "& input[type=number]": {
-                "-moz-appearance": "textfield",
-              },
-              "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
-                {
-                  "-webkit-appearance": "none",
-                  margin: 0,
-                },
-            }}
-            onChange={(e) => setDiscount(e.target.value)}
-          />
-
-          <FormControl fullWidth>
-            <InputLabel>Kategori</InputLabel>
-            <Select
-              value={selectedCategory?.id || ""}
-              onChange={(e) => {
-                const selected = categories.find(
-                  (cat) => cat.id === e.target.value
-                );
-                setSelectedCategory(selected || null);
+                "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
+                  {
+                    "-webkit-appearance": "none",
+                    margin: 0,
+                  },
               }}
-              label="Kategori"
-            >
-              {categories.map((cat: Category) => (
-                <MenuItem key={cat.id} value={cat.id}>
-                  <Typography sx={{ color: "black", fontSize: 14 }}>
-                    {cat.category}
-                  </Typography>
+              onChange={(e) => setPrice(e.target.value)}
+            />
+
+            <ImageUploader imageUrl={imageUrl} setImageUrl={setImageUrl} />
+
+            <TextField
+              label="Antal"
+              variant="outlined"
+              fullWidth
+              type="number"
+              value={amount}
+              sx={{
+                "& input[type=number]": {
+                  "-moz-appearance": "textfield",
+                },
+                "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
+                  {
+                    "-webkit-appearance": "none",
+                    margin: 0,
+                  },
+              }}
+              onChange={(e) => setAmount(e.target.value)}
+            />
+
+            <TextField
+              label="Rabatt"
+              variant="outlined"
+              fullWidth
+              type="number"
+              value={discount}
+              sx={{
+                "& input[type=number]": {
+                  "-moz-appearance": "textfield",
+                },
+                "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
+                  {
+                    "-webkit-appearance": "none",
+                    margin: 0,
+                  },
+              }}
+              onChange={(e) => setDiscount(e.target.value)}
+            />
+
+            <FormControl fullWidth>
+              <InputLabel>Kategori</InputLabel>
+              <Select
+                value={selectedCategory?.id || ""}
+                onChange={(e) => {
+                  const selected = categories.find(
+                    (cat) => cat.id === e.target.value
+                  );
+                  setSelectedCategory(selected || null);
+                }}
+                label="Kategori"
+              >
+                {categories.map((cat: Category) => (
+                  <MenuItem key={cat.id} value={cat.id}>
+                    <Typography sx={{ color: "black", fontSize: 14 }}>
+                      {cat.category}
+                    </Typography>
+                  </MenuItem>
+                ))}
+                <MenuItem value="">
+                  <em>Ny kategori</em>
                 </MenuItem>
-              ))}
-              <MenuItem value="">
-                <em>Ny kategori</em>
-              </MenuItem>
-            </Select>
-          </FormControl>
+              </Select>
+            </FormControl>
 
-          {selectedCategory == null && (
-            <>
-              <Typography>Ny kategori</Typography>
-              <TextField
-                label="Kategorinamn"
-                variant="outlined"
-                fullWidth
-                value={newCategoryName}
-                onChange={(e) => setNewCategoryName(e.target.value)}
-              />
-              <TextField
-                label="Kategoribild"
-                variant="outlined"
-                fullWidth
-                value={newCategoryImageUrl}
-                onChange={(e) => setNewCategoryImageUrl(e.target.value)}
-              />
-            </>
-          )}
+            {selectedCategory == null && (
+              <>
+                <Typography>Ny kategori</Typography>
+                <TextField
+                  label="Kategorinamn"
+                  variant="outlined"
+                  fullWidth
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                />
+                <TextField
+                  label="Kategoribild"
+                  variant="outlined"
+                  fullWidth
+                  value={newCategoryImageUrl}
+                  onChange={(e) => setNewCategoryImageUrl(e.target.value)}
+                />
+              </>
+            )}
 
-          <Box mt={3} display="flex" justifyContent="center">
-            <Button type="submit" variant="contained" color="primary">
-              {productToEdit ? "Spara ändringar" : "Lägg till produkt"}
-            </Button>
+            <Box mt={3} display="flex" justifyContent="center">
+              <Button
+                onClick={() => setPreview(true)}
+                variant="contained"
+                color="primary"
+              >
+                <Typography>{"Förhandsgrandska"}</Typography>
+              </Button>
+            </Box>
           </Box>
-        </Box>
+        )}
+        {preview && (
+          <Box sx={{ display: "flex", flexDirection: "column" }}>
+            <ProductPreview
+              name={name}
+              description={description}
+              imageUrl={imageUrl}
+              price={price}
+            />
+            <Box mt={3} display="flex" justifyContent="center" sx={{ gap: 2 }}>
+              <Button
+                onClick={(e) => handleOnSubmit(e)}
+                variant="contained"
+                color="primary"
+              >
+                {productToEdit ? "Spara ändringar" : "Lägg till produkt"}
+              </Button>
+              <Button
+                onClick={() => setPreview(false)}
+                variant="contained"
+                color="primary"
+              >
+                Tillbaka
+              </Button>
+            </Box>
+          </Box>
+        )}
       </form>
     </Paper>
   );
