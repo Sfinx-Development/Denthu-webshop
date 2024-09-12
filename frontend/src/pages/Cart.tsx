@@ -4,12 +4,14 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { Box, Button, IconButton, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { CartItem, updateItem } from "../slices/cartSlice";
 import { addOrderAsync, Order, OrderItem } from "../slices/orderSlice";
-import { Product, Size, updateProductAsync } from "../slices/productSlice";
+import { Product, updateProductAsync } from "../slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
+import { db } from "../api/config";
+import { doc, getDoc } from "firebase/firestore";
 
 const fadeIn = keyframes`
     from {
@@ -33,11 +35,17 @@ export default function Cart() {
   const navigate = useNavigate();
   const [groupedItems, setGroupedItems] = useState<GroupedCartItem[]>([]);
 
+
+
+
+
+
   useEffect(() => {
     if (cart) {
       const grouped = cart.items.reduce(
         (acc: Record<string, GroupedCartItem>, item) => {
-          const key = `${item.product_id}-${item.size}`;
+          // const key = `${item.product_id}-${item.size}`;
+          const key = `${item.product_id}`;
           if (!acc[key]) {
             acc[key] = { ...item, quantity: 0 };
           }
@@ -50,26 +58,27 @@ export default function Cart() {
     }
   }, [cart]);
 
-  function getProduct(productId: string): Product | undefined {
+  function getProduct(productId: string ): Product | undefined {
+    console.log("PRODUKTEEEEN", productId);
     return products.find((p) => p.id === productId);
   }
 
-  const sizesLeft = (product: Product, cartItem: CartItem) => {
-    const size = product.sizes.find((s) => s.label == cartItem.size);
-    return size ? size.amount : 0;
-  };
+  // const sizesLeft = (product: Product, cartItem: CartItem) => {
+  //   const size = product.sizes.find((s) => s.label == cartItem.size);
+  //   return size ? size.amount : 0;
+  // };
 
-  const updatedQuantity = (product: Product): Size[] => {
+  const updatedQuantity = (product: Product): [] => {
     const sizeMap: { [key: string]: number } = {};
 
     cart?.items
       .filter((item) => item.product_id === product.id)
       .forEach((item) => {
-        if (sizeMap[item.size]) {
-          sizeMap[item.size] += item.quantity;
-        } else {
-          sizeMap[item.size] = item.quantity;
-        }
+        // if (sizeMap[item.size]) {
+        //   sizeMap[item.size] += item.quantity;
+        // } else {
+        //   sizeMap[item.size] = item.quantity;
+        // }
       });
 
     return product.sizes.map((size) => {
@@ -83,16 +92,17 @@ export default function Cart() {
     });
   };
 
-  const handleAddToCart = (product: Product, sizeLabel: string) => {
+  const handleAddToCart = (product: Product /*, sizeLabel: string*/) => {
     if (cart) {
       const itemExists = cart.items.find(
-        (i) => i.product_id === product.id && i.size === sizeLabel
+        (i) => i.product_id === product.id /* && i.size === sizeLabel */
       );
-      if (
-        itemExists &&
-        product &&
-        itemExists.quantity < sizesLeft(product, itemExists)
-      ) {
+      // if (
+      //   itemExists &&
+      //   product &&
+      //   itemExists.quantity < sizesLeft(product, itemExists)
+      // ) {
+      if (itemExists && product) {
         const updatedItem: CartItem = {
           ...itemExists,
           quantity: itemExists.quantity + 1,
@@ -102,10 +112,10 @@ export default function Cart() {
     }
   };
 
-  const handleRemoveFromCart = (product: Product, sizeLabel: string) => {
+  const handleRemoveFromCart = (product: Product /*, sizeLabel: string*/) => {
     if (cart) {
       const itemExists = cart.items.find(
-        (i) => i.product_id === product.id && i.size === sizeLabel
+        (i) => i.product_id === product.id /* && i.size === sizeLabel */
       );
       if (itemExists && itemExists.quantity > 0) {
         const updatedItem: CartItem = {
@@ -125,8 +135,8 @@ export default function Cart() {
         product_id: item.product_id,
         quantity: item.quantity,
         price: item.price * 100,
-        vatPercent: 1200,
-        vatAmount: 0,
+        // vatPercent: 1200,
+        // vatAmount: 0,
       };
       return orderItem;
     });
@@ -166,15 +176,11 @@ export default function Cart() {
     );
   };
 
-  const getTotalAmountPerProduct = (
-    product: Product | undefined,
-    item: CartItem
-  ) => {
-    if (product) {
-      return product.price * item.quantity;
-    }
-    return 1;
+  const getTotalAmountPerProduct = (item: CartItem): number => {
+    return item.price * item.quantity;
   };
+  
+  
 
   return (
     <Box
@@ -242,7 +248,7 @@ export default function Cart() {
             const product = getProduct(item.product_id);
             return (
               <Box
-                key={`${item.product_id}-${item.size}`}
+                key={`${item.product_id}`}
                 sx={{
                   backgroundColor: "white",
                   display: "flex",
@@ -269,7 +275,7 @@ export default function Cart() {
                   }}
                 >
                   <Typography sx={{ fontSize: 20, marginY: 1 }}>
-                    {product?.title} - {item.size}
+                    {product?.name} {/* - {item.size} */}
                   </Typography>
                   <Typography sx={{ fontSize: 16, color: "#777" }}>
                     {item.quantity} st
@@ -284,7 +290,7 @@ export default function Cart() {
                 >
                   <IconButton
                     onClick={() =>
-                      handleRemoveFromCart(product as Product, item.size)
+                      handleRemoveFromCart(product as Product /*, item.size*/)
                     }
                     sx={{ marginRight: 1 }}
                   >
@@ -293,7 +299,7 @@ export default function Cart() {
                   <Typography>{item.quantity}</Typography>
                   <IconButton
                     onClick={() =>
-                      handleAddToCart(product as Product, item.size)
+                      handleAddToCart(product as Product /*, item.size*/)
                     }
                     sx={{ marginLeft: 1 }}
                   >
@@ -301,7 +307,7 @@ export default function Cart() {
                   </IconButton>
                 </Box>
                 <Typography sx={{ marginLeft: "auto", fontSize: 20 }}>
-                  {getTotalAmountPerProduct(product, item)} kr
+                {getTotalAmountPerProduct(item)} kr
                 </Typography>
               </Box>
             );
@@ -343,3 +349,5 @@ export default function Cart() {
     </Box>
   );
 }
+
+

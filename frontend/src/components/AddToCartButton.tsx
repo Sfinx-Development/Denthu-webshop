@@ -29,14 +29,13 @@ const AddtoCartButton: React.FC<Props> = ({ product }) => {
         setTimeout(() => {
           setResetButton(false);
         });
-      }, 1000);
+      }, 3000);
     }
   };
 
   return (
     <div>
       <Button
-        data-cy="product-buy-button"
         onClick={handleAddToCart}
         variant="contained"
         disabled={productAddedToCart || resetButton}
@@ -54,7 +53,7 @@ const AddtoCartButton: React.FC<Props> = ({ product }) => {
       >
         <ShoppingCartIcon fontSize="small" style={{ marginRight: "8px" }} />
         {productAddedToCart ? (
-          <Typography variant="body1" data-cy="added-to-cart-toast">
+          <Typography variant="body1">
             har lagts till
           </Typography>
         ) : (
