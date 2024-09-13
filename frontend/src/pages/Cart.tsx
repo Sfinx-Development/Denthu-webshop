@@ -4,14 +4,19 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { Box, Button, IconButton, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate,  /* useParams */ } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { CartItem, updateItem } from "../slices/cartSlice";
 import { addOrderAsync, Order, OrderItem } from "../slices/orderSlice";
 import { Product, updateProductAsync } from "../slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
-import { db } from "../api/config";
-import { doc, getDoc } from "firebase/firestore";
+// import { useParams } from "react-router-dom";
+// import { db } from "../api/config";
+// import { doc, getDoc } from "firebase/firestore";
+
+
+
+
 
 const fadeIn = keyframes`
     from {
@@ -35,8 +40,11 @@ export default function Cart() {
   const navigate = useNavigate();
   const [groupedItems, setGroupedItems] = useState<GroupedCartItem[]>([]);
 
+  // const { productId } = useParams<{ productId: string }>();
+  // const [product, setProduct] = useState<Product | null>(null);
+  // const [loading, setLoading] = useState(true);
 
-
+ 
 
 
 
@@ -58,10 +66,21 @@ export default function Cart() {
     }
   }, [cart]);
 
+ 
+
+ 
+  
   function getProduct(productId: string ): Product | undefined {
     console.log("PRODUKTEEEEN", productId);
+
+
     return products.find((p) => p.id === productId);
   }
+
+ 
+  
+
+  
 
   // const sizesLeft = (product: Product, cartItem: CartItem) => {
   //   const size = product.sizes.find((s) => s.label == cartItem.size);
@@ -74,14 +93,14 @@ export default function Cart() {
     cart?.items
       .filter((item) => item.product_id === product.id)
       .forEach((item) => {
-        // if (sizeMap[item.size]) {
-        //   sizeMap[item.size] += item.quantity;
-        // } else {
-        //   sizeMap[item.size] = item.quantity;
-        // }
+        if (sizeMap[item.size]) {
+          sizeMap[item.size] += item.quantity;
+        } else {
+          sizeMap[item.size] = item.quantity;
+        }
       });
 
-    return product.sizes.map((size) => {
+    return product.sizes.map((size: { label: string | number; amount: number; }) => {
       const purchasedQuantity = sizeMap[size.label] || 0;
       const updatedQuantity = size.amount - purchasedQuantity;
 
@@ -151,7 +170,7 @@ export default function Cart() {
         reference: "or-" + uuidv4(),
         items: orderItems,
         total_amount: totalPrice,
-        vat_amount: totalPrice,
+        // vat_amount: totalPrice,
         created_date: new Date().toISOString(),
         status: "Waiting for payment",
       };
@@ -161,7 +180,7 @@ export default function Cart() {
         const sizeArray = updatedQuantity(p);
         const productToUpdate: Product = {
           ...p,
-          in_store: p.sizes.some((s) => s.amount > 0),
+          // in_store: p.sizes.some((s: { amount: number; }) => s.amount > 0),
           sizes: sizeArray,
         };
         dispatch(updateProductAsync(productToUpdate));
@@ -342,7 +361,8 @@ export default function Cart() {
               marginTop: 2,
             }}
           >
-            Genomför köp
+            {/* Genomför köp */}
+            Fortsätt till betalning
           </Button>
         </Box>
       )}
