@@ -10,6 +10,7 @@ import Checkout from "./pages/Checkout";
 import Confirmation from "./pages/Confirmation";
 import Error from "./pages/Error";
 import Index from "./pages/Index";
+import Cart from "./pages/Cart";
 import {
   default as Product,
   default as ProductDetails,
@@ -27,6 +28,7 @@ const Navigation = () => {
         <Route path="confirmation" element={<Confirmation />}></Route>
 
         <Route path="/category/:id" element={<CategoryProducts />}></Route>
+        <Route path="cart" element={<Cart />}></Route>
 
         {/* ÄNDRA SEN SÅ INTE VI SKICKAR ID, UTAN SÄTTER ACTIVEPRODUCT? : */}
         <Route path="/product/:productId" element={<ProductDetails />} />

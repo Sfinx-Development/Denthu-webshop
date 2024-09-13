@@ -11,6 +11,8 @@ import {
 } from "../api/product";
 
 export interface Product {
+  sizes: any;
+  // sizes: any;
   id: string;
   name: string;
   description: string;
@@ -20,6 +22,8 @@ export interface Product {
   launch_date: string;
   imageUrl: string;
   amount: number;
+  // in_store: boolean;
+  // vat_amount: number;
 }
 
 export interface ProductWithDate {
