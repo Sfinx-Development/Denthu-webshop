@@ -87,29 +87,29 @@ export default function Cart() {
   //   return size ? size.amount : 0;
   // };
 
-  const updatedQuantity = (product: Product): [] => {
-    const sizeMap: { [key: string]: number } = {};
+  // const updatedQuantity = (product: Product): [] => {
+  //   const sizeMap: { [key: string]: number } = {};
 
-    cart?.items
-      .filter((item) => item.product_id === product.id)
-      .forEach((item) => {
-        if (sizeMap[item.size]) {
-          sizeMap[item.size] += item.quantity;
-        } else {
-          sizeMap[item.size] = item.quantity;
-        }
-      });
+  //   cart?.items
+  //     .filter((item) => item.product_id === product.id)
+      // .forEach((item) => {
+      //   if (sizeMap[item.size]) {
+      //     sizeMap[item.size] += item.quantity;
+      //   } else {
+      //     sizeMap[item.size] = item.quantity;
+      //   }
+      // });
 
-    return product.sizes.map((size: { label: string | number; amount: number; }) => {
-      const purchasedQuantity = sizeMap[size.label] || 0;
-      const updatedQuantity = size.amount - purchasedQuantity;
+  //   return product.sizes.map((size: { label: string | number; amount: number; }) => {
+  //     const purchasedQuantity = sizeMap[size.label] || 0;
+  //     const updatedQuantity = size.amount - purchasedQuantity;
 
-      return {
-        label: size.label,
-        amount: updatedQuantity,
-      };
-    });
-  };
+  //     return {
+  //       label: size.label,
+  //       amount: updatedQuantity,
+  //     };
+  //   });
+  // };
 
   const handleAddToCart = (product: Product /*, sizeLabel: string*/) => {
     if (cart) {
@@ -176,12 +176,14 @@ export default function Cart() {
       };
 
       dispatch(addOrderAsync(newOrder));
+      // localStorage.removeItem("cart");
+      navigate("/");
       products.forEach((p) => {
-        const sizeArray = updatedQuantity(p);
+        // const sizeArray = updatedQuantity(p);
         const productToUpdate: Product = {
           ...p,
           // in_store: p.sizes.some((s: { amount: number; }) => s.amount > 0),
-          sizes: sizeArray,
+          // sizes: sizeArray,
         };
         dispatch(updateProductAsync(productToUpdate));
       });

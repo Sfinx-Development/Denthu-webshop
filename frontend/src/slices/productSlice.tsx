@@ -11,7 +11,7 @@ import {
 } from "../api/product";
 
 export interface Product {
-  sizes: any;
+  // sizes: any;
   // sizes: any;
   id: string;
   name: string;

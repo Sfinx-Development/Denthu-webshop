@@ -44,7 +44,7 @@ import {Category} from "../slices/categorySlice"
   
       const updatedCategoryData = {
         ...category,
-        sizes: category.sizes,
+        // sizes: category.sizes,
       };
   
       await updateDoc(categoryRef, updatedCategoryData);
