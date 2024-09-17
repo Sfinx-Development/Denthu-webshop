@@ -199,7 +199,7 @@ export default function Cart() {
 
       dispatch(addOrderAsync(newOrder));
       // localStorage.removeItem("cart");
-      navigate("/");
+      navigate("/checkout");
       products.forEach((p) => {
         // const sizeArray = updatedQuantity(p);
         const productToUpdate: Product = {
