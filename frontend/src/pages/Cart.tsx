@@ -45,14 +45,10 @@ export default function Cart() {
   // const [loading, setLoading] = useState(true);
 
  
-
-
-
   useEffect(() => {
     if (cart) {
       const grouped = cart.items.reduce(
         (acc: Record<string, GroupedCartItem>, item) => {
-          // const key = `${item.product_id}-${item.size}`;
           const key = `${item.product_id}`;
           if (!acc[key]) {
             acc[key] = { ...item, quantity: 0 };
@@ -62,20 +58,46 @@ export default function Cart() {
         },
         {}
       );
-      setGroupedItems(Object.values(grouped));
+      const filteredGroupedItems = Object.values(grouped).filter(item => item.quantity > 0);
+      setGroupedItems(filteredGroupedItems);
     }
   }, [cart]);
+  
+
+
+  // useEffect(() => {
+  //   if (cart) {
+  //     const grouped = cart.items.reduce(
+  //       (acc: Record<string, GroupedCartItem>, item) => {
+  //         // const key = `${item.product_id}-${item.size}`;
+  //         const key = `${item.product_id}`;
+  //         if (!acc[key]) {
+  //           acc[key] = { ...item, quantity: 0 };
+  //         }
+  //         acc[key].quantity += item.quantity;
+  //         return acc;
+  //       },
+  //       {}
+  //     );
+  //     setGroupedItems(Object.values(grouped));
+  //   }
+  // }, [cart]);
 
  
 
  
   
-  function getProduct(productId: string ): Product | undefined {
-    console.log("PRODUKTEEEEN", productId);
+  // function getProduct(productId: string ): Product | undefined {
+  //   console.log("PRODUKTEEEEN", productId);
 
 
-    return products.find((p) => p.id === productId);
-  }
+  //   return products.find((p) => p.id === productId);
+  // }
+
+  const getProduct = (productId: string): Product | undefined => {
+    return products.find((p) => p.id === productId && p.amount > 0);
+  };
+  
 
  
   
