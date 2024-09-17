@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { addOrderToDB, editOrderInDB, getOrderFromDB } from "../api/order";
-import { PaymentInfo } from "./paymentSlice";
+// import { PaymentInfo } from "./paymentSlice";
 
 export interface Order {
   id: string;
@@ -10,7 +10,11 @@ export interface Order {
   created_date: string;
   status: string;
   items: OrderItem[];
-  paymentInfo?: PaymentInfo;
+  // paymentInfo?: PaymentInfo;
+  guestEmail?: string;
+  guestPhone?: string;
+  guestFirstName?: string;
+  guestLastName?: string;
 }
 
 export interface OrderItem {
