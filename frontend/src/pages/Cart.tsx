@@ -4,7 +4,7 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { Box, Button, IconButton, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
-import { useNavigate,  /* useParams */ } from "react-router-dom";
+import { useNavigate /* useParams */ } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { CartItem, updateItem } from "../slices/cartSlice";
 import { addOrderAsync, Order, OrderItem } from "../slices/orderSlice";
@@ -13,10 +13,6 @@ import { useAppDispatch, useAppSelector } from "../slices/store";
 // import { useParams } from "react-router-dom";
 // import { db } from "../api/config";
 // import { doc, getDoc } from "firebase/firestore";
-
-
-
-
 
 const fadeIn = keyframes`
     from {
@@ -44,7 +40,7 @@ export default function Cart() {
   // const [product, setProduct] = useState<Product | null>(null);
   // const [loading, setLoading] = useState(true);
 
- 
+
   useEffect(() => {
     if (cart) {
       const grouped = cart.items.reduce(
@@ -83,6 +79,7 @@ export default function Cart() {
   //   }
   // }, [cart]);
 
+
  
 
  
@@ -99,15 +96,12 @@ export default function Cart() {
   };
   
 
- 
-  
-
-  
 
   // const sizesLeft = (product: Product, cartItem: CartItem) => {
   //   const size = product.sizes.find((s) => s.label == cartItem.size);
   //   return size ? size.amount : 0;
   // };
+
 
   // const updatedQuantity = (product: Product): [] => {
   //   const sizeMap: { [key: string]: number } = {};
@@ -132,6 +126,33 @@ export default function Cart() {
   //     };
   //   });
   // };
+=======
+  const updatedQuantity = (product: Product): [] => {
+    const sizeMap: { [key: string]: number } = {};
+
+    cart?.items
+      .filter((item) => item.product_id === product.id)
+      .forEach((item) => {
+        if (sizeMap[item.size]) {
+          sizeMap[item.size] += item.quantity;
+        } else {
+          sizeMap[item.size] = item.quantity;
+        }
+      });
+
+    return product.sizes.map(
+      (size: { label: string | number; amount: number }) => {
+        const purchasedQuantity = sizeMap[size.label] || 0;
+        const updatedQuantity = size.amount - purchasedQuantity;
+
+        return {
+          label: size.label,
+          amount: updatedQuantity,
+        };
+      }
+    );
+  };
+
 
   const handleAddToCart = (product: Product /*, sizeLabel: string*/) => {
     if (cart) {
@@ -222,8 +243,6 @@ export default function Cart() {
   const getTotalAmountPerProduct = (item: CartItem): number => {
     return item.price * item.quantity;
   };
-  
-  
 
   return (
     <Box
@@ -350,7 +369,7 @@ export default function Cart() {
                   </IconButton>
                 </Box>
                 <Typography sx={{ marginLeft: "auto", fontSize: 20 }}>
-                {getTotalAmountPerProduct(item)} kr
+                  {getTotalAmountPerProduct(item)} kr
                 </Typography>
               </Box>
             );
@@ -393,5 +412,3 @@ export default function Cart() {
     </Box>
   );
 }
-
-
