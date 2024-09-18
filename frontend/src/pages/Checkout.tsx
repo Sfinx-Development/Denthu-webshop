@@ -2,12 +2,17 @@ import { Box, Button, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { PaymentOrderOutgoing } from "../../types";
 import { generatePayeeReference } from "../../utils";
+import SeamlessCheckout from "../components/SeamlessCheckout";
 import { Order, updateOrderAsync } from "../slices/orderSlice";
 import { addPaymentOrderOutgoing } from "../slices/paymentSlice";
 import { Product } from "../slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
 
 export default function Checkout() {
+  const incomingPaymentOrder = useAppSelector(
+    (state) => state.paymentSlice.paymentOrderIncoming
+  );
+  const paymentInfo = useAppSelector((state) => state.paymentSlice.paymentInfo);
   const order = useAppSelector((state) => state.orderSlice.order);
   const products = useAppSelector((state) => state.productSlice.products);
   const [firstName, setFirstName] = useState("");
@@ -164,6 +169,9 @@ export default function Checkout() {
         >
           Betalning
         </Typography>
+        {incomingPaymentOrder && incomingPaymentOrder.operations && (
+          <SeamlessCheckout />
+        )}
         <Box sx={{ display: "flex", gap: 1 }}>
           <TextField
             label="Förnamn"
