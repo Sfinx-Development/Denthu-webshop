@@ -33,6 +33,10 @@ const AddtoCartButton: React.FC<Props> = ({ product }) => {
     }
   };
 
+  if (product.amount <= 0) {
+    return null; 
+  }
+
   return (
     <div>
       <Button

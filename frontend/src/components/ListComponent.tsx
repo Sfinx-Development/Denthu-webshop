@@ -8,7 +8,8 @@ import {
   ListItemText,
   Typography,
 } from "@mui/material";
-import { CartItem } from "../../data/types";
+
+import { CartItem } from "../slices/cartSlice";
 
 interface CustomButton {
   icon: React.ReactNode;
