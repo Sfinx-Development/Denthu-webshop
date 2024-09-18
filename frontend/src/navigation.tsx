@@ -5,12 +5,12 @@ import { Route, Routes } from "react-router-dom";
 import AdminAddAndEdit from "./pages/AdminAddAndEdit";
 import AdminProducts from "./pages/AdminProducts";
 import AdminSignIn from "./pages/AdminSignIn";
+import Cart from "./pages/Cart";
 import CategoryProducts from "./pages/CategoryProducts";
 import Checkout from "./pages/Checkout";
 import Confirmation from "./pages/Confirmation";
 import Error from "./pages/Error";
 import Index from "./pages/Index";
-import Cart from "./pages/Cart";
 import {
   default as Product,
   default as ProductDetails,

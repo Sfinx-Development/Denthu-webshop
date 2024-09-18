@@ -9,7 +9,6 @@ export interface Cart {
 }
 
 export interface CartItem {
-  size: any;
   id: string;
   cart_id: string;
   product_id: string;

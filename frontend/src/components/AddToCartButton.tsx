@@ -53,9 +53,7 @@ const AddtoCartButton: React.FC<Props> = ({ product }) => {
       >
         <ShoppingCartIcon fontSize="small" style={{ marginRight: "8px" }} />
         {productAddedToCart ? (
-          <Typography variant="body1">
-            har lagts till
-          </Typography>
+          <Typography variant="body1">har lagts till</Typography>
         ) : (
           <Typography variant="body1">Lägg till</Typography>
         )}
