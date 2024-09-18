@@ -44,7 +44,43 @@
 export interface PaymentOrderIncoming {
   id: string;
   operations: Operation[];
-  paymentOrder: PaymentOrder;
+  paymentOrder: PaymentOrderIn;
+}
+
+export interface PaymentOrderId {
+  id: string;
+}
+
+export interface PaymentOrderIn {
+  id: string;
+  amount: number;
+  currency: string;
+  description: string;
+  created: string;
+  updated: string;
+  operation: string;
+  status: string;
+  payeeInfo: PaymentOrderId;
+  payer: PaymentOrderId;
+  urls: PaymentOrderId;
+  aborted: PaymentOrderId;
+  cancelled: PaymentOrderId;
+  failed: PaymentOrderId;
+  failedAttempts: PaymentOrderId;
+  financialTransactions: PaymentOrderId;
+  history: PaymentOrderId;
+  metadata: PaymentOrderId;
+  paid: PaymentOrderId;
+  postPurchaseFailedAttempts: PaymentOrderId;
+  reversed: PaymentOrderId;
+  vatAmount: number;
+  availableInstruments: string[];
+  guestMode: boolean;
+  implementation: string;
+  initiatingSystemUserAgent: string;
+  instrumentMode: boolean;
+  integration: string;
+  language: string;
 }
 
 export interface PaymentOrder {
@@ -367,4 +403,15 @@ export interface TransactionDetails {
   isOperational: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   operations: any[]; // If operations have a more specific structure, define it here
+}
+
+export interface CallbackData {
+  orderReference: string;
+  paymentOrder: CallbackPaymentOrder;
+}
+
+interface CallbackPaymentOrder {
+  id: string;
+  instrument: string;
+  number?: number;
 }

@@ -106,8 +106,8 @@ export default function Cart() {
         product_id: item.product_id,
         quantity: item.quantity,
         price: item.price * 100,
-        // vatPercent: 1200,
-        // vatAmount: 0,
+        vatPercent: 1200,
+        vatAmount: 0,
       };
       return orderItem;
     });
@@ -122,7 +122,7 @@ export default function Cart() {
         reference: "or-" + uuidv4(),
         items: orderItems,
         total_amount: totalPrice,
-        // vat_amount: totalPrice,
+        vat_amount: totalPrice,
         created_date: new Date().toISOString(),
         status: "Waiting for payment",
       };
