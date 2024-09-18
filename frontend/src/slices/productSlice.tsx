@@ -49,6 +49,7 @@ interface ProductState {
 const storedProducts = localStorage.getItem("products");
 const storedActiveProduct = localStorage.getItem("activeProduct");
 const filteredProducts = localStorage.getItem("filteredProducts");
+
 export const initialState: ProductState = {
   products: storedProducts ? JSON.parse(storedProducts) : [],
   filteredProducts: filteredProducts ? JSON.parse(filteredProducts) : [],
@@ -67,6 +68,7 @@ export const getProductsByCategoryAsync = createAsyncThunk<
   try {
     const products = await getProductsByCategoryFromDB(categoryId);
     if (products) {
+      localStorage.setItem("products", JSON.stringify(products));
       return products;
     } else {
       return thunkAPI.rejectWithValue("Failed to fetch products by category");
@@ -119,6 +121,7 @@ export const getProductsAsync = createAsyncThunk<
   try {
     const products = await getProductsFromDB();
     if (products) {
+      localStorage.setItem("products", JSON.stringify(products));
       return products;
     } else {
       return thunkAPI.rejectWithValue("failed to fetch products");

@@ -36,11 +36,6 @@ export default function Cart() {
   const navigate = useNavigate();
   const [groupedItems, setGroupedItems] = useState<GroupedCartItem[]>([]);
 
-  // const { productId } = useParams<{ productId: string }>();
-  // const [product, setProduct] = useState<Product | null>(null);
-  // const [loading, setLoading] = useState(true);
-
-
   useEffect(() => {
     if (cart) {
       const grouped = cart.items.reduce(
@@ -54,131 +49,45 @@ export default function Cart() {
         },
         {}
       );
-      const filteredGroupedItems = Object.values(grouped).filter(item => item.quantity > 0);
+      const filteredGroupedItems = Object.values(grouped).filter(
+        (item) => item.quantity > 0
+      );
       setGroupedItems(filteredGroupedItems);
     }
   }, [cart]);
-  
-
-
-  // useEffect(() => {
-  //   if (cart) {
-  //     const grouped = cart.items.reduce(
-  //       (acc: Record<string, GroupedCartItem>, item) => {
-  //         // const key = `${item.product_id}-${item.size}`;
-  //         const key = `${item.product_id}`;
-  //         if (!acc[key]) {
-  //           acc[key] = { ...item, quantity: 0 };
-  //         }
-  //         acc[key].quantity += item.quantity;
-  //         return acc;
-  //       },
-  //       {}
-  //     );
-  //     setGroupedItems(Object.values(grouped));
-  //   }
-  // }, [cart]);
-
-
- 
-
- 
-  
-  // function getProduct(productId: string ): Product | undefined {
-  //   console.log("PRODUKTEEEEN", productId);
-
-
-  //   return products.find((p) => p.id === productId);
-  // }
 
   const getProduct = (productId: string): Product | undefined => {
-    return products.find((p) => p.id === productId && p.amount > 0);
-  };
-  
-
-
-  // const sizesLeft = (product: Product, cartItem: CartItem) => {
-  //   const size = product.sizes.find((s) => s.label == cartItem.size);
-  //   return size ? size.amount : 0;
-  // };
-
-
-  // const updatedQuantity = (product: Product): [] => {
-  //   const sizeMap: { [key: string]: number } = {};
-
-  //   cart?.items
-  //     .filter((item) => item.product_id === product.id)
-      // .forEach((item) => {
-      //   if (sizeMap[item.size]) {
-      //     sizeMap[item.size] += item.quantity;
-      //   } else {
-      //     sizeMap[item.size] = item.quantity;
-      //   }
-      // });
-
-  //   return product.sizes.map((size: { label: string | number; amount: number; }) => {
-  //     const purchasedQuantity = sizeMap[size.label] || 0;
-  //     const updatedQuantity = size.amount - purchasedQuantity;
-
-  //     return {
-  //       label: size.label,
-  //       amount: updatedQuantity,
-  //     };
-  //   });
-  // };
-=======
-  const updatedQuantity = (product: Product): [] => {
-    const sizeMap: { [key: string]: number } = {};
-
-    cart?.items
-      .filter((item) => item.product_id === product.id)
-      .forEach((item) => {
-        if (sizeMap[item.size]) {
-          sizeMap[item.size] += item.quantity;
-        } else {
-          sizeMap[item.size] = item.quantity;
-        }
-      });
-
-    return product.sizes.map(
-      (size: { label: string | number; amount: number }) => {
-        const purchasedQuantity = sizeMap[size.label] || 0;
-        const updatedQuantity = size.amount - purchasedQuantity;
-
-        return {
-          label: size.label,
-          amount: updatedQuantity,
-        };
-      }
-    );
+    return products.find((p) => p.id == productId);
   };
 
-
-  const handleAddToCart = (product: Product /*, sizeLabel: string*/) => {
+  const handleAddToCart = (productId: string) => {
     if (cart) {
-      const itemExists = cart.items.find(
-        (i) => i.product_id === product.id /* && i.size === sizeLabel */
-      );
-      // if (
-      //   itemExists &&
-      //   product &&
-      //   itemExists.quantity < sizesLeft(product, itemExists)
-      // ) {
-      if (itemExists && product) {
-        const updatedItem: CartItem = {
-          ...itemExists,
-          quantity: itemExists.quantity + 1,
-        };
-        dispatch(updateItem(updatedItem));
+      const product = getProduct(productId);
+      if (product) {
+        const itemExists = cart.items.find((i) => i.product_id == product.id);
+        if (itemExists && productId && product.amount > 0) {
+          const updatedItem: CartItem = {
+            ...itemExists,
+            quantity: itemExists.quantity + 1,
+          };
+          dispatch(updateItem(updatedItem));
+        } else {
+          const updatedItem: CartItem = {
+            product_id: product.id,
+            cart_id: cart.id,
+            price: product.price,
+            quantity: 1,
+            id: "123",
+          };
+          dispatch(updateItem(updatedItem));
+        }
       }
     }
   };
 
-  const handleRemoveFromCart = (product: Product /*, sizeLabel: string*/) => {
+  const handleRemoveFromCart = (product: Product) => {
     if (cart) {
-      const itemExists = cart.items.find(
-        (i) => i.product_id === product.id /* && i.size === sizeLabel */
-      );
+      const itemExists = cart.items.find((i) => i.product_id == product.id);
       if (itemExists && itemExists.quantity > 0) {
         const updatedItem: CartItem = {
           ...itemExists,
@@ -219,14 +128,10 @@ export default function Cart() {
       };
 
       dispatch(addOrderAsync(newOrder));
-      // localStorage.removeItem("cart");
       navigate("/checkout");
       products.forEach((p) => {
-        // const sizeArray = updatedQuantity(p);
         const productToUpdate: Product = {
           ...p,
-          // in_store: p.sizes.some((s: { amount: number; }) => s.amount > 0),
-          // sizes: sizeArray,
         };
         dispatch(updateProductAsync(productToUpdate));
       });
@@ -325,7 +230,7 @@ export default function Cart() {
               >
                 <img
                   src={product?.imageUrl}
-                  alt={`Product ${item.product_id}`}
+                  alt={`Product ${product?.name}`}
                   style={{ height: 100, width: 80, objectFit: "cover" }}
                 />
                 <Box
@@ -360,9 +265,7 @@ export default function Cart() {
                   </IconButton>
                   <Typography>{item.quantity}</Typography>
                   <IconButton
-                    onClick={() =>
-                      handleAddToCart(product as Product /*, item.size*/)
-                    }
+                    onClick={() => handleAddToCart(item.id)}
                     sx={{ marginLeft: 1 }}
                   >
                     <AddIcon />
