@@ -101,29 +101,45 @@ const cartSlice = createSlice({
     addToCart: (state, action: PayloadAction<Product>) => {
       if (state.cart) {
         const product = action.payload;
-        const existingItem = state.cart.items.find(
-          (item) => item.product_id === product.id
-        );
-
-        if (existingItem) {
-          existingItem.quantity += 1;
+    
+        // Check if the product has amount > 0
+        if (product.amount > 0) {
+          const existingItem = state.cart.items.find(
+            (item) => item.product_id === product.id
+          );
+    
+          if (existingItem) {
+            // Ensure there's enough stock before increasing the quantity
+            if (existingItem.quantity + 1 <= product.amount) {
+              existingItem.quantity += 1;
+            } else {
+              console.warn("Not enough stock available for this product.");
+            }
+          } else {
+            // Ensure there is at least 1 in stock before adding
+            if (product.amount > 0) {
+              const newCartItem: CartItem = {
+                id: uuidv4(),
+                cart_id: state.cart.id,
+                product_id: product.id,
+                quantity: 1,
+                price: product.price,
+              };
+              state.cart.items.push(newCartItem);
+            } else {
+              console.warn("This product is out of stock.");
+            }
+          }
+    
+          localStorage.setItem("cart", JSON.stringify(state.cart));
+          state.isCheckVisible = true;
         } else {
-          const newCartItem: CartItem = {
-            id: uuidv4(),
-            cart_id: state.cart.id,
-            product_id: product.id,
-            quantity: 1,
-            price: product.price,
-          };
-          state.cart.items.push(newCartItem);
+          console.warn("This product is out of stock.");
         }
-
-        localStorage.setItem("cart", JSON.stringify(state.cart));
-        state.isCheckVisible = true;
       }
     },
-  },
-});
+    
+}});
 
 export const {
   setCart,

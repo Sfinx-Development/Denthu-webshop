@@ -17,13 +17,18 @@ export default function CategoryProducts() {
     if (id) {
       dispatch(getProductsByCategoryAsync(id)); // Anropar thunk för att hämta produkter baserat på kategori
     }
-  }, [id]);
+  }, [id, dispatch]);
 
   if (loading) {
     return <Typography>Loading...</Typography>;
   }
 
-  if (filteredProducts.length === 0) {
+  // Filtrera bort produkter med amount <= 0
+  const availableProducts = filteredProducts.filter(
+    (product) => product.amount > 0
+  );
+
+  if (availableProducts.length === 0) {
     return <Typography>No products found for this category.</Typography>;
   }
 
@@ -41,7 +46,7 @@ export default function CategoryProducts() {
         {id}
       </Typography>
       <Grid container spacing={4}>
-        {filteredProducts.map((product) => (
+        {availableProducts.map((product) => (
           <Grid item xs={12} sm={6} md={4} key={product.id}>
             <Link
               to={`/product/${product.id}`}

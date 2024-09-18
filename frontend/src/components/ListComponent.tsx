@@ -8,7 +8,8 @@ import {
   ListItemText,
   Typography,
 } from "@mui/material";
-import { CartItem } from "../../data/types";
+
+import { CartItem } from "../slices/cartSlice";
 
 interface CustomButton {
   icon: React.ReactNode;
@@ -43,14 +44,14 @@ function ListComponent(props: Props) {
           <Card className="w-10 h-10">
             <div style={{ overflow: "visible" }}>
               <img
-                src={p.image}
+                src={p.id}
                 alt="Product"
                 className="w-full h-full object-cover object-center"
               />
             </div>
           </Card>
           <ListItemText
-            primary={<Typography variant="body2">{p.title}</Typography>}
+            primary={<Typography variant="body2">{}</Typography>}
             data-cy="product-title"
             sx={{ padding: "4px" }}
           />
