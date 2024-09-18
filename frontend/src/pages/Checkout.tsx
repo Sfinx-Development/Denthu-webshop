@@ -12,7 +12,7 @@ export default function Checkout() {
   const incomingPaymentOrder = useAppSelector(
     (state) => state.paymentSlice.paymentOrderIncoming
   );
-  const paymentInfo = useAppSelector((state) => state.paymentSlice.paymentInfo);
+  // const paymentInfo = useAppSelector((state) => state.paymentSlice.paymentInfo);
   const order = useAppSelector((state) => state.orderSlice.order);
   const products = useAppSelector((state) => state.productSlice.products);
   const [firstName, setFirstName] = useState("");
