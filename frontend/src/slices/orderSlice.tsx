@@ -1,20 +1,21 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { Paid } from "../../swedbankTypes";
 import { addOrderToDB, editOrderInDB, getOrderFromDB } from "../api/order";
-// import { PaymentInfo } from "./paymentSlice";
 
 export interface Order {
   id: string;
   reference: string;
   total_amount: number;
+  vat_amount: number;
   created_date: string;
   status: string;
   items: OrderItem[];
-  // paymentInfo?: PaymentInfo;
-  guestEmail?: string;
-  guestPhone?: string;
-  guestFirstName?: string;
-  guestLastName?: string;
+  paymentInfo?: Paid;
+  guestFirstName?: string,
+  guestLastName?: string,
+  guestEmail?: string,
+  guestPhone?: string,
 }
 
 export interface OrderItem {
@@ -23,6 +24,8 @@ export interface OrderItem {
   product_id: string;
   quantity: number;
   price: number;
+  vatPercent: number; // New field
+  vatAmount: number; // New field
 }
 
 interface OrderState {
@@ -39,16 +42,36 @@ const getInitialOrderState = (): OrderState => {
 
 const initialState: OrderState = getInitialOrderState();
 
+const calculateVatAmount = (price: number, vatPercent: number): number => {
+  const vatAmount = price * (vatPercent / 100);
+  return Math.round(vatAmount);
+};
+
+const calculateTotalVat = (items: OrderItem[]): number => {
+  return items.reduce(
+    (total, item) => total + item.vatAmount * item.quantity,
+    0
+  );
+};
+
+const calculateTotalAmount = (items: OrderItem[]): number => {
+  return items.reduce((total, item) => total + item.price * item.quantity, 0);
+};
+
 export const addOrderAsync = createAsyncThunk<
   Order,
   Order,
   { rejectValue: string }
 >("orders/addOrder", async (order, thunkAPI) => {
   try {
-    const totalAmount =
-      order.items?.reduce((acc, item) => acc + item.price * item.quantity, 0) ||
-      0;
-    order.total_amount = totalAmount;
+    order.items.forEach((item) => {
+      item.vatPercent = 12; // 12% VAT
+      item.vatAmount = calculateVatAmount(item.price, item.vatPercent);
+    });
+
+    order.total_amount = calculateTotalAmount(order.items);
+    order.vat_amount = calculateTotalVat(order.items);
+
     const createdOrder = await addOrderToDB(order);
     if (createdOrder) {
       localStorage.setItem("order", JSON.stringify(createdOrder));
@@ -57,7 +80,7 @@ export const addOrderAsync = createAsyncThunk<
       return thunkAPI.rejectWithValue("failed to create order");
     }
   } catch (error) {
-    throw new Error("Något gick fel vid .");
+    throw new Error("Något gick fel vid skapande av order.");
   }
 });
 
@@ -67,14 +90,45 @@ export const updateOrderAsync = createAsyncThunk<
   { rejectValue: string }
 >("orders/updateOrder", async (order, thunkAPI) => {
   try {
-    const updatedOrder = await editOrderInDB(order);
-    if (updatedOrder) {
-      return updatedOrder;
+    console.log("ORDER TO UPDATE: ", order);
+
+    // Skapa kopior av items innan uppdatering
+    const updatedItems = order.items.map((item) => {
+      const newItem = { ...item };
+      newItem.vatPercent = 12; // 12% VAT
+      // newItem.vatAmount = calculateVatAmount(newItem.price, newItem.vatPercent);
+      newItem.vatAmount = 21;
+      return newItem;
+    });
+
+    const updatedOrder = {
+      ...order,
+      items: updatedItems,
+      total_amount: calculateTotalAmount(updatedItems),
+      // vat_amount: calculateTotalVat(updatedItems),
+      vat_amount: 12,
+    };
+
+    console.log("UPDATED ORDER DATA: ", updatedOrder);
+
+    // Försök att uppdatera ordern i databasen
+    const response = await editOrderInDB(updatedOrder);
+    if (response) {
+      console.log("ORDER SUCCESSFULLY UPDATED: ", response);
+      return response;
     } else {
-      return thunkAPI.rejectWithValue("failed to update order");
+      console.error("FAILED TO UPDATE ORDER: No order returned");
+      return thunkAPI.rejectWithValue(
+        "Failed to update order: No order returned"
+      );
     }
   } catch (error) {
-    throw new Error("Något gick fel vid uppdatering av order.");
+    console.error("ERROR UPDATING ORDER: ", error);
+    return thunkAPI.rejectWithValue(
+      error instanceof Error
+        ? error.message
+        : "Något gick fel vid uppdatering av order."
+    );
   }
 });
 
@@ -90,6 +144,7 @@ export const getOrderAsync = createAsyncThunk<
     } else {
       return thunkAPI.rejectWithValue("failed to fetch order");
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     throw new Error("Något gick fel vid hämtning av order.");
   }
@@ -105,7 +160,14 @@ const orderSlice = createSlice({
     },
     addItem: (state, action: PayloadAction<OrderItem>) => {
       if (state.order) {
-        state.order.items.push(action.payload);
+        const item = action.payload;
+        item.vatPercent = 12; // 12% VAT
+        item.vatAmount = calculateVatAmount(item.price, item.vatPercent);
+
+        state.order.items.push(item);
+        state.order.total_amount = calculateTotalAmount(state.order.items);
+        state.order.vat_amount = calculateTotalVat(state.order.items);
+
         localStorage.setItem("order", JSON.stringify(state.order));
       }
     },
@@ -114,22 +176,38 @@ const orderSlice = createSlice({
         state.order.items = state.order.items.filter(
           (item) => item.id !== action.payload
         );
+        state.order.total_amount = calculateTotalAmount(state.order.items);
+        state.order.vat_amount = calculateTotalVat(state.order.items);
+
         localStorage.setItem("order", JSON.stringify(state.order));
       }
     },
     updateItem: (state, action: PayloadAction<OrderItem>) => {
       if (state.order) {
         const index = state.order.items.findIndex(
-          (item) => item.id == action.payload.id
+          (item) => item.id === action.payload.id
         );
-        if (index >= 0 && action.payload.quantity > 0) {
-          state.order.items[index] = action.payload;
-        } else if (index >= 0 && action.payload.quantity == 0) {
-          state.order.items = state.order.items.filter(
-            (item) => item.id !== action.payload.id
+        if (index >= 0) {
+          const updatedItem = action.payload;
+          updatedItem.vatPercent = 12; // 12% VAT
+          updatedItem.vatAmount = calculateVatAmount(
+            updatedItem.price,
+            updatedItem.vatPercent
           );
+
+          if (updatedItem.quantity > 0) {
+            state.order.items[index] = updatedItem;
+          } else {
+            state.order.items = state.order.items.filter(
+              (item) => item.id !== updatedItem.id
+            );
+          }
+
+          state.order.total_amount = calculateTotalAmount(state.order.items);
+          state.order.vat_amount = calculateTotalVat(state.order.items);
+
+          localStorage.setItem("order", JSON.stringify(state.order));
         }
-        localStorage.setItem("order", JSON.stringify(state.order));
       }
     },
     clearOrder: (state) => {
@@ -161,6 +239,7 @@ const orderSlice = createSlice({
       .addCase(updateOrderAsync.fulfilled, (state, action) => {
         if (action.payload) {
           state.order = action.payload;
+          localStorage.setItem("order", JSON.stringify(action.payload));
           state.error = null;
         }
       })

@@ -7,6 +7,7 @@ import { OrderReducer } from "./orderSlice";
 // import { PaymentReducer } from "./paymentSlice";
 import { adminReducer } from "./adminSlice";
 import { CategoryReduces } from "./categorySlice";
+import { PaymentReducer } from "./paymentSlice";
 import { ProductReduces } from "./productSlice";
 
 const store = configureStore({
@@ -16,7 +17,7 @@ const store = configureStore({
     orderSlice: OrderReducer,
     categorySlice: CategoryReduces,
     adminSlice: adminReducer,
-    // paymentSlice: PaymentReducer,
+    paymentSlice: PaymentReducer,
   },
   //   middleware: (getDefaultMiddleware) =>
   //     getDefaultMiddleware().concat(localStorageMiddleware),
