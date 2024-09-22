@@ -303,6 +303,14 @@ const paymentSlice = createSlice({
       state.paymentOrderIncoming = null;
       localStorage.removeItem("paymentOrderIncoming");
     },
+    clearCapture: (state) => {
+      state.capture = null;
+      localStorage.removeItem("captures");
+    },
+    clearCallbackData: (state) => {
+      state.callbackData = null;
+      localStorage.removeItem("callbackData");
+    },
     clearPaymentInfo: (state) => {
       state.paymentInfo = null;
       localStorage.removeItem("paymentInfo");
@@ -334,7 +342,6 @@ const paymentSlice = createSlice({
       })
       .addCase(getPaymentCaptureAsync.fulfilled, (state, action) => {
         if (action.payload) {
-          console.log("CAPTURE SVARET: ", action.payload);
           state.paymentCapture = action.payload;
           state.error = null;
         }
@@ -361,5 +368,10 @@ const paymentSlice = createSlice({
   },
 });
 
-export const { clearPaymentOrder, clearPaymentInfo } = paymentSlice.actions;
+export const {
+  clearPaymentOrder,
+  clearPaymentInfo,
+  clearCallbackData,
+  clearCapture,
+} = paymentSlice.actions;
 export const PaymentReducer = paymentSlice.reducer;

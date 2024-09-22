@@ -19,7 +19,7 @@ export interface Product {
   price: number;
   categoryId: string;
   discount: number;
-  launch_date: string;
+  // launch_date: string;
   imageUrl: string;
   amount: number;
   // in_store: boolean;
@@ -33,7 +33,7 @@ export interface ProductWithDate {
   price: number;
   categoryId: string;
   discount: number;
-  launch_date: Date;
+  // launch_date: Date;
   imageUrl: string;
   amount: number;
 }

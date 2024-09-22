@@ -4,8 +4,9 @@ import { NavLink } from "react-router-dom";
 // import { getProductsAsync, Product } from "../slices/productSlice";
 import SearchBar from "../components/SearchBar";
 import { Category, getCategorysAsync } from "../slices/categorySlice";
-import { useAppDispatch, useAppSelector } from "../slices/store";
+import { clearEmailSent } from "../slices/orderSlice";
 import { getProductsAsync } from "../slices/productSlice";
+import { useAppDispatch, useAppSelector } from "../slices/store";
 
 // export default function Index() {
 //   const products = useAppSelector((state) => state.productSlice.products);
@@ -19,7 +20,8 @@ export default function Index() {
   const dispatch = useAppDispatch();
   useEffect(() => {
     dispatch(getCategorysAsync());
-  }, [dispatch]);
+    dispatch(getProductsAsync());
+  }, []);
 
   const groupedCategorys = Object.values(
     categorys.reduce((acc: { [key: string]: Category }, category) => {
@@ -32,7 +34,8 @@ export default function Index() {
 
   useEffect(() => {
     dispatch(getProductsAsync());
-  },[])
+    dispatch(clearEmailSent(false));
+  }, []);
 
   return (
     <Box sx={{ width: "100%", backgroundColor: "#f4f4f4" }}>

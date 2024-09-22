@@ -13,9 +13,8 @@ export default function CategoryProducts() {
   const loading = useAppSelector((state) => state.productSlice.loading);
 
   useEffect(() => {
-    console.log("ID: ", id);
     if (id) {
-      dispatch(getProductsByCategoryAsync(id)); // Anropar thunk för att hämta produkter baserat på kategori
+      dispatch(getProductsByCategoryAsync(id));
     }
   }, [id, dispatch]);
 
@@ -23,7 +22,6 @@ export default function CategoryProducts() {
     return <Typography>Loading...</Typography>;
   }
 
-  // Filtrera bort produkter med amount <= 0
   const availableProducts = filteredProducts.filter(
     (product) => product.amount > 0
   );

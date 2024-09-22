@@ -10,9 +10,6 @@ import { CartItem, updateItem } from "../slices/cartSlice";
 import { addOrderAsync, Order, OrderItem } from "../slices/orderSlice";
 import { Product, updateProductAsync } from "../slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
-// import { useParams } from "react-router-dom";
-// import { db } from "../api/config";
-// import { doc, getDoc } from "firebase/firestore";
 
 const fadeIn = keyframes`
     from {
@@ -111,7 +108,7 @@ export default function Cart() {
         product_id: item.product_id,
         quantity: item.quantity,
         price: item.price * 100,
-        vatPercent: product?.vat_amount || 12,
+        vatPercent: product?.vat_amount || 25,
         vatAmount: 0,
       };
       return orderItem;
@@ -127,7 +124,7 @@ export default function Cart() {
         reference: "or-" + uuidv4(),
         items: orderItems,
         total_amount: totalPrice,
-        vat_amount: totalPrice,
+        vat_amount: 0,
         created_date: new Date().toISOString(),
         status: "Waiting for payment",
       };

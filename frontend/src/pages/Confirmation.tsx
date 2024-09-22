@@ -1,9 +1,20 @@
 import { Box, Typography, useMediaQuery, useTheme } from "@mui/material";
 import emailjs from "emailjs-com";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { clearCart } from "../slices/cartSlice";
-import { Order, updateOrderAsync } from "../slices/orderSlice";
-import { getPaymentPaidValidation } from "../slices/paymentSlice";
+import {
+  clearOrder,
+  Order,
+  setEmailSent,
+  updateOrderAsync,
+} from "../slices/orderSlice";
+import {
+  clearCallbackData,
+  clearCapture,
+  clearPaymentInfo,
+  clearPaymentOrder,
+  getPaymentPaidValidation,
+} from "../slices/paymentSlice";
 import { Product } from "../slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
 
@@ -13,13 +24,13 @@ export default function Confirmation() {
   const order = useAppSelector((state) => state.orderSlice.order);
   const products = useAppSelector((state) => state.productSlice.products);
   const paymentInfo = useAppSelector((state) => state.paymentSlice.paymentInfo);
+  const emailSent = useAppSelector((state) => state.orderSlice.emailSent);
   const getProduct = (productId: string): Product | undefined => {
     return products.find((p) => p.id == productId);
   };
   const incomingPaymentOrder = useAppSelector(
     (state) => state.paymentSlice.paymentOrderIncoming
   );
-  const [emailSent, setEmailSent] = useState(false);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -43,8 +54,6 @@ export default function Confirmation() {
         paymentInfo: paymentInfo.paymentOrder.paid,
       };
       dispatch(updateOrderAsync(orderUpdatedPayment));
-    } else {
-      console.log("Order eller PaymentInfo saknas");
     }
   }, [paymentInfo]);
 
@@ -56,23 +65,32 @@ export default function Confirmation() {
       emailSent == false
     ) {
       sendEmailWithLink(order);
-      setEmailSent(true);
+      dispatch(setEmailSent(true));
+      dispatch(clearCart());
+      dispatch(clearPaymentInfo());
+      dispatch(clearOrder());
+      dispatch(clearPaymentOrder());
+      dispatch(clearCapture());
+      dispatch(clearCallbackData());
     }
   }, [order]);
 
   emailjs.init("C8CxNnxZg6mg-d2tq");
 
   const sendEmailWithLink = (order: Order) => {
+    const priceExVat = (order.total_amount - order.vat_amount / 100).toFixed(2);
     const receipt = `
-    <p>Din betalning är genomförd.Nedan visas betalningsdetaljer:</p>
+    <p>Din betalning är genomförd. Nedan visas betalningsdetaljer:</p>
     <ul>
       <li>Datum: ${new Date(order.created_date).toLocaleString()}</li>
-      <li>Totalt belopp: ${(order.total_amount / 100).toFixed(2)} SEK</li>
+      <li>Pris (exkl. moms): ${priceExVat} SEK</li>
       <li>Moms: ${(order.vat_amount / 100).toFixed(2)} SEK</li>
+      <li><strong>Totalt belopp: ${(order.total_amount / 100).toFixed(
+        2
+      )} SEK</strong></li>
       <li>Betalningsmetod: ${order.paymentInfo?.instrument}</li>
-      
     </ul>
-    <p>Vid frågor, tveka inte att kontakta oss på denthu.webshop@outlook.com!.</p>
+    <p>Vid frågor, tveka inte att kontakta oss på denthu.webshop@outlook.com!</p>
   `;
     const body = receipt;
 
@@ -81,7 +99,7 @@ export default function Confirmation() {
       to_email: order.guestEmail,
       order_number: order.reference,
       store_name: "DenThu Webshop",
-      reply_to: "zeroettab@gmail.com",
+      reply_to: "denthu.webshop@outlook.com",
       message: ` ${body}`,
     };
 

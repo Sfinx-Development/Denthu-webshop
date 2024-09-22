@@ -2,12 +2,10 @@ import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import { Badge, Box, IconButton, Typography } from "@mui/material";
 import { useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-// import { useAppSelector } from "../slices/store";
 
 export default function Rootlayout() {
   const [isWiggling, setIsWiggling] = useState(false);
   const navigate = useNavigate();
-  // const admin = useAppSelector((state) => state.adminSlice.admin);
 
   const handleWiggle = () => {
     setIsWiggling(true);
@@ -114,11 +112,11 @@ export default function Rootlayout() {
           sx={{
             color: "white",
             position: "absolute",
-            right: 20, // Diskret placering i hörnet
+            right: 20,
             cursor: "pointer",
             textDecoration: "underline",
             "&:hover": {
-              color: "gray", // Färgändring vid hover för att indikera att det är en länk
+              color: "gray",
             },
           }}
         >

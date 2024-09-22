@@ -99,15 +99,19 @@ const cartSlice = createSlice({
       state.isCheckVisible = action.payload;
     },
     addToCart: (state, action: PayloadAction<Product>) => {
+      if (!state.cart) {
+        // Skapa en ny kundvagn om den inte finns
+        const newCart = createNewCart();
+        state.cart = newCart;
+      }
       if (state.cart) {
         const product = action.payload;
-    
         // Check if the product has amount > 0
         if (product.amount > 0) {
           const existingItem = state.cart.items.find(
             (item) => item.product_id === product.id
           );
-    
+
           if (existingItem) {
             // Ensure there's enough stock before increasing the quantity
             if (existingItem.quantity + 1 <= product.amount) {
@@ -130,7 +134,7 @@ const cartSlice = createSlice({
               console.warn("This product is out of stock.");
             }
           }
-    
+
           localStorage.setItem("cart", JSON.stringify(state.cart));
           state.isCheckVisible = true;
         } else {
@@ -138,8 +142,8 @@ const cartSlice = createSlice({
         }
       }
     },
-    
-}});
+  },
+});
 
 export const {
   setCart,
