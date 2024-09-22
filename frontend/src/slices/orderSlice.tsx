@@ -30,20 +30,26 @@ export interface OrderItem {
 
 interface OrderState {
   order: Order | null;
+  emailSent: boolean;
   error: string | null;
 }
 
 const getInitialOrderState = (): OrderState => {
   const storedOrder = localStorage.getItem("order");
+  const storedEmailSent = localStorage.getItem("emailSent");
   return storedOrder
-    ? { order: JSON.parse(storedOrder), error: null }
-    : { order: null, error: null };
+    ? {
+        order: JSON.parse(storedOrder),
+        error: null,
+        emailSent: storedEmailSent ? true : false,
+      }
+    : { order: null, error: null, emailSent: false };
 };
 
 const initialState: OrderState = getInitialOrderState();
 
 const calculateVatAmount = (price: number, vatPercent: number): number => {
-  const vatAmount = price * (vatPercent / 100);
+  const vatAmount = price * (vatPercent / (100 + vatPercent));
   return Math.round(vatAmount);
 };
 
@@ -65,7 +71,7 @@ export const addOrderAsync = createAsyncThunk<
 >("orders/addOrder", async (order, thunkAPI) => {
   try {
     order.items.forEach((item) => {
-      item.vatPercent = item.vatAmount; // 12% VAT
+      item.vatPercent = 25; // 25% VATPERCENT
       item.vatAmount = calculateVatAmount(item.price, item.vatPercent);
     });
 
@@ -73,6 +79,7 @@ export const addOrderAsync = createAsyncThunk<
     order.vat_amount = calculateTotalVat(order.items);
 
     const createdOrder = await addOrderToDB(order);
+
     if (createdOrder) {
       localStorage.setItem("order", JSON.stringify(createdOrder));
       return createdOrder;
@@ -90,31 +97,24 @@ export const updateOrderAsync = createAsyncThunk<
   { rejectValue: string }
 >("orders/updateOrder", async (order, thunkAPI) => {
   try {
-    console.log("ORDER TO UPDATE: ", order);
-
-    // Skapa kopior av items innan uppdatering
     const updatedItems = order.items.map((item) => {
       const newItem = { ...item };
-      newItem.vatPercent = 12; // 12% VAT
-      // newItem.vatAmount = calculateVatAmount(newItem.price, newItem.vatPercent);
-      newItem.vatAmount = 21;
+      newItem.vatPercent = item.vatAmount || 25; // 25% VAT
+      newItem.vatAmount = calculateVatAmount(newItem.price, newItem.vatPercent);
       return newItem;
     });
 
     const updatedOrder = {
       ...order,
       items: updatedItems,
-      total_amount: calculateTotalAmount(updatedItems),
+      // total_amount: calculateTotalAmount(updatedItems),
       // vat_amount: calculateTotalVat(updatedItems),
-      vat_amount: 12,
+      total_amount: calculateTotalAmount(updatedItems),
+      vat_amount: calculateTotalVat(updatedItems),
     };
 
-    console.log("UPDATED ORDER DATA: ", updatedOrder);
-
-    // Försök att uppdatera ordern i databasen
     const response = await editOrderInDB(updatedOrder);
     if (response) {
-      console.log("ORDER SUCCESSFULLY UPDATED: ", response);
       return response;
     } else {
       console.error("FAILED TO UPDATE ORDER: No order returned");
@@ -123,7 +123,6 @@ export const updateOrderAsync = createAsyncThunk<
       );
     }
   } catch (error) {
-    console.error("ERROR UPDATING ORDER: ", error);
     return thunkAPI.rejectWithValue(
       error instanceof Error
         ? error.message
@@ -158,10 +157,18 @@ const orderSlice = createSlice({
       state.order = action.payload;
       localStorage.setItem("order", JSON.stringify(state.order));
     },
+    setEmailSent: (state, action: PayloadAction<boolean>) => {
+      state.emailSent = action.payload;
+      localStorage.setItem("emailSent", JSON.stringify(true));
+    },
+    clearEmailSent: (state, action: PayloadAction<boolean>) => {
+      state.emailSent = action.payload;
+      localStorage.removeItem("emailSent");
+    },
     addItem: (state, action: PayloadAction<OrderItem>) => {
       if (state.order) {
         const item = action.payload;
-        item.vatPercent = 12; // 12% VAT
+        item.vatPercent = 25; // 25% VAT
         item.vatAmount = calculateVatAmount(item.price, item.vatPercent);
 
         state.order.items.push(item);
@@ -189,7 +196,7 @@ const orderSlice = createSlice({
         );
         if (index >= 0) {
           const updatedItem = action.payload;
-          updatedItem.vatPercent = 12; // 12% VAT
+          updatedItem.vatPercent = 25;
           updatedItem.vatAmount = calculateVatAmount(
             updatedItem.price,
             updatedItem.vatPercent
@@ -250,6 +257,6 @@ const orderSlice = createSlice({
   },
 });
 
-export const { setOrder, addItem, removeItem, clearOrder, updateItem } =
+export const { setOrder, addItem, removeItem, clearOrder, updateItem, setEmailSent, clearEmailSent } =
   orderSlice.actions;
 export const OrderReducer = orderSlice.reducer;

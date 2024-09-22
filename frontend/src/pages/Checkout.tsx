@@ -12,7 +12,6 @@ export default function Checkout() {
   const incomingPaymentOrder = useAppSelector(
     (state) => state.paymentSlice.paymentOrderIncoming
   );
-  // const paymentInfo = useAppSelector((state) => state.paymentSlice.paymentInfo);
   const order = useAppSelector((state) => state.orderSlice.order);
   const products = useAppSelector((state) => state.productSlice.products);
   const [firstName, setFirstName] = useState("");
@@ -26,7 +25,6 @@ export default function Checkout() {
   const handleAddToOrder = async () => {
     setEmailError(false);
     if (order && firstName && lastName && phone && email) {
-      console.log("EMAIK  : ", email);
       const emailIsValid = email.includes("@") && email.includes(".");
       if (emailIsValid) {
         setEmailError(false);
@@ -108,7 +106,7 @@ export default function Checkout() {
       <Box sx={{ display: "flex", flexDirection: "column", flex: 1 / 2 }}>
         {order && order.total_amount && (
           <Typography variant="h6" sx={{ marginBottom: 2 }}>
-            Totalbelopp: {order.total_amount / 100} kr
+            Totalbelopp: {order.total_amount / 100} kr inkl. moms
           </Typography>
         )}
 

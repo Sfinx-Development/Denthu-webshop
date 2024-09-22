@@ -4,14 +4,17 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { db } from "../api/config";
 import AddtoCartButton from "../components/AddToCartButton";
+import { clearEmailSent } from "../slices/orderSlice";
 import { Product } from "../slices/productSlice";
+import { useAppDispatch } from "../slices/store";
 
 export default function ProductDetails() {
   const { productId } = useParams<{ productId: string }>();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
-
+  const dispatch = useAppDispatch();
   useEffect(() => {
+    dispatch(clearEmailSent(false));
     const fetchProduct = async () => {
       try {
         const docRef = doc(db, "products", productId!);
