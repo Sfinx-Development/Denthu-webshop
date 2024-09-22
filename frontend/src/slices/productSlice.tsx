@@ -67,6 +67,7 @@ export const getProductsByCategoryAsync = createAsyncThunk<
 >("products/getProductsByCategory", async (categoryId, thunkAPI) => {
   try {
     const products = await getProductsByCategoryFromDB(categoryId);
+    
     if (products) {
       localStorage.setItem("products", JSON.stringify(products));
       return products;
@@ -138,6 +139,7 @@ export const getProductByIdAsync = createAsyncThunk<
 >("products/getProductsById", async (id, thunkAPI) => {
   try {
     const products = await getProductFromDBById(id);
+
     if (products) {
       return products;
     } else {
