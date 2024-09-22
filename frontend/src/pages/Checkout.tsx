@@ -19,28 +19,38 @@ export default function Checkout() {
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState(false);
   const [isOrderUpdated, setIsOrderUpdated] = useState(false);
   const dispatch = useAppDispatch();
 
-  const handleAddToOrder = () => {
+  const handleAddToOrder = async() => {
+    setEmailError(false);
     if (order && firstName && lastName && phone && email) {
-      const updatedOrder: Order = {
-        ...order,
-        guestFirstName: firstName,
-        guestLastName: lastName,
-        guestEmail: email,
-        guestPhone: phone,
-      };
-      dispatch(updateOrderAsync(updatedOrder));
+      console.log("EMAIK  : ", email)
+      const emailIsValid = email.includes('@') && email.includes('.');
+      if (emailIsValid) {
+        setEmailError(false);
+        const updatedOrder: Order = {
+          ...order,
+          guestFirstName: firstName,
+          guestLastName: lastName,
+          guestEmail: email,
+          guestPhone: phone,
+        };
+        dispatch(updateOrderAsync(updatedOrder));
+      }
+      else{
+        setEmailError(true);
+      }
     }
   };
 
   useEffect(() => {
-    if (
-      order?.guestFirstName &&
-      order?.guestLastName &&
-      order?.guestPhone &&
-      order?.guestEmail
+    if ( order &&
+      order.guestFirstName &&
+      order.guestLastName &&
+      order.guestPhone &&
+      order.guestEmail
     ) {
       setIsOrderUpdated(true);
     }
@@ -80,7 +90,7 @@ export default function Checkout() {
   };
 
   function getProduct(productId: string): Product | undefined {
-    return products.find((p) => p.id === productId);
+    return products.find((p) => p.id == productId);
   }
 
   return (
@@ -97,63 +107,65 @@ export default function Checkout() {
     >
       <Box sx={{ display: "flex", flexDirection: "column", flex: 1 / 2 }}>
         <Typography variant="h6" sx={{ marginBottom: 2 }}>
-          Totalbelopp: {order?.total_amount} kr
+          Totalbelopp: {order?.total_amount / 100} kr
         </Typography>
 
-        {order?.items.map((item) => {
-          const product = getProduct(item.product_id);
-          return (
-            <Box
-              key={item.product_id}
-              sx={{
-                backgroundColor: "white",
-                display: "flex",
-                flexDirection: { xs: "column", sm: "row" },
-                alignItems: "center",
-                padding: 1,
-                marginY: 4,
-                borderRadius: "8px",
-                boxShadow: "0 3px 6px rgba(0, 0, 0, 0.1)",
-                marginX: 2,
-              }}
-            >
-              <img
-                src={product?.imageUrl}
-                alt={product?.name}
-                style={{
-                  height: 100,
-                  width: 80,
-                  objectFit: "cover",
-                  borderRadius: "4px",
-                }}
-              />
+        {products &&
+          order &&
+          order.items.map((item) => {
+            const product = getProduct(item.product_id);
+            return (
               <Box
+                key={item.product_id}
                 sx={{
-                  paddingX: { xs: 2, sm: 4 },
-                  width: "100%",
-                  textAlign: { xs: "center", sm: "left" },
-                  marginBottom: { xs: 1, sm: 0 },
+                  backgroundColor: "white",
+                  display: "flex",
+                  flexDirection: { xs: "column", sm: "row" },
+                  alignItems: "center",
+                  padding: 1,
+                  marginY: 4,
+                  borderRadius: "8px",
+                  boxShadow: "0 3px 6px rgba(0, 0, 0, 0.1)",
+                  marginX: 2,
                 }}
               >
-                <Typography sx={{ fontSize: 18, fontWeight: 600 }}>
-                  {product?.name}
-                </Typography>
-                <Typography sx={{ fontSize: 16, color: "#555" }}>
-                  Antal: {item.quantity}
+                <img
+                  src={product?.imageUrl}
+                  alt={product?.name}
+                  style={{
+                    height: 100,
+                    width: 80,
+                    objectFit: "cover",
+                    borderRadius: "4px",
+                  }}
+                />
+                <Box
+                  sx={{
+                    paddingX: { xs: 2, sm: 4 },
+                    width: "100%",
+                    textAlign: { xs: "center", sm: "left" },
+                    marginBottom: { xs: 1, sm: 0 },
+                  }}
+                >
+                  <Typography sx={{ fontSize: 18, fontWeight: 600 }}>
+                    {product?.name}
+                  </Typography>
+                  <Typography sx={{ fontSize: 16, color: "#555" }}>
+                    Antal: {item.quantity}
+                  </Typography>
+                </Box>
+                <Typography
+                  sx={{
+                    marginLeft: "auto",
+                    fontSize: 18,
+                    fontWeight: 600,
+                  }}
+                >
+                  {(item.price * item.quantity) / 100} kr
                 </Typography>
               </Box>
-              <Typography
-                sx={{
-                  marginLeft: "auto",
-                  fontSize: 18,
-                  fontWeight: 600,
-                }}
-              >
-                {item.price * item.quantity} kr
-              </Typography>
-            </Box>
-          );
-        })}
+            );
+          })}
       </Box>
       <Box
         sx={{
@@ -187,6 +199,10 @@ export default function Checkout() {
           />
         </Box>
         <Box sx={{ display: "flex", gap: 1 }}>
+          {emailError && 
+          <Typography sx={{color: "red"}}>
+            Vänligen fyll i en giltig emailadress
+            </Typography>}
           <TextField
             label="Email"
             variant="outlined"

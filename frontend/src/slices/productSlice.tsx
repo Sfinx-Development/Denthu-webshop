@@ -48,7 +48,7 @@ interface ProductState {
 
 const storedProducts = localStorage.getItem("products");
 const storedActiveProduct = localStorage.getItem("activeProduct");
-const filteredProducts = localStorage.getItem("filteredProducts");
+const filteredProducts = localStorage.getItem("categoryProducts");
 
 export const initialState: ProductState = {
   products: storedProducts ? JSON.parse(storedProducts) : [],
@@ -69,7 +69,7 @@ export const getProductsByCategoryAsync = createAsyncThunk<
     const products = await getProductsByCategoryFromDB(categoryId);
     
     if (products) {
-      localStorage.setItem("products", JSON.stringify(products));
+      localStorage.setItem("categoryProducts", JSON.stringify(products));
       return products;
     } else {
       return thunkAPI.rejectWithValue("Failed to fetch products by category");

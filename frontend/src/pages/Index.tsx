@@ -5,6 +5,7 @@ import { NavLink } from "react-router-dom";
 import SearchBar from "../components/SearchBar";
 import { Category, getCategorysAsync } from "../slices/categorySlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
+import { getProductsAsync } from "../slices/productSlice";
 
 // export default function Index() {
 //   const products = useAppSelector((state) => state.productSlice.products);
@@ -28,6 +29,10 @@ export default function Index() {
       return acc;
     }, {})
   );
+
+  useEffect(() => {
+    dispatch(getProductsAsync());
+  },[])
 
   return (
     <Box sx={{ width: "100%", backgroundColor: "#f4f4f4" }}>
