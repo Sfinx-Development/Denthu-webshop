@@ -23,7 +23,7 @@ export interface Product {
   imageUrl: string;
   amount: number;
   // in_store: boolean;
-  // vat_amount: number;
+  vat_amount: number;
 }
 
 export interface ProductWithDate {

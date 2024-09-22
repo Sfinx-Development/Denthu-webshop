@@ -66,11 +66,12 @@ export default function Cart() {
       if (product) {
         const itemExists = cart.items.find((i) => i.product_id == product.id);
         if (itemExists && productId && product.amount > 0) {
-          const itemAmountBiggerThanItemAmountPlusOne = product.amount >= itemExists.quantity + 1;
-          if(itemAmountBiggerThanItemAmountPlusOne){
+          const itemAmountBiggerThanItemAmountPlusOne =
+            product.amount >= itemExists.quantity + 1;
+          if (itemAmountBiggerThanItemAmountPlusOne) {
             const updatedItem: CartItem = {
               ...itemExists,
-              quantity: itemExists.quantity +1,
+              quantity: itemExists.quantity + 1,
             };
             dispatch(updateItem(updatedItem));
           }
@@ -103,13 +104,14 @@ export default function Cart() {
 
   const handleMakeOrder = () => {
     const orderItems = cart?.items.map((item) => {
+      const product = products.find((p) => p.id == item.product_id);
       const orderItem: OrderItem = {
         id: uuidv4(),
         order_id: uuidv4(),
         product_id: item.product_id,
         quantity: item.quantity,
         price: item.price * 100,
-        vatPercent: 1200,
+        vatPercent: product?.vat_amount || 12,
         vatAmount: 0,
       };
       return orderItem;

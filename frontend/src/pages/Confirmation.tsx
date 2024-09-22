@@ -1,11 +1,11 @@
 import { Box, Typography, useMediaQuery, useTheme } from "@mui/material";
-import { useEffect } from "react";
+import emailjs from "emailjs-com";
+import { useEffect, useState } from "react";
 import { clearCart } from "../slices/cartSlice";
 import { Order, updateOrderAsync } from "../slices/orderSlice";
 import { getPaymentPaidValidation } from "../slices/paymentSlice";
 import { Product } from "../slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
-import emailjs from "emailjs-com";
 
 export default function Confirmation() {
   const theme = useTheme();
@@ -19,6 +19,7 @@ export default function Confirmation() {
   const incomingPaymentOrder = useAppSelector(
     (state) => state.paymentSlice.paymentOrderIncoming
   );
+  const [emailSent, setEmailSent] = useState(false);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -48,12 +49,18 @@ export default function Confirmation() {
   }, [paymentInfo]);
 
   useEffect(() => {
-    if (order && order.paymentInfo?.instrument == "Swish" && paymentInfo?.paymentOrder.status == "Paid") {
+    if (
+      order &&
+      order.paymentInfo?.instrument == "Swish" &&
+      paymentInfo?.paymentOrder.status == "Paid" &&
+      emailSent == false
+    ) {
       sendEmailWithLink(order);
+      setEmailSent(true);
     }
   }, [order]);
 
-  emailjs.init("C8CxNnxZg6mg-d2tq"); 
+  emailjs.init("C8CxNnxZg6mg-d2tq");
 
   const sendEmailWithLink = (order: Order) => {
     const receipt = `

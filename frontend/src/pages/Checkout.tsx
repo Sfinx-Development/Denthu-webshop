@@ -23,11 +23,11 @@ export default function Checkout() {
   const [isOrderUpdated, setIsOrderUpdated] = useState(false);
   const dispatch = useAppDispatch();
 
-  const handleAddToOrder = async() => {
+  const handleAddToOrder = async () => {
     setEmailError(false);
     if (order && firstName && lastName && phone && email) {
-      console.log("EMAIK  : ", email)
-      const emailIsValid = email.includes('@') && email.includes('.');
+      console.log("EMAIK  : ", email);
+      const emailIsValid = email.includes("@") && email.includes(".");
       if (emailIsValid) {
         setEmailError(false);
         const updatedOrder: Order = {
@@ -38,15 +38,15 @@ export default function Checkout() {
           guestPhone: phone,
         };
         dispatch(updateOrderAsync(updatedOrder));
-      }
-      else{
+      } else {
         setEmailError(true);
       }
     }
   };
 
   useEffect(() => {
-    if ( order &&
+    if (
+      order &&
       order.guestFirstName &&
       order.guestLastName &&
       order.guestPhone &&
@@ -106,9 +106,11 @@ export default function Checkout() {
       }}
     >
       <Box sx={{ display: "flex", flexDirection: "column", flex: 1 / 2 }}>
-        <Typography variant="h6" sx={{ marginBottom: 2 }}>
-          Totalbelopp: {order?.total_amount / 100} kr
-        </Typography>
+        {order && order.total_amount && (
+          <Typography variant="h6" sx={{ marginBottom: 2 }}>
+            Totalbelopp: {order.total_amount / 100} kr
+          </Typography>
+        )}
 
         {products &&
           order &&
@@ -199,10 +201,11 @@ export default function Checkout() {
           />
         </Box>
         <Box sx={{ display: "flex", gap: 1 }}>
-          {emailError && 
-          <Typography sx={{color: "red"}}>
-            Vänligen fyll i en giltig emailadress
-            </Typography>}
+          {emailError && (
+            <Typography sx={{ color: "red" }}>
+              Vänligen fyll i en giltig emailadress
+            </Typography>
+          )}
           <TextField
             label="Email"
             variant="outlined"

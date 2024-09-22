@@ -12,10 +12,10 @@ export interface Order {
   status: string;
   items: OrderItem[];
   paymentInfo?: Paid;
-  guestFirstName?: string,
-  guestLastName?: string,
-  guestEmail?: string,
-  guestPhone?: string,
+  guestFirstName?: string;
+  guestLastName?: string;
+  guestEmail?: string;
+  guestPhone?: string;
 }
 
 export interface OrderItem {
@@ -65,7 +65,7 @@ export const addOrderAsync = createAsyncThunk<
 >("orders/addOrder", async (order, thunkAPI) => {
   try {
     order.items.forEach((item) => {
-      item.vatPercent = 12; // 12% VAT
+      item.vatPercent = item.vatAmount; // 12% VAT
       item.vatAmount = calculateVatAmount(item.price, item.vatPercent);
     });
 
