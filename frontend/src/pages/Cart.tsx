@@ -66,11 +66,14 @@ export default function Cart() {
       if (product) {
         const itemExists = cart.items.find((i) => i.product_id == product.id);
         if (itemExists && productId && product.amount > 0) {
-          const updatedItem: CartItem = {
-            ...itemExists,
-            quantity: itemExists.quantity + 1,
-          };
-          dispatch(updateItem(updatedItem));
+          const itemAmountBiggerThanItemAmountPlusOne = product.amount >= itemExists.quantity + 1;
+          if(itemAmountBiggerThanItemAmountPlusOne){
+            const updatedItem: CartItem = {
+              ...itemExists,
+              quantity: itemExists.quantity +1,
+            };
+            dispatch(updateItem(updatedItem));
+          }
         } else {
           const updatedItem: CartItem = {
             product_id: product.id,
@@ -265,7 +268,7 @@ export default function Cart() {
                   </IconButton>
                   <Typography>{item.quantity}</Typography>
                   <IconButton
-                    onClick={() => handleAddToCart(item.id)}
+                    onClick={() => handleAddToCart(item.product_id)}
                     sx={{ marginLeft: 1 }}
                   >
                     <AddIcon />

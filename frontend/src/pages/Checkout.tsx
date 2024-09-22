@@ -80,7 +80,7 @@ export default function Checkout() {
   };
 
   function getProduct(productId: string): Product | undefined {
-    return products.find((p) => p.id === productId);
+    return products.find((p) => p.id == productId);
   }
 
   return (
@@ -97,10 +97,10 @@ export default function Checkout() {
     >
       <Box sx={{ display: "flex", flexDirection: "column", flex: 1 / 2 }}>
         <Typography variant="h6" sx={{ marginBottom: 2 }}>
-          Totalbelopp: {order?.total_amount} kr
+          Totalbelopp: {order?.total_amount/100} kr
         </Typography>
 
-        {order?.items.map((item) => {
+        {products && order && order.items.map((item) => {
           const product = getProduct(item.product_id);
           return (
             <Box
@@ -149,7 +149,7 @@ export default function Checkout() {
                   fontWeight: 600,
                 }}
               >
-                {item.price * item.quantity} kr
+                {(item.price * item.quantity)/100} kr
               </Typography>
             </Box>
           );
