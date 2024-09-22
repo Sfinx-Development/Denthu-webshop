@@ -5,6 +5,7 @@ import { Order, updateOrderAsync } from "../slices/orderSlice";
 import { getPaymentPaidValidation } from "../slices/paymentSlice";
 import { Product } from "../slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
+import emailjs from "emailjs-com";
 
 export default function Confirmation() {
   const theme = useTheme();
@@ -45,6 +46,40 @@ export default function Confirmation() {
       console.log("Order eller PaymentInfo saknas");
     }
   }, [paymentInfo]);
+
+  useEffect(() => {
+    if (order && order.paymentInfo?.instrument == "Swish" && paymentInfo?.paymentOrder.status == "Paid") {
+      sendEmailWithLink(order);
+    }
+  }, [order]);
+
+  emailjs.init("C8CxNnxZg6mg-d2tq"); 
+
+  const sendEmailWithLink = (order: Order) => {
+    const receipt = `
+    <p>Din betalning är genomförd.Nedan visas betalningsdetaljer:</p>
+    <ul>
+      <li>Datum: ${new Date(order.created_date).toLocaleString()}</li>
+      <li>Totalt belopp: ${(order.total_amount / 100).toFixed(2)} SEK</li>
+      <li>Moms: ${(order.vat_amount / 100).toFixed(2)} SEK</li>
+      <li>Betalningsmetod: ${order.paymentInfo?.instrument}</li>
+      
+    </ul>
+    <p>Vid frågor, tveka inte att kontakta oss på denthu.webshop@outlook.com!.</p>
+  `;
+    const body = receipt;
+
+    const templateParams = {
+      from_name: "DenThu",
+      to_email: order.guestEmail,
+      order_number: order.reference,
+      store_name: "DenThu Webshop",
+      reply_to: "zeroettab@gmail.com",
+      message: ` ${body}`,
+    };
+
+    emailjs.send("service_9phhhzn", "template_d2buzz5", templateParams);
+  };
 
   return (
     <Box

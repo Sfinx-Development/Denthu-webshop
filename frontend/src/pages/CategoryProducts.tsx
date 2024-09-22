@@ -34,17 +34,6 @@ export default function CategoryProducts() {
 
   return (
     <Box sx={{ width: "100%", padding: 4, backgroundColor: "#f4f4f4" }}>
-      <Typography
-        variant="h4"
-        component="h1"
-        sx={{
-          marginBottom: 4,
-          textTransform: "uppercase",
-          textAlign: "center",
-        }}
-      >
-        {id}
-      </Typography>
       <Grid container spacing={4}>
         {availableProducts.map((product) => (
           <Grid item xs={12} sm={6} md={4} key={product.id}>
