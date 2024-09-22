@@ -64,7 +64,7 @@ export default function Checkout() {
           completeUrl: "https://localhost:5173/confirmation",
           cancelUrl: "https://localhost:5173/checkout", //Redirect only
           callbackUrl:
-            "https://swedbankpay-gad0dfg6fha9bpfh.swedencentral-01.azurewebsites.net/swedbankpay/callback",
+            "https://swedbankpay-gad0dfg6fha9bpfh.swedencentral-01.azurewebsites.net/swedbankpay/callback/denthu",
           logoUrl: "", //Redirect only
         },
         payeeInfo: {

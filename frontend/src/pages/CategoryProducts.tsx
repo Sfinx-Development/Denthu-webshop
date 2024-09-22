@@ -1,8 +1,8 @@
 import { Box, Card, CardMedia, Grid, Typography } from "@mui/material";
 import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../slices/store";
 import { getProductsByCategoryAsync } from "../slices/productSlice";
+import { useAppDispatch, useAppSelector } from "../slices/store";
 
 export default function CategoryProducts() {
   const { id } = useParams<{ id: string }>();
@@ -29,17 +29,6 @@ export default function CategoryProducts() {
 
   return (
     <Box sx={{ width: "100%", padding: 4, backgroundColor: "#f4f4f4" }}>
-      <Typography
-        variant="h4"
-        component="h1"
-        sx={{
-          marginBottom: 4,
-          textTransform: "uppercase",
-          textAlign: "center",
-        }}
-      >
-        {id}
-      </Typography>
       <Grid container spacing={4}>
         {filteredProducts.map((product) => (
           <Grid item xs={12} sm={6} md={4} key={product.id}>
