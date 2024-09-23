@@ -40,7 +40,7 @@ export async function PostCaptureToInternalApiDB({
   transaction: OutgoingTransaction;
 }) {
   const baseUrl =
-    "https://swedbankpay-gad0dfg6fha9bpfh.swedencentral-01.azurewebsites.net/swedbankpay/capture/denthu";
+    "https://swedbankpay-gad0dfg6fha9bpfh.swedencentral-01.azurewebsites.net/swedbankpay/captureDenthu";
   const captureUrl = transaction.transaction.captureUrl;
   const fullUrl = `${baseUrl}?captureUrl=${encodeURIComponent(
     captureUrl
@@ -106,7 +106,7 @@ export const addCaptureToDB = async (capture: CaptureResponse) => {
 
     const docRef = await addDoc(captureResponseCollectionRef, {});
 
-    capture.capture.id = docRef.id;
+    capture.paymentOrder.id = docRef.id;
 
     await updateDoc(docRef, capture as Partial<CaptureResponse>);
 
