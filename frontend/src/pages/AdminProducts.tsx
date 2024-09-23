@@ -22,7 +22,7 @@ export default function AdminProducts() {
     setIsPopupOpen(true);
   }
 
-  function handleRemoveProduct(product: Product) {
+  function handleRemoveProduct() {
     setIsPopupOpen(false);
   }
 
@@ -144,7 +144,7 @@ export default function AdminProducts() {
                   variant="contained"
                   data-cy="confirm-delete-button"
                   color="primary"
-                  onClick={() => handleRemoveProduct(selectedProduct)}
+                  onClick={() => handleRemoveProduct()}
                 >
                   Ta bort
                 </Button>

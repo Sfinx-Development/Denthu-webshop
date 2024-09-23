@@ -380,14 +380,49 @@ export interface ValidPaymentOrder {
 }
 // CaptureResponse type in TypeScript
 export interface CaptureResponse {
-  payment: string;
-  capture: CaptureDetails;
+  paymentOrder: {
+    id: string;
+    created: string;
+    updated: string;
+    operation: string;
+    status: string;
+    currency: string;
+    amount: number;
+    vatAmount: number;
+    remainingCaptureAmount?: number; // Optional field, only present after a partial capture
+    remainingCancellationAmount?: number; // Optional field, only present after a partial capture
+    remainingReversalAmount: number;
+    description: string;
+    initiatingSystemUserAgent: string;
+    language: string;
+    availableInstruments: string[];
+    implementation: string;
+    integration: string;
+    instrumentMode: boolean;
+    guestMode: boolean;
+    orderItems: { id: string };
+    urls: { id: string };
+    payeeInfo: { id: string };
+    payer: { id: string };
+    history: { id: string };
+    failed: { id: string };
+    aborted: { id: string };
+    paid: { id: string };
+    cancelled: { id: string };
+    financialTransactions: { id: string };
+    failedAttempts: { id: string };
+    postPurchaseFailedAttempts: { id: string };
+    metadata: { id: string };
+  };
+  operations: CaptureOperation[];
 }
 
-export interface CaptureDetails {
-  id: string;
-  transaction: TransactionDetails;
-}
+type CaptureOperation = {
+  href: string;
+  rel: string;
+  method: string;
+  contentType: string;
+};
 
 export interface TransactionDetails {
   id: string;

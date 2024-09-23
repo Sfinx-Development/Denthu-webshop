@@ -1,6 +1,7 @@
 import { Box, Typography, useMediaQuery, useTheme } from "@mui/material";
 import emailjs from "emailjs-com";
 import { useEffect } from "react";
+import { OutgoingTransaction } from "../../swedbankTypes";
 import { clearCart } from "../slices/cartSlice";
 import {
   clearOrder,
@@ -14,6 +15,7 @@ import {
   clearPaymentInfo,
   clearPaymentOrder,
   getPaymentPaidValidation,
+  postCaptureToInternalApi,
 } from "../slices/paymentSlice";
 import { Product } from "../slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
@@ -24,6 +26,7 @@ export default function Confirmation() {
   const order = useAppSelector((state) => state.orderSlice.order);
   const products = useAppSelector((state) => state.productSlice.products);
   const paymentInfo = useAppSelector((state) => state.paymentSlice.paymentInfo);
+  const callbacks = useAppSelector((state) => state.paymentSlice.callbackData);
   const emailSent = useAppSelector((state) => state.orderSlice.emailSent);
   const getProduct = (productId: string): Product | undefined => {
     return products.find((p) => p.id == productId);
@@ -50,12 +53,47 @@ export default function Confirmation() {
     if (paymentInfo && order) {
       const orderUpdatedPayment: Order = {
         ...order,
-        status: "Paid",
+        status: "Paid/Not captured",
         paymentInfo: paymentInfo.paymentOrder.paid,
       };
       dispatch(updateOrderAsync(orderUpdatedPayment));
     }
   }, [paymentInfo]);
+
+  useEffect(() => {
+    if (
+      paymentInfo &&
+      paymentInfo.paymentOrder.paid.instrument == "CreditCard" &&
+      order &&
+      order.paymentInfo
+    ) {
+      //OCH OMO INTE FRAKT ÄR ATT SKICKA
+      const operation = paymentInfo.operations.find((o) => o.rel === "capture");
+      if (operation) {
+        const outgoingTransaction: OutgoingTransaction = {
+          transaction: {
+            description: new Date().toLocaleDateString(),
+            amount: paymentInfo.paymentOrder.amount,
+            vatAmount: paymentInfo.paymentOrder.vatAmount,
+            payeeReference: order.paymentInfo.payeeReference,
+            captureUrl: operation.href,
+          },
+        };
+        dispatch(postCaptureToInternalApi(outgoingTransaction));
+      }
+    }
+  }, [callbacks]);
+
+  useEffect(() => {
+    if (paymentInfo && order && callbacks) {
+      const orderUpdatedPayment: Order = {
+        ...order,
+        status: "Paid/Captured",
+        paymentInfo: paymentInfo.paymentOrder.paid,
+      };
+      dispatch(updateOrderAsync(orderUpdatedPayment));
+    }
+  }, [paymentInfo, callbacks]);
 
   useEffect(() => {
     if (

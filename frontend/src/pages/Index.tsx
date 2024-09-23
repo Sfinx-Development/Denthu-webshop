@@ -5,6 +5,12 @@ import { NavLink } from "react-router-dom";
 import SearchBar from "../components/SearchBar";
 import { Category, getCategorysAsync } from "../slices/categorySlice";
 import { clearEmailSent } from "../slices/orderSlice";
+import {
+  clearCallbackData,
+  clearCapture,
+  clearPaymentInfo,
+  clearPaymentOrder,
+} from "../slices/paymentSlice";
 import { getProductsAsync } from "../slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
 
@@ -35,6 +41,10 @@ export default function Index() {
   useEffect(() => {
     dispatch(getProductsAsync());
     dispatch(clearEmailSent(false));
+    dispatch(clearPaymentInfo());
+    dispatch(clearPaymentOrder());
+    dispatch(clearCapture());
+    dispatch(clearCallbackData());
   }, []);
 
   return (
