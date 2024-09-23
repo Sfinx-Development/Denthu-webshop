@@ -1,4 +1,11 @@
-import { Box, Button, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Checkbox,
+  FormControlLabel,
+} from "@mui/material";
 import { useEffect, useState } from "react";
 import { PaymentOrderOutgoing } from "../../types";
 import { generatePayeeReference } from "../../utils";
@@ -22,8 +29,16 @@ export default function Checkout() {
   const [isOrderUpdated, setIsOrderUpdated] = useState(false);
   const dispatch = useAppDispatch();
 
+  const [isPickup, setIsPickup] = useState(false);
+  const [isShipping, setIsShipping] = useState(false);
+  const [shippingAddress, setShippingAddress] = useState("");
+  const [shippingError, setShippingError] = useState(false);
+  const [totalShippingCost, setTotalShippingCost] = useState(0);
+
   const handleAddToOrder = async () => {
     setEmailError(false);
+    setShippingError(false);
+
     if (order && firstName && lastName && phone && email) {
       const emailIsValid = email.includes("@") && email.includes(".");
       if (emailIsValid) {
@@ -34,13 +49,31 @@ export default function Checkout() {
           guestLastName: lastName,
           guestEmail: email,
           guestPhone: phone,
+          shippingMethod: isShipping ? "shipping" : "pickup",
+          shippingAddress: isShipping ? shippingAddress : "",
+          shippingCost: isShipping ? 50 * 100 : 0, // Exempel fraktkostnad
         };
         dispatch(updateOrderAsync(updatedOrder));
       } else {
         setEmailError(true);
       }
+      if (isShipping && !shippingAddress) {
+        setShippingError(true);
+      }
     }
   };
+
+  useEffect(() => {
+    if (order && isShipping) {
+      const shippingCost = order.items.reduce((total, item) => {
+        const product = getProduct(item.product_id);
+        return total + getProductShippingCost(product);
+      }, 0);
+      setTotalShippingCost(shippingCost);
+    } else {
+      setTotalShippingCost(0);
+    }
+  }, [order, isShipping, products]);
 
   useEffect(() => {
     if (
@@ -48,20 +81,42 @@ export default function Checkout() {
       order.guestFirstName &&
       order.guestLastName &&
       order.guestPhone &&
-      order.guestEmail
+      order.guestEmail &&
+      (order.shippingMethod === "pickup" ||
+        (order.shippingMethod === "shipping" && order.shippingAddress))
     ) {
       setIsOrderUpdated(true);
     }
   }, [order]);
 
+  function getProductShippingCost(product: Product | undefined): number {
+    // Kolla om produkten har fraktalternativ och välj ett rimligt alternativ
+    if (product && product.shippingOptions.length > 0) {
+      // Anta att vi tar det första fraktalternativet för enkelhetens skull
+      return product.shippingOptions[0].cost;
+    }
+    return 0; // Om ingen frakt finns, returnera 0
+  }
+
   const handleMakeOrder = () => {
     if (order) {
+      const totalShippingCost = isShipping
+      ? order.items.reduce((total, item) => {
+          const product = getProduct(item.product_id);
+          return total + getProductShippingCost(product); // Calculate total shipping cost
+        }, 0)
+      : 0;
+
+    // Do not divide totalShippingCost by 100
+    const totalAmount = order.total_amount + totalShippingCost;
+
       const payeeId = import.meta.env.VITE_SWEDBANK_PAYEEID;
       const payeeName = import.meta.env.VITE_SWEDBANK_PAYEENAME;
       const paymentOrder: PaymentOrderOutgoing = {
         operation: "Purchase",
         currency: "SEK",
-        amount: order.total_amount,
+        // amount: order.total_amount,
+        amount: totalAmount,
         vatAmount: order.vat_amount,
         description: "Test Purchase",
         userAgent: "Mozilla/5.0...",
@@ -82,7 +137,14 @@ export default function Checkout() {
           orderReference: order.reference,
         },
       };
-      dispatch(addPaymentOrderOutgoing(paymentOrder));
+      if (isShipping) {
+        // Om frakt krävs, capture sker senare via admin
+        // dispatch(someAdminActionToCaptureLater());
+      } else {
+        // Capture sker som vanligt om det inte är frakt
+        dispatch(addPaymentOrderOutgoing(paymentOrder));
+      }
+      // dispatch(addPaymentOrderOutgoing(paymentOrder));
       // dispatch(clearCart());
     }
   };
@@ -104,16 +166,19 @@ export default function Checkout() {
       }}
     >
       <Box sx={{ display: "flex", flexDirection: "column", flex: 1 / 2 }}>
-        {order && order.total_amount && (
-          <Typography variant="h6" sx={{ marginBottom: 2 }}>
-            Totalbelopp: {order.total_amount / 100} kr inkl. moms
-          </Typography>
-        )}
+      {order && order.total_amount && (
+  <Typography variant="h6" sx={{ marginBottom: 2 }}>
+    Totalbelopp: {((order.total_amount / 100) + (isShipping ? totalShippingCost : 0))} kr inkl. moms
+  </Typography>
+)}
 
         {products &&
           order &&
           order.items.map((item) => {
             const product = getProduct(item.product_id);
+            const productShippingCost = isShipping
+              ? getProductShippingCost(product)
+              : 0;
             return (
               <Box
                 key={item.product_id}
@@ -151,10 +216,9 @@ export default function Checkout() {
                     {product?.name}
                   </Typography>
                   <Typography sx={{ fontSize: 16, color: "#555" }}>
-                    Antal: {item.quantity}
+                    Antal: {item.quantity} 
                   </Typography>
-                </Box>
-                <Typography
+                  <Typography
                   sx={{
                     marginLeft: "auto",
                     fontSize: 18,
@@ -163,6 +227,16 @@ export default function Checkout() {
                 >
                   {(item.price * item.quantity) / 100} kr
                 </Typography>
+                  <Typography sx={{ fontSize: 16, color: "#555" }}>
+                    Fraktkostnad: {productShippingCost} kr
+                  </Typography>
+                  <Typography sx={{ fontSize: 18, fontWeight: 600 }}>
+                    Totalt: {(item.price * item.quantity) / 100 +
+                      productShippingCost}{" "}
+                    kr
+                  </Typography>
+                </Box>
+              
               </Box>
             );
           })}
@@ -217,6 +291,57 @@ export default function Checkout() {
             onChange={(event) => setPhone(event.target.value)}
           />
         </Box>
+
+        {/* Checkboxar för fraktalternativ */}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 1,
+            marginTop: 2,
+          }}
+        >
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={isPickup}
+                onChange={(event) => {
+                  setIsPickup(event.target.checked);
+                  setIsShipping(false); // Avmarkera frakt om upphämtning väljs
+                }}
+              />
+            }
+            label="Hämta upp på plats"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={isShipping}
+                onChange={(event) => {
+                  setIsShipping(event.target.checked);
+                  setIsPickup(false); // Avmarkera upphämtning om frakt väljs
+                }}
+              />
+            }
+            label="Skicka med frakt (50 kr)"
+          />
+        </Box>
+
+        {/* Leveransadressfält om frakt har valts */}
+        {isShipping && (
+          <TextField
+            label="Leveransadress"
+            variant="outlined"
+            fullWidth
+            value={shippingAddress}
+            onChange={(event) => setShippingAddress(event.target.value)}
+            sx={{ marginTop: 2 }}
+            error={shippingError}
+            helperText={
+              shippingError ? "Vänligen fyll i en leveransadress" : ""
+            }
+          />
+        )}
 
         {isOrderUpdated ? (
           <Button

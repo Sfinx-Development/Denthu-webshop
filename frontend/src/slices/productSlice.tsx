@@ -25,6 +25,7 @@ export interface Product {
   amount: number;
   // in_store: boolean;
   vat_amount: number;
+  shippingCost: number;  
 }
 
 export interface ShippingOption {

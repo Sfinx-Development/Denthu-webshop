@@ -4,6 +4,7 @@ import { Paid } from "../../swedbankTypes";
 import { addOrderToDB, editOrderInDB, getOrderFromDB } from "../api/order";
 
 export interface Order {
+  shippingAddress: string;
   id: string;
   reference: string;
   total_amount: number;
@@ -16,6 +17,8 @@ export interface Order {
   guestLastName?: string;
   guestEmail?: string;
   guestPhone?: string;
+  shippingMethod: string;
+  shippingCost: number;
 }
 
 export interface OrderItem {
