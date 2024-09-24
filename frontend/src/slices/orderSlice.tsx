@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Paid } from "../../swedbankTypes";
-import { addOrderToDB, editOrderInDB, getOrderFromDB } from "../api/order";
+import { addOrderToDB, editOrderInDB, getOrderFromDB, getAllOrdersFromDB } from "../api/order";
 
 export interface Order {
   shippingAddress: string;
@@ -32,6 +32,7 @@ export interface OrderItem {
 }
 
 interface OrderState {
+  orders: any;
   order: Order | null;
   emailSent: boolean;
   error: string | null;
@@ -66,6 +67,31 @@ const calculateTotalVat = (items: OrderItem[]): number => {
 const calculateTotalAmount = (items: OrderItem[]): number => {
   return items.reduce((total, item) => total + item.price * item.quantity, 0);
 };
+
+export const fetchAllOrdersAsync = createAsyncThunk<
+  Order[],
+  undefined,
+  { rejectValue: string }
+>("orders/fetchAllOrders", async (_, thunkAPI) => {
+  try {
+    const orders = await getAllOrdersFromDB();
+    return orders;
+  } catch (error) {
+    return thunkAPI.rejectWithValue("Failed to fetch orders");
+  }
+});
+
+export const getOrdersAsync = createAsyncThunk<Order[], void, { rejectValue: string }>(
+  "orders/getOrders",
+  async (_, thunkAPI) => {
+    try {
+      const orders = await getAllOrdersFromDB(); // Replace with the actual API call to fetch all orders
+      return orders; // Return the fetched orders
+    } catch (error) {
+      return thunkAPI.rejectWithValue("Failed to fetch orders");
+    }
+  }
+);
 
 export const addOrderAsync = createAsyncThunk<
   Order,
