@@ -11,6 +11,8 @@ import Checkout from "./pages/Checkout";
 import Confirmation from "./pages/Confirmation";
 import Error from "./pages/Error";
 import Index from "./pages/Index";
+import OrdersForShipping from "./pages/OrdersForShipping";
+
 import {
   default as Product,
   default as ProductDetails,
@@ -40,6 +42,10 @@ const Navigation = () => {
         <Route
           path="admin/product/:param"
           element={<ProtectedRoute element={AdminAddAndEdit} />}
+        />
+         <Route
+          path="admin/ordersForShipping"
+          element={<ProtectedRoute element={OrdersForShipping} />}
         />
 
         <Route path="admin/signin" element={<AdminSignIn />}></Route>
