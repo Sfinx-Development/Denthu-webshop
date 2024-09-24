@@ -117,6 +117,20 @@ export default function AdminProducts() {
               backgroundColor: "#00695c",
             },
           }}
+          onClick={() => navigate("/admin/ordersForShipping")}
+          data-cy="admin-orders-shipping"
+        >
+          Ordrar/Frakt
+        </Button>
+
+        <Button
+          variant="contained"
+          sx={{
+            backgroundColor: "#009688",
+            "&:hover": {
+              backgroundColor: "#00695c",
+            },
+          }}
           onClick={handleLogOut}
         >
           Logga ut
