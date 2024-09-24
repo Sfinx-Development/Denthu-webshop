@@ -32,6 +32,9 @@ export default function Checkout() {
   const [isPickup, setIsPickup] = useState(false);
   const [isShipping, setIsShipping] = useState(false);
   const [shippingAddress, setShippingAddress] = useState("");
+  const [street, setStreet] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [city, setCity] = useState("");
   const [shippingError, setShippingError] = useState(false);
   const [totalShippingCost, setTotalShippingCost] = useState(0);
 
@@ -41,8 +44,14 @@ export default function Checkout() {
 
     if (order && firstName && lastName && phone && email) {
       const emailIsValid = email.includes("@") && email.includes(".");
+
       if (emailIsValid) {
         setEmailError(false);
+
+        const fullShippingAddress = isShipping
+          ? `${street}, ${postalCode}, ${city}`
+          : "";
+
         const updatedOrder: Order = {
           ...order,
           guestFirstName: firstName,
@@ -50,15 +59,18 @@ export default function Checkout() {
           guestEmail: email,
           guestPhone: phone,
           shippingMethod: isShipping ? "shipping" : "pickup",
-          shippingAddress: isShipping ? shippingAddress : "",
-          shippingCost: isShipping ? 50 * 100 : 0, // Exempel fraktkostnad
+          shippingAddress: isShipping ? fullShippingAddress : "",
+          shippingCost: isShipping ? totalShippingCost : 0, // Använd beräknad fraktkostnad
         };
-        dispatch(updateOrderAsync(updatedOrder));
+
+        dispatch(updateOrderAsync(updatedOrder)); // Uppdatera ordern
+        setIsOrderUpdated(true); // Markera order som uppdaterad
       } else {
-        setEmailError(true);
+        setEmailError(true); // Visa felmeddelande om email är ogiltig
       }
-      if (isShipping && !shippingAddress) {
-        setShippingError(true);
+
+      if (isShipping && (!street || !postalCode || !city)) {
+        setShippingError(true); // Visa felmeddelande om fraktuppgifter saknas
       }
     }
   };
@@ -323,45 +335,73 @@ export default function Checkout() {
                 }}
               />
             }
-            label="Skicka med frakt (50 kr)"
+            label="Skicka med frakt (Se pris på produkten)"
           />
         </Box>
 
         {/* Leveransadressfält om frakt har valts */}
         {isShipping && (
-          <TextField
-            label="Leveransadress"
-            variant="outlined"
-            fullWidth
-            value={shippingAddress}
-            onChange={(event) => setShippingAddress(event.target.value)}
-            sx={{ marginTop: 2 }}
-            error={shippingError}
-            helperText={
-              shippingError ? "Vänligen fyll i en leveransadress" : ""
-            }
-          />
+          <Box>
+            <TextField
+              label="Gata"
+              variant="outlined"
+              fullWidth
+              value={street}
+              onChange={(event) => setStreet(event.target.value)}
+              sx={{ marginTop: 2 }}
+              error={shippingError && !street}
+              helperText={shippingError && !street ? "Fyll i gata" : ""}
+            />
+            <TextField
+              label="Postnummer"
+              variant="outlined"
+              fullWidth
+              value={postalCode}
+              onChange={(event) => setPostalCode(event.target.value)}
+              sx={{ marginTop: 2 }}
+              error={shippingError && !postalCode}
+              helperText={shippingError && !postalCode ? "Fyll i postnummer" : ""}
+            />
+            <TextField
+              label="Ort"
+              variant="outlined"
+              fullWidth
+              value={city}
+              onChange={(event) => setCity(event.target.value)}
+              sx={{ marginTop: 2 }}
+              error={shippingError && !city}
+              helperText={shippingError && !city ? "Fyll i ort" : ""}
+            />
+          </Box>
         )}
 
-        {isOrderUpdated ? (
-          <Button
-            onClick={handleMakeOrder}
-            fullWidth
-            sx={{
-              padding: "14px",
-              backgroundColor: "#1976d2",
-              color: "white",
-              fontSize: "16px",
-              fontWeight: "bold",
-              textTransform: "none",
-              marginTop: 3,
-              "&:hover": {
-                backgroundColor: "#1565c0",
-              },
-            }}
-          >
-            Gå till betalning
-          </Button>
+
+{isOrderUpdated ? (
+          <>
+            <Button
+              onClick={handleMakeOrder}
+              fullWidth
+              sx={{
+                padding: "14px",
+                backgroundColor: "#1976d2",
+                color: "white",
+                fontSize: "16px",
+                fontWeight: "bold",
+                textTransform: "none",
+                marginTop: 3,
+                "&:hover": {
+                  backgroundColor: "#1565c0",
+                },
+              }}
+            >
+              Gå till betalning
+            </Button>
+
+            {/* Visa SeamlessCheckout-vyn endast när order är uppdaterad */}
+            {incomingPaymentOrder && incomingPaymentOrder.operations && (
+              <SeamlessCheckout />
+            )}
+          </>
         ) : (
           <Button
             onClick={handleAddToOrder}
