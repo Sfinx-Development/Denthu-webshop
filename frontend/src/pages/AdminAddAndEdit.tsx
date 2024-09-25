@@ -43,10 +43,6 @@ export default function AdminAddAndEdit() {
   );
   const [price, setPrice] = useState(productToEdit ? productToEdit.price : "");
 
-  const [vatAmount, setVatAmount] = useState(
-    productToEdit ? productToEdit.vat_amount : ""
-  );
-
   const [amount, setAmount] = useState(
     productToEdit ? productToEdit.amount : ""
   );
@@ -98,8 +94,12 @@ export default function AdminAddAndEdit() {
         categoryId,
         discount: Number(discount),
         // launch_date: new Date().toISOString(),
+<<<<<<< HEAD
         vat_amount: Number(vatAmount),
         weight: Number(weight)
+=======
+        vat_amount: 25,
+>>>>>>> fe917ef560e68ffeb0146cbf1b5ad166e46eae37
       };
 
       if (productToEdit) {
@@ -173,6 +173,7 @@ export default function AdminAddAndEdit() {
               fullWidth
               type="number"
               value={price}
+<<<<<<< HEAD
               onChange={(e) => setPrice(e.target.value)} // Korrekt uppdatering för price
             />
                <TextField
@@ -192,6 +193,9 @@ export default function AdminAddAndEdit() {
               type="number"
               value={vatAmount}
               onChange={(e) => setVatAmount(e.target.value)} // Korrekt uppdatering för vatAmount
+=======
+              onChange={(e) => setPrice(e.target.value)}
+>>>>>>> fe917ef560e68ffeb0146cbf1b5ad166e46eae37
             />
 
             <ImageUploader imageUrl={imageUrl} setImageUrl={setImageUrl} />

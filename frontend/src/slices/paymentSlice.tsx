@@ -17,7 +17,6 @@ import { getCallbackFromDb } from "../api/callback";
 import { getCaptureFromDb, PostCaptureToInternalApiDB } from "../api/capture";
 import { addPaymentOrderIncomingToDB } from "../api/paymentOrder";
 import {
-  CapturePayment,
   GetPaymentById,
   GetPaymentPaidValidation,
   PostPaymentOrder,
@@ -199,26 +198,6 @@ export const getPaymentPaidValidation = createAsyncThunk<
   }
 });
 
-export const getPaymentCaptureAsync = createAsyncThunk<
-  PaymentOrderResponse, // Return type
-  { transaction: OutgoingTransaction; url: string },
-  { rejectValue: string } // ThunkAPI type
->("payments/getPaymentCaptureAsync", async ({ transaction, url }, thunkAPI) => {
-  try {
-    const response = await CapturePayment({
-      transaction: transaction,
-      captureUrl: url,
-    });
-    if (response) {
-      return response;
-    } else {
-      return thunkAPI.rejectWithValue("failed to capture payment");
-    }
-  } catch (error) {
-    throw new Error("Något gick fel vid Betalning (Capture).");
-  }
-});
-
 export const getPaymentByIdAsync = createAsyncThunk<
   PaymentOrderIncoming, // Return type
   { url: string },
@@ -339,16 +318,6 @@ const paymentSlice = createSlice({
       .addCase(getPaymentPaidValidation.rejected, (state) => {
         state.error =
           "Något gick fel när validering av betalning hämtades. Försök igen senare.";
-      })
-      .addCase(getPaymentCaptureAsync.fulfilled, (state, action) => {
-        if (action.payload) {
-          console.log("CAPTURE SVARET: ", action.payload);
-          state.paymentCapture = action.payload;
-          state.error = null;
-        }
-      })
-      .addCase(getPaymentCaptureAsync.rejected, (state) => {
-        state.error = "Något gick fel när betalning bearbetades.";
       })
       .addCase(getCallbackAsync.rejected, (state) => {
         state.error =
