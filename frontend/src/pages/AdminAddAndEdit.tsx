@@ -41,10 +41,6 @@ export default function AdminAddAndEdit() {
   );
   const [price, setPrice] = useState(productToEdit ? productToEdit.price : "");
 
-  const [vatAmount, setVatAmount] = useState(
-    productToEdit ? productToEdit.vat_amount : ""
-  );
-
   const [amount, setAmount] = useState(
     productToEdit ? productToEdit.amount : ""
   );
@@ -93,8 +89,8 @@ export default function AdminAddAndEdit() {
         amount: Number(amount),
         categoryId,
         discount: Number(discount),
-        launch_date: new Date().toISOString(),
-        vat_amount: Number(vatAmount),
+        // launch_date: new Date().toISOString(),
+        vat_amount: 25,
       };
 
       if (productToEdit) {
@@ -168,16 +164,7 @@ export default function AdminAddAndEdit() {
               fullWidth
               type="number"
               value={price}
-              onChange={(e) => setPrice(e.target.value)} // Korrekt uppdatering för price
-            />
-
-            <TextField
-              label="Momsprocent"
-              variant="outlined"
-              fullWidth
-              type="number"
-              value={vatAmount}
-              onChange={(e) => setVatAmount(e.target.value)} // Korrekt uppdatering för vatAmount
+              onChange={(e) => setPrice(e.target.value)}
             />
 
             <ImageUploader imageUrl={imageUrl} setImageUrl={setImageUrl} />
