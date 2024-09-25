@@ -194,6 +194,8 @@ export const updateOrderAsync = createAsyncThunk<
   }
 });
 
+
+
 export const getOrderAsync = createAsyncThunk<
   Order,
   string,
@@ -211,6 +213,47 @@ export const getOrderAsync = createAsyncThunk<
     throw new Error("Något gick fel vid hämtning av order.");
   }
 });
+
+export const updateOrderFrakt = createAsyncThunk<
+  Order,
+  [Order, Product[]], 
+  { rejectValue: string }
+>("orders/updateOrderFrakt", async ([order, products], thunkAPI) => {
+  try {
+    const updatedItems = order.items.map((item) => {
+      const newItem = { ...item };
+      newItem.vatPercent = item.vatAmount || 25; 
+      newItem.vatAmount = calculateVatAmount(newItem.price, newItem.vatPercent);
+      return newItem;
+    });
+
+    // Hantera frakt
+    order.shippingCost = getShippingCost(order, products);
+    const updatedOrder = {
+      ...order,
+      items: updatedItems,
+      total_amount: calculateTotalAmount(updatedItems) + order.shippingCost,
+      vat_amount: calculateTotalVat(updatedItems),
+    };
+
+    const response = await editOrderInDB(updatedOrder);
+    if (response) {
+      return response;
+    } else {
+      console.error("FAILED TO UPDATE ORDER: No order returned");
+      return thunkAPI.rejectWithValue(
+        "Failed to update order: No order returned"
+      );
+    }
+  } catch (error) {
+    return thunkAPI.rejectWithValue(
+      error instanceof Error
+        ? error.message
+        : "Något gick fel vid uppdatering av order."
+    );
+  }
+});
+
 
 const orderSlice = createSlice({
   name: "order",
@@ -285,6 +328,9 @@ const orderSlice = createSlice({
       localStorage.removeItem("order");
     },
   },
+  
+ 
+  
   extraReducers: (builder) => {
     builder
       .addCase(getOrderAsync.fulfilled, (state, action) => {
@@ -293,6 +339,17 @@ const orderSlice = createSlice({
           state.error = null;
         }
       })
+      .addCase(updateOrderFrakt.fulfilled, (state, action) => {
+        if (action.payload) {
+          state.order = action.payload;
+          localStorage.setItem("order", JSON.stringify(action.payload));
+          state.error = null;
+        }
+      })
+      .addCase(updateOrderFrakt.rejected, (state) => {
+        state.error = "Något gick fel när ordern uppdaterades. Försök igen senare.";
+      })
+  
       .addCase(getOrderAsync.rejected, (state) => {
         state.error = "Något gick fel när ordern hämtades. Försök igen senare.";
       })
