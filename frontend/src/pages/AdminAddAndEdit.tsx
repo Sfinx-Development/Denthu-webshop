@@ -5,9 +5,11 @@ import {
   InputLabel,
   MenuItem,
   Paper,
+  Checkbox,
   Select,
   TextField,
   Typography,
+  FormControlLabel,
 } from "@mui/material";
 import { MouseEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -51,6 +53,9 @@ export default function AdminAddAndEdit() {
   const [discount, setDiscount] = useState(
     productToEdit ? productToEdit.discount : ""
   );
+  const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>(
+    productToEdit ? productToEdit.shippingOptions || [] : []
+  );
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
     productToEdit
       ? categories.find((c) => c.id === productToEdit.categoryId) || null
@@ -60,9 +65,33 @@ export default function AdminAddAndEdit() {
   const [newCategoryImageUrl, setNewCategoryImageUrl] = useState("");
   const [preview, setPreview] = useState(false);
 
+  type ShippingOption = {
+    weight: string;
+    cost: number;
+  };
+
+  // const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
+
+  const availableShippingOptions: ShippingOption[] = [
+    { weight: "1 kg", cost: 80 },
+    { weight: "2 kg", cost: 118 },
+    { weight: "3 kg", cost: 132 },
+    { weight: "5 kg", cost: 161 },
+    { weight: "10 kg", cost: 215 },
+    { weight: "15 kg", cost: 260 },
+    { weight: "20 kg", cost: 308 },
+  ];
+
   useEffect(() => {
     dispatch(getCategorysAsync());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (productToEdit) {
+      // Initialize shipping options if editing a product
+      setShippingOptions(productToEdit.shippingOptions || []);
+    }
+  }, [productToEdit]);
 
   const handleOnSubmit = async (
     e: MouseEvent<HTMLButtonElement, MouseEvent>
@@ -251,6 +280,32 @@ export default function AdminAddAndEdit() {
                 />
               </>
             )}
+
+            <Typography variant="h6">Fraktkostnad baserat på vikt</Typography>
+            {availableShippingOptions.map((option, index) => (
+              <FormControlLabel
+                key={index}
+                control={
+                  <Checkbox
+                    checked={shippingOptions.some(
+                      (selected) => selected.weight === option.weight
+                    )}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setShippingOptions([...shippingOptions, option]);
+                      } else {
+                        setShippingOptions(
+                          shippingOptions.filter(
+                            (selected) => selected.weight !== option.weight
+                          )
+                        );
+                      }
+                    }}
+                  />
+                }
+                label={`${option.weight} - ${option.cost} kr`}
+              />
+            ))}
 
             <Box mt={3} display="flex" justifyContent="center">
               <Button
