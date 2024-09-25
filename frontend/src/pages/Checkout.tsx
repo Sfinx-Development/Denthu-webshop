@@ -70,22 +70,10 @@ export default function Checkout() {
       }
 
       if (isShipping && (!street || !postalCode || !city)) {
-        setShippingError(true); // Visa felmeddelande om fraktuppgifter saknas
+        setShippingError(true); 
       }
     }
   };
-
-  useEffect(() => {
-    if (order && isShipping) {
-      const shippingCost = order.items.reduce((total, item) => {
-        const product = getProduct(item.product_id);
-        return total + getProductShippingCost(product);
-      }, 0);
-      setTotalShippingCost(shippingCost);
-    } else {
-      setTotalShippingCost(0);
-    }
-  }, [order, isShipping, products]);
 
   useEffect(() => {
     if (
@@ -101,26 +89,9 @@ export default function Checkout() {
     }
   }, [order]);
 
-  function getProductShippingCost(product: Product | undefined): number {
-    // Kolla om produkten har fraktalternativ och välj ett rimligt alternativ
-    if (product && product.shippingOptions.length > 0) {
-      // Anta att vi tar det första fraktalternativet för enkelhetens skull
-      return product.shippingOptions[0].cost;
-    }
-    return 0; // Om ingen frakt finns, returnera 0
-  }
 
   const handleMakeOrder = () => {
     if (order) {
-      const totalShippingCost = isShipping
-      ? order.items.reduce((total, item) => {
-          const product = getProduct(item.product_id);
-          return total + getProductShippingCost(product); // Calculate total shipping cost
-        }, 0)
-      : 0;
-
-    // Do not divide totalShippingCost by 100
-    const totalAmount = order.total_amount + totalShippingCost;
 
       const payeeId = import.meta.env.VITE_SWEDBANK_PAYEEID;
       const payeeName = import.meta.env.VITE_SWEDBANK_PAYEENAME;
@@ -128,7 +99,7 @@ export default function Checkout() {
         operation: "Purchase",
         currency: "SEK",
         // amount: order.total_amount,
-        amount: totalAmount,
+        amount: order.total_amount,
         vatAmount: order.vat_amount,
         description: "Test Purchase",
         userAgent: "Mozilla/5.0...",
@@ -188,9 +159,6 @@ export default function Checkout() {
           order &&
           order.items.map((item) => {
             const product = getProduct(item.product_id);
-            const productShippingCost = isShipping
-              ? getProductShippingCost(product)
-              : 0;
             return (
               <Box
                 key={item.product_id}
@@ -239,19 +207,18 @@ export default function Checkout() {
                 >
                   {(item.price * item.quantity) / 100} kr
                 </Typography>
-                  <Typography sx={{ fontSize: 16, color: "#555" }}>
-                    Fraktkostnad: {productShippingCost} kr
-                  </Typography>
                   <Typography sx={{ fontSize: 18, fontWeight: 600 }}>
-                    Totalt: {(item.price * item.quantity) / 100 +
-                      productShippingCost}{" "}
-                    kr
+                    Totalt: {(item.price * item.quantity) / 100
+                    }kr
                   </Typography>
                 </Box>
               
               </Box>
             );
           })}
+                            <Typography sx={{ fontSize: 16, color: "#555" }}>
+                    Fraktkostnad: {order?.shippingCost} kr
+                  </Typography>
       </Box>
       <Box
         sx={{

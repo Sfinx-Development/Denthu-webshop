@@ -128,8 +128,7 @@ export default function Cart() {
         created_date: new Date().toISOString(),
         status: "Waiting for payment",
       };
-
-      dispatch(addOrderAsync(newOrder));
+      dispatch(addOrderAsync([newOrder, products]));
       navigate("/checkout");
       products.forEach((p) => {
         const productToUpdate: Product = {

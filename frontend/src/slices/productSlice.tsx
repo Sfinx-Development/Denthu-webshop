@@ -11,7 +11,6 @@ import {
 } from "../api/product";
 
 export interface Product {
-  shippingOptions: never[];
   // sizes: any;
   // sizes: any;
   id: string;
@@ -25,12 +24,7 @@ export interface Product {
   amount: number;
   // in_store: boolean;
   vat_amount: number;
-  shippingCost: number;  
-}
-
-export interface ShippingOption {
-  weight: string;
-  cost: number;
+  weight: number;
 }
 
 export interface ProductWithDate {
@@ -43,7 +37,9 @@ export interface ProductWithDate {
   // launch_date: Date;
   imageUrl: string;
   amount: number; 
-  shippingOptions: ShippingOption[]; 
+  //gram
+  vat_amount: number;
+  weight: number;
 }
 
 interface ProductState {

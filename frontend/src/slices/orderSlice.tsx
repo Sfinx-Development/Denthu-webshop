@@ -2,9 +2,11 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Paid } from "../../swedbankTypes";
 import { addOrderToDB, editOrderInDB, getOrderFromDB, getAllOrdersFromDB } from "../api/order";
+import OrdersForShipping from "../pages/OrdersForShipping";
+import { Product } from "./productSlice";
 
 export interface Order {
-  shippingAddress: string;
+  shippingAddress?: string;
   id: string;
   reference: string;
   total_amount: number;
@@ -17,8 +19,8 @@ export interface Order {
   guestLastName?: string;
   guestEmail?: string;
   guestPhone?: string;
-  shippingMethod: string;
-  shippingCost: number;
+  shippingMethod?: string;
+  shippingCost?: number;
 }
 
 export interface OrderItem {
@@ -32,7 +34,7 @@ export interface OrderItem {
 }
 
 interface OrderState {
-  orders: any;
+  orders: Order[];
   order: Order | null;
   emailSent: boolean;
   error: string | null;
@@ -40,14 +42,16 @@ interface OrderState {
 
 const getInitialOrderState = (): OrderState => {
   const storedOrder = localStorage.getItem("order");
+  const storedOrders = localStorage.getItem("orders");
   const storedEmailSent = localStorage.getItem("emailSent");
   return storedOrder
     ? {
         order: JSON.parse(storedOrder),
         error: null,
         emailSent: storedEmailSent ? true : false,
+        orders: storedOrders ? JSON.parse(storedOrders) : []
       }
-    : { order: null, error: null, emailSent: false };
+    : { order: null, error: null, emailSent: false,orders:storedOrders ? storedOrders : [] };
 };
 
 const initialState: OrderState = getInitialOrderState();
@@ -64,9 +68,45 @@ const calculateTotalVat = (items: OrderItem[]): number => {
   );
 };
 
+function getProduct(productId: string, products:Product[]): Product | undefined {
+  return products.find((p) => p.id == productId);
+}
+
 const calculateTotalAmount = (items: OrderItem[]): number => {
   return items.reduce((total, item) => total + item.price * item.quantity, 0);
 };
+
+function getShippingCost (order:Order, products:Product[]) {
+  //plussa ihop alla produkters vikt och hämta kostnaden
+  const productWeightTogether = order.items.reduce((total, item) => {
+    const product = getProduct(item.product_id, products);
+    return total + product.weight
+  }, 0)
+  const cost = availableShippingOptions(productWeightTogether);
+  return cost;
+}
+
+const availableShippingOptions = (weight: number): number => {
+  if (weight > 0 && weight <= 1) {
+    return 80;
+  } else if (weight > 1 && weight <= 2) {
+    return 118;
+  } else if (weight > 2 && weight <= 3) {
+    return 132;
+  } else if (weight > 3 && weight <= 5) {
+    return 161;
+  } else if (weight > 5 && weight <= 10) {
+    return 215;
+  } else if (weight > 10 && weight <= 15) {
+    return 260;
+  } else if (weight > 15 && weight <= 20) {
+    return 308;
+  } else {
+    // Hantera vikter över 20 kg eller om vikten är ogiltig
+    return -1; // -1 indikerar att vikten är för stor eller ogiltig
+  }
+};
+
 
 export const fetchAllOrdersAsync = createAsyncThunk<
   Order[],
@@ -75,36 +115,30 @@ export const fetchAllOrdersAsync = createAsyncThunk<
 >("orders/fetchAllOrders", async (_, thunkAPI) => {
   try {
     const orders = await getAllOrdersFromDB();
+    if(orders){
+      localStorage.setItem("orders", JSON.stringify(orders));
+    }
     return orders;
   } catch (error) {
     return thunkAPI.rejectWithValue("Failed to fetch orders");
   }
 });
 
-export const getOrdersAsync = createAsyncThunk<Order[], void, { rejectValue: string }>(
-  "orders/getOrders",
-  async (_, thunkAPI) => {
-    try {
-      const orders = await getAllOrdersFromDB(); // Replace with the actual API call to fetch all orders
-      return orders; // Return the fetched orders
-    } catch (error) {
-      return thunkAPI.rejectWithValue("Failed to fetch orders");
-    }
-  }
-);
-
+//TA IN PRODUCTS SOM ARGUMENT
 export const addOrderAsync = createAsyncThunk<
-  Order,
-  Order,
-  { rejectValue: string }
->("orders/addOrder", async (order, thunkAPI) => {
+  Order, // Resultatet som returneras när thunk är klar
+  [Order, Product[]], // Två argument: Order och en string (exempelvis ett användar-id eller annat värde)
+  { rejectValue: string } // Hantering av fel
+>(
+  "orders/addOrder",
+  async ([order, products], thunkAPI) => {
   try {
     order.items.forEach((item) => {
       item.vatPercent = 25; // 25% VATPERCENT
       item.vatAmount = calculateVatAmount(item.price, item.vatPercent);
     });
-
-    order.total_amount = calculateTotalAmount(order.items);
+    order.shippingCost = getShippingCost(order, products);
+    order.total_amount = calculateTotalAmount(order.items) + order.shippingCost;
     order.vat_amount = calculateTotalVat(order.items);
 
     const createdOrder = await addOrderToDB(order);

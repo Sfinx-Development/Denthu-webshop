@@ -42,7 +42,7 @@ export const addProductToDB = async (product: Product) => {
     const todoCollectionRef = collection(db, "products");
     const productWithDate: ProductWithDate = {
       ...product,
-      launch_date: new Date(product.launch_date),
+      // launch_date: new Date(product.launch_date),
     };
 
     const docRef = await addDoc(todoCollectionRef, productWithDate);
@@ -70,7 +70,7 @@ export const editProductInDB = async (product: Product) => {
 
     const productWithDate: ProductWithDate = {
       ...product,
-      launch_date: new Date(product.launch_date),
+      // launch_date: new Date(product.launch_date),
     };
 
     const updatedProductData = {
@@ -97,7 +97,7 @@ export const getProductsFromDB = async () => {
 
     querySnapshot.forEach((doc) => {
       const docData = doc.data() as Product;
-      docData.launch_date = docData.launch_date.toString();
+      // docData.launch_date = docData.launch_date.toString();
       products.push(docData as Product);
     });
 
@@ -118,7 +118,7 @@ export const getProductFromDBById = async (id: string) => {
 
     if (docSnapshot.exists()) {
       const docData = docSnapshot.data() as Product;
-      docData.launch_date = docData.launch_date.toString();
+      // docData.launch_date = docData.launch_date.toString();
       return docData as Product;
     } else {
       return null;
