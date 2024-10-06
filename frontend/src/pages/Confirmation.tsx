@@ -88,7 +88,7 @@ export default function Confirmation() {
     if (paymentInfo && order && callbacks) {
       const orderUpdatedPayment: Order = {
         ...order,
-        status: "Paid/Captured",
+        status: "Paid/Waiting for Capture",
         paymentInfo: paymentInfo.paymentOrder.paid,
       };
       dispatch(updateOrderAsync(orderUpdatedPayment));
@@ -116,7 +116,7 @@ export default function Confirmation() {
   emailjs.init("C8CxNnxZg6mg-d2tq");
 
   const sendEmailWithLink = (order: Order) => {
-    const priceExVat = (order.total_amount - order.vat_amount / 100).toFixed(2);
+    const priceExVat = (order.total_amount/100).toFixed(2);
     const receipt = `
     <p>Din betalning är genomförd. Nedan visas betalningsdetaljer:</p>
     <ul>
@@ -206,6 +206,10 @@ export default function Confirmation() {
           <Box>
             <Typography sx={{ fontWeight: 600 }}>Ordernummer</Typography>
             <Typography>{order?.reference}</Typography>
+          </Box>
+          <Box>
+            <Typography sx={{ fontWeight: 600 }}>Totalt belopp</Typography>
+            <Typography>{order?.total_amount}</Typography>
           </Box>
         </Box>
         <Box sx={{ padding: 2 }}>

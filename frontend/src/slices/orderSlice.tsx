@@ -76,30 +76,37 @@ const calculateTotalAmount = (items: OrderItem[]): number => {
   return items.reduce((total, item) => total + item.price * item.quantity, 0);
 };
 
-function getShippingCost (order:Order, products:Product[]) {
-  //plussa ihop alla produkters vikt och hämta kostnaden
+function getShippingCost(order: Order, products: Product[]) {
+  // Plussa ihop alla produkters vikt och hämta kostnaden
+  console.log("ORDER", order);
+  
   const productWeightTogether = order.items.reduce((total, item) => {
     const product = getProduct(item.product_id, products);
-    return total + product.weight
-  }, 0)
+    // Multiplicera produktens vikt med antalet av den produkten
+    return total + (product.weight * item.quantity);
+  }, 0);
+
   const cost = availableShippingOptions(productWeightTogether);
+  console.log("COST: ", cost)
   return cost;
 }
 
+
 const availableShippingOptions = (weight: number): number => {
-  if (weight > 0 && weight <= 1) {
+  console.log("IN  MED VIKTEN: ", weight)
+  if (weight > 0 && weight <= 1000) {
     return 80;
-  } else if (weight > 1 && weight <= 2) {
+  } else if (weight > 1000 && weight <= 2000) {
     return 118;
-  } else if (weight > 2 && weight <= 3) {
+  } else if (weight > 2000 && weight <= 3000) {
     return 132;
-  } else if (weight > 3 && weight <= 5) {
+  } else if (weight > 3000 && weight <= 5000) {
     return 161;
-  } else if (weight > 5 && weight <= 10) {
+  } else if (weight > 5000 && weight <= 10000) {
     return 215;
-  } else if (weight > 10 && weight <= 15) {
+  } else if (weight > 10000 && weight <= 15000) {
     return 260;
-  } else if (weight > 15 && weight <= 20) {
+  } else if (weight > 15000 && weight <= 20000) {
     return 308;
   } else {
     // Hantera vikter över 20 kg eller om vikten är ogiltig
@@ -216,24 +223,27 @@ export const getOrderAsync = createAsyncThunk<
 
 export const updateOrderFrakt = createAsyncThunk<
   Order,
-  [Order, Product[]], 
+  [Order, Product[], string], 
   { rejectValue: string }
->("orders/updateOrderFrakt", async ([order, products], thunkAPI) => {
+>("orders/updateOrderFrakt", async ([order, products, method], thunkAPI) => {
   try {
-    const updatedItems = order.items.map((item) => {
-      const newItem = { ...item };
-      newItem.vatPercent = item.vatAmount || 25; 
-      newItem.vatAmount = calculateVatAmount(newItem.price, newItem.vatPercent);
-      return newItem;
-    });
+    
+    // const updatedItems = order.items.map((item) => {
+    //   const newItem = { ...item };
+    //   newItem.vatPercent = item.vatAmount || 25; 
+    //   newItem.vatAmount = calculateVatAmount(newItem.price, newItem.vatPercent);
+    //   return newItem;
+    // });
 
     // Hantera frakt
-    order.shippingCost = getShippingCost(order, products);
-    const updatedOrder = {
+    const cost  = getShippingCost(order, products);
+    const totalShippingCost= cost * 100
+    console.log("SHIPPPING COST BLEV", order.shippingCost)
+    const updatedOrder : Order = {
       ...order,
-      items: updatedItems,
-      total_amount: calculateTotalAmount(updatedItems) + order.shippingCost,
-      vat_amount: calculateTotalVat(updatedItems),
+      total_amount: order.total_amount + totalShippingCost,
+      shippingCost: cost,
+      shippingMethod: method
     };
 
     const response = await editOrderInDB(updatedOrder);

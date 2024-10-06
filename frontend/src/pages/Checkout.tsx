@@ -448,7 +448,8 @@ export default function Checkout() {
   const handleShippingMethodChange = (method: string) => {
     setSelectedShippingMethod(method);
     if (order) { // Ensure order is not null
-      dispatch(updateOrderFrakt([order, products])); // Dispatch here
+      console.log("KÖRS")
+      dispatch(updateOrderFrakt([order, products, method])); // Dispatch here
     }
   };
 
@@ -504,7 +505,10 @@ export default function Checkout() {
   }, [order]);
 
   const handleMakeOrder = () => {
-    if (order) {
+    //göra denna asyjc?
+    handleAddToOrder();
+    if (order && !shippingError && !emailError) {
+
       const payeeId = import.meta.env.VITE_SWEDBANK_PAYEEID;
       const payeeName = import.meta.env.VITE_SWEDBANK_PAYEENAME;
       const paymentOrder: PaymentOrderOutgoing = {
@@ -533,6 +537,7 @@ export default function Checkout() {
       if (isShipping) {
         // Om frakt krävs, capture sker senare via admin
         // dispatch(someAdminActionToCaptureLater());
+        dispatch(addPaymentOrderOutgoing(paymentOrder));
       } else {
         // Capture sker som vanligt om det inte är frakt
         dispatch(addPaymentOrderOutgoing(paymentOrder));
@@ -720,19 +725,19 @@ export default function Checkout() {
             />
           </>
         )}
-        <Button
+        {/* <Button
           variant="contained"
           onClick={handleAddToOrder}
           sx={{ marginTop: 2 }}
         >
           Fortsätt
-        </Button>
+        </Button> */}
         <Button
           variant="contained"
-          onClick={handleMakeOrder}
+          onClick={() =>handleMakeOrder()}
           sx={{ marginTop: 2 }}
         >
-          Gör beställning
+          Till betalning
         </Button>
       </Box>
     </Box>
