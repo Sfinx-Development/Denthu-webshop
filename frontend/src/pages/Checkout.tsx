@@ -46,8 +46,6 @@
 //     }
 //   };
 
-  
-
 //   const handleAddToOrder = async () => {
 //     setEmailError(false);
 //     setShippingError(false);
@@ -80,7 +78,7 @@
 //       }
 
 //       if (isShipping && (!street || !postalCode || !city)) {
-//         setShippingError(true); 
+//         setShippingError(true);
 //       }
 //     }
 //   };
@@ -98,7 +96,6 @@
 //       setIsOrderUpdated(true);
 //     }
 //   }, [order]);
-
 
 //   const handleMakeOrder = () => {
 //     if (order) {
@@ -206,7 +203,7 @@
 //                     {product?.name}
 //                   </Typography>
 //                   <Typography sx={{ fontSize: 16, color: "#555" }}>
-//                     Antal: {item.quantity} 
+//                     Antal: {item.quantity}
 //                   </Typography>
 //                   <Typography
 //                   sx={{
@@ -222,7 +219,7 @@
 //                     }kr
 //                   </Typography>
 //                 </Box>
-              
+
 //               </Box>
 //             );
 //           })}
@@ -352,7 +349,6 @@
 //           </Box>
 //         )}
 
-
 // {isOrderUpdated ? (
 //           <>
 //             <Button
@@ -407,16 +403,20 @@
 import {
   Box,
   Button,
-  TextField,
-  Typography,
   Checkbox,
   FormControlLabel,
+  TextField,
+  Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { PaymentOrderOutgoing } from "../../types";
 import { generatePayeeReference } from "../../utils";
 import SeamlessCheckout from "../components/SeamlessCheckout";
-import { Order, updateOrderAsync, updateOrderFrakt } from "../slices/orderSlice";
+import {
+  Order,
+  updateOrderAsync,
+  updateOrderFrakt,
+} from "../slices/orderSlice";
 import { addPaymentOrderOutgoing } from "../slices/paymentSlice";
 import { Product } from "../slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
@@ -443,13 +443,19 @@ export default function Checkout() {
   const [city, setCity] = useState("");
   const [shippingError, setShippingError] = useState(false);
   const [totalShippingCost, setTotalShippingCost] = useState(0);
-  const [selectedShippingMethod, setSelectedShippingMethod] = useState<string | null>(null);
+  const [selectedShippingMethod, setSelectedShippingMethod] = useState<
+    string | null
+  >(null);
+
+  useEffect(() => {
+    //kolla om produkterna (order items) och antalen fortfarande finns i lager
+    //annars gråmarkera dessa och uppdatera ordern - text slut i lager
+  }, [order]);
 
   const handleShippingMethodChange = (method: string) => {
     setSelectedShippingMethod(method);
-    if (order) { // Ensure order is not null
-      console.log("KÖRS")
-      dispatch(updateOrderFrakt([order, products, method])); // Dispatch here
+    if (order) {
+      dispatch(updateOrderFrakt([order, products, method]));
     }
   };
 
@@ -475,17 +481,17 @@ export default function Checkout() {
           guestPhone: phone,
           shippingMethod: isShipping ? "shipping" : "pickup",
           shippingAddress: isShipping ? fullShippingAddress : "",
-          shippingCost: isShipping ? totalShippingCost : 0, // Använd beräknad fraktkostnad
+          shippingCost: isShipping ? totalShippingCost : 0,
         };
 
-        dispatch(updateOrderAsync(updatedOrder)); // Uppdatera ordern
-        setIsOrderUpdated(true); // Markera order som uppdaterad
+        dispatch(updateOrderAsync(updatedOrder));
+        setIsOrderUpdated(true);
       } else {
-        setEmailError(true); // Visa felmeddelande om email är ogiltig
+        setEmailError(true);
       }
 
       if (isShipping && (!street || !postalCode || !city)) {
-        setShippingError(true); 
+        setShippingError(true);
       }
     }
   };
@@ -508,7 +514,6 @@ export default function Checkout() {
     //göra denna asyjc?
     handleAddToOrder();
     if (order && !shippingError && !emailError) {
-
       const payeeId = import.meta.env.VITE_SWEDBANK_PAYEEID;
       const payeeName = import.meta.env.VITE_SWEDBANK_PAYEENAME;
       const paymentOrder: PaymentOrderOutgoing = {
@@ -524,7 +529,8 @@ export default function Checkout() {
           paymentUrl: "https://localhost:5173/checkout", //Seamless View only
           completeUrl: "https://localhost:5173/confirmation",
           cancelUrl: "https://localhost:5173/checkout", //Redirect only
-          callbackUrl: "https://swedbankpay-gad0dfg6fha9bpfh.swedencentral-01.azurewebsites.net/swedbankpay/callbackDenthu",
+          callbackUrl:
+            "https://swedbankpay-gad0dfg6fha9bpfh.swedencentral-01.azurewebsites.net/swedbankpay/callbackDenthu",
           logoUrl: "", //Redirect only
         },
         payeeInfo: {
@@ -564,67 +570,71 @@ export default function Checkout() {
       <Box sx={{ display: "flex", flexDirection: "column", flex: 1 / 2 }}>
         {order && order.total_amount && (
           <Typography variant="h6" sx={{ marginBottom: 2 }}>
-            Totalbelopp: {((order.total_amount / 100) + (isShipping ? totalShippingCost : 0))} kr inkl. moms
+            Totalbelopp:{" "}
+            {order.total_amount / 100 + (isShipping ? totalShippingCost : 0)} kr
+            inkl. moms
           </Typography>
         )}
 
-        {products && order && order.items.map((item) => {
-          const product = getProduct(item.product_id);
-          return (
-            <Box
-              key={item.product_id}
-              sx={{
-                backgroundColor: "white",
-                display: "flex",
-                flexDirection: { xs: "column", sm: "row" },
-                alignItems: "center",
-                padding: 1,
-                marginY: 4,
-                borderRadius: "8px",
-                boxShadow: "0 3px 6px rgba(0, 0, 0, 0.1)",
-                marginX: 2,
-              }}
-            >
-              <img
-                src={product?.imageUrl}
-                alt={product?.name}
-                style={{
-                  height: 100,
-                  width: 80,
-                  objectFit: "cover",
-                  borderRadius: "4px",
-                }}
-              />
+        {products &&
+          order &&
+          order.items.map((item) => {
+            const product = getProduct(item.product_id);
+            return (
               <Box
+                key={item.product_id}
                 sx={{
-                  paddingX: { xs: 2, sm: 4 },
-                  width: "100%",
-                  textAlign: { xs: "center", sm: "left" },
-                  marginBottom: { xs: 1, sm: 0 },
+                  backgroundColor: "white",
+                  display: "flex",
+                  flexDirection: { xs: "column", sm: "row" },
+                  alignItems: "center",
+                  padding: 1,
+                  marginY: 4,
+                  borderRadius: "8px",
+                  boxShadow: "0 3px 6px rgba(0, 0, 0, 0.1)",
+                  marginX: 2,
                 }}
               >
-                <Typography sx={{ fontSize: 18, fontWeight: 600 }}>
-                  {product?.name}
-                </Typography>
-                <Typography sx={{ fontSize: 16, color: "#555" }}>
-                  Antal: {item.quantity} 
-                </Typography>
-                <Typography
+                <img
+                  src={product?.imageUrl}
+                  alt={product?.name}
+                  style={{
+                    height: 100,
+                    width: 80,
+                    objectFit: "cover",
+                    borderRadius: "4px",
+                  }}
+                />
+                <Box
                   sx={{
-                    marginLeft: "auto",
-                    fontSize: 18,
-                    fontWeight: 600,
+                    paddingX: { xs: 2, sm: 4 },
+                    width: "100%",
+                    textAlign: { xs: "center", sm: "left" },
+                    marginBottom: { xs: 1, sm: 0 },
                   }}
                 >
-                  {(item.price * item.quantity) / 100} kr
-                </Typography>
-                <Typography sx={{ fontSize: 18, fontWeight: 600 }}>
-                  Totalt: {(item.price * item.quantity) / 100} kr
-                </Typography>
+                  <Typography sx={{ fontSize: 18, fontWeight: 600 }}>
+                    {product?.name}
+                  </Typography>
+                  <Typography sx={{ fontSize: 16, color: "#555" }}>
+                    Antal: {item.quantity}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      marginLeft: "auto",
+                      fontSize: 18,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {(item.price * item.quantity) / 100} kr
+                  </Typography>
+                  <Typography sx={{ fontSize: 18, fontWeight: 600 }}>
+                    Totalt: {(item.price * item.quantity) / 100} kr
+                  </Typography>
+                </Box>
               </Box>
-            </Box>
-          );
-        })}
+            );
+          })}
         <Typography sx={{ fontSize: 16, color: "#555" }}>
           Fraktkostnad: {order?.shippingCost} kr
         </Typography>
@@ -734,7 +744,7 @@ export default function Checkout() {
         </Button> */}
         <Button
           variant="contained"
-          onClick={() =>handleMakeOrder()}
+          onClick={() => handleMakeOrder()}
           sx={{ marginTop: 2 }}
         >
           Till betalning

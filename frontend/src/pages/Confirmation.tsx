@@ -17,7 +17,7 @@ import {
   getPaymentPaidValidation,
   postCaptureToInternalApi,
 } from "../slices/paymentSlice";
-import { Product } from "../slices/productSlice";
+import { Product, updateProductAsync } from "../slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
 
 export default function Confirmation() {
@@ -57,6 +57,16 @@ export default function Confirmation() {
         paymentInfo: paymentInfo.paymentOrder.paid,
       };
       dispatch(updateOrderAsync(orderUpdatedPayment));
+      order.items.forEach((o) => {
+        const productToUpdate = products.find((p) => p.id == o.product_id);
+        if (productToUpdate) {
+          const product: Product = {
+            ...productToUpdate,
+            amount: productToUpdate.amount - o.quantity,
+          };
+          dispatch(updateProductAsync(product));
+        }
+      });
     }
   }, [paymentInfo]);
 
@@ -116,7 +126,7 @@ export default function Confirmation() {
   emailjs.init("C8CxNnxZg6mg-d2tq");
 
   const sendEmailWithLink = (order: Order) => {
-    const priceExVat = (order.total_amount/100).toFixed(2);
+    const priceExVat = (order.total_amount / 100).toFixed(2);
     const receipt = `
     <p>Din betalning är genomförd. Nedan visas betalningsdetaljer:</p>
     <ul>
