@@ -92,4 +92,22 @@ import {Category} from "../slices/categorySlice"
       throw new Error("Failed to get categorys");
     }
   };
+
+  export const getCategoriesByIdFromDB = async (ids: string[]) => {
+    try {
+      const todoCollectionRef = collection(db, "categorys");
+  
+      // Använd "in" för att matcha flera ID:n
+      const q = query(todoCollectionRef, where("id", "in", ids));
+  
+      const querySnapshot = await getDocs(q);
+      const categories = querySnapshot.docs.map(doc => doc.data() as Category);
+  
+      return categories; // Returnerar en array med kategorier
+    } catch (error) {
+      console.error("Error getting categories: ", error);
+      throw new Error("Failed to get categories");
+    }
+  };
+  
   

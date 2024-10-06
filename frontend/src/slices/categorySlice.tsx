@@ -7,6 +7,7 @@ import {
   editCategoryInDB,
   getCategoryFromDB,
   getCategorysFromDB,
+  getCategoriesByIdFromDB
 } from "../api/category";
 
 export interface Category {
@@ -84,6 +85,24 @@ export const getCategorysAsync = createAsyncThunk<
   }
 });
 
+export const getCategorysByIdAsync = createAsyncThunk<
+  Category[],
+  string [],
+  { rejectValue: string }
+>("categorys/getCategorysById", async (ids, thunkAPI) => {
+  try {
+    const categorys = await getCategoriesByIdFromDB(ids);
+    if (categorys) {
+      localStorage.setItem("categorys", JSON.stringify(categorys));
+      return categorys;
+    } else {
+      return thunkAPI.rejectWithValue("failed to fetch Categorys");
+    }
+  } catch (error) {
+    throw new Error("Något gick fel vid hämtning av Categorys.");
+  }
+});
+
 export const getCategoryAsync = createAsyncThunk<
   Category,
   string,
@@ -147,6 +166,16 @@ const Categoryslice = createSlice({
         }
       })
       .addCase(getCategorysAsync.rejected, (state) => {
+        state.error =
+          "Något gick fel när produkter hämtades. Försök igen senare.";
+      })
+      .addCase(getCategorysByIdAsync.fulfilled, (state, action) => {
+        if (action.payload) {
+          state.categorys = action.payload;
+          state.error = null;
+        }
+      })
+      .addCase(getCategorysByIdAsync.rejected, (state) => {
         state.error =
           "Något gick fel när produkter hämtades. Försök igen senare.";
       })

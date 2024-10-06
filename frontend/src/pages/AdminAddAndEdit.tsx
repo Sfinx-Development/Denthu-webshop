@@ -94,12 +94,8 @@ export default function AdminAddAndEdit() {
         categoryId,
         discount: Number(discount),
         // launch_date: new Date().toISOString(),
-<<<<<<< HEAD
-        vat_amount: Number(vatAmount),
+        vat_amount: Number(amount),
         weight: Number(weight)
-=======
-        vat_amount: 25,
->>>>>>> fe917ef560e68ffeb0146cbf1b5ad166e46eae37
       };
 
       if (productToEdit) {
@@ -173,7 +169,6 @@ export default function AdminAddAndEdit() {
               fullWidth
               type="number"
               value={price}
-<<<<<<< HEAD
               onChange={(e) => setPrice(e.target.value)} // Korrekt uppdatering för price
             />
                <TextField
@@ -191,11 +186,8 @@ export default function AdminAddAndEdit() {
               variant="outlined"
               fullWidth
               type="number"
-              value={vatAmount}
-              onChange={(e) => setVatAmount(e.target.value)} // Korrekt uppdatering för vatAmount
-=======
-              onChange={(e) => setPrice(e.target.value)}
->>>>>>> fe917ef560e68ffeb0146cbf1b5ad166e46eae37
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)} // Korrekt uppdatering för vatAmount
             />
 
             <ImageUploader imageUrl={imageUrl} setImageUrl={setImageUrl} />

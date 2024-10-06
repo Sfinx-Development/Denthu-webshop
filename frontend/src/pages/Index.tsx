@@ -1,9 +1,9 @@
 import { Box, Card, CardMedia, Grid, Typography } from "@mui/material";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 // import { getProductsAsync, Product } from "../slices/productSlice";
 import SearchBar from "../components/SearchBar";
-import { Category, getCategorysAsync } from "../slices/categorySlice";
+import { Category, getCategorysAsync, getCategorysByIdAsync } from "../slices/categorySlice";
 import { clearEmailSent } from "../slices/orderSlice";
 import {
   clearCallbackData,
@@ -11,7 +11,7 @@ import {
   clearPaymentInfo,
   clearPaymentOrder,
 } from "../slices/paymentSlice";
-import { getProductsAsync } from "../slices/productSlice";
+import { getProductsAsync, Product } from "../slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
 
 // export default function Index() {
@@ -23,20 +23,30 @@ import { useAppDispatch, useAppSelector } from "../slices/store";
 
 export default function Index() {
   const categorys = useAppSelector((state) => state.categorySlice.categorys);
+  const products = useAppSelector((state) => state.productSlice.products);
+
+  const [groupedCategorys, setGroupedCategorys] = useState<Category []>();  
+
   const dispatch = useAppDispatch();
   useEffect(() => {
-    dispatch(getCategorysAsync());
     dispatch(getProductsAsync());
   }, []);
 
-  const groupedCategorys = Object.values(
-    categorys.reduce((acc: { [key: string]: Category }, category) => {
-      if (!acc[category.category]) {
-        acc[category.category] = category;
-      }
-      return acc;
-    }, {})
-  );
+
+  const getCategorys = (products: Product []) => {
+    const categorys = [...new Set(products.map(product => product.categoryId))];
+    dispatch(getCategorysByIdAsync(categorys))
+    return categorys;
+  }
+
+  useEffect(() => {
+    getCategorys(products)
+  },[products])
+
+  useEffect(() => {
+    setGroupedCategorys(categorys)
+  },[categorys])
+  
 
   useEffect(() => {
     dispatch(getProductsAsync());
@@ -51,7 +61,7 @@ export default function Index() {
     <Box sx={{ width: "100%", backgroundColor: "#f4f4f4" }}>
       <SearchBar />
       <Grid container spacing={4} sx={{ padding: 4 }}>
-        {groupedCategorys.map((category) => (
+        {groupedCategorys && groupedCategorys.map((category) => (
           <Grid item xs={12} sm={6} md={4} key={category.id}>
             <Card
               sx={{
