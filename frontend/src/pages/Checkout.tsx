@@ -414,11 +414,12 @@ import { generatePayeeReference } from "../../utils";
 import SeamlessCheckout from "../components/SeamlessCheckout";
 import {
   Order,
+  OrderItem,
   updateOrderAsync,
   updateOrderFrakt,
 } from "../slices/orderSlice";
 import { addPaymentOrderOutgoing } from "../slices/paymentSlice";
-import { Product } from "../slices/productSlice";
+import { getProductsAsync, Product } from "../slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
 
 export default function Checkout() {
@@ -446,11 +447,49 @@ export default function Checkout() {
   const [selectedShippingMethod, setSelectedShippingMethod] = useState<
     string | null
   >(null);
+  const [productsRemoved, setProductsRemoved] = useState<Product[]>([]);
+
+  useEffect(() => {
+    dispatch(getProductsAsync());
+  }, []);
 
   useEffect(() => {
     //kolla om produkterna (order items) och antalen fortfarande finns i lager
     //annars gråmarkera dessa och uppdatera ordern - text slut i lager
-  }, [order]);
+    //och uppdatera paymentorder till swedbank
+    if (order) {
+      const updatedItems = order.items.map((o) => {
+        const productInOrder = products.find((p) => p.id === o.product_id);
+
+        if (productInOrder) {
+          productsRemoved.push(productInOrder);
+          setProductsRemoved([...productsRemoved]);
+
+          if (o.quantity > productInOrder.amount) {
+            return {
+              ...o,
+              quantity: productInOrder.amount,
+            };
+          }
+          if (productInOrder.amount === 0) {
+            return null;
+          }
+        }
+        return o;
+      });
+
+      const filteredItems: OrderItem[] = updatedItems.filter(
+        (item): item is OrderItem => item !== null
+      );
+
+      const updatedOrder: Order = {
+        ...order,
+        items: filteredItems,
+      };
+
+      dispatch(updateOrderAsync(updatedOrder));
+    }
+  }, [order, products]);
 
   const handleShippingMethodChange = (method: string) => {
     setSelectedShippingMethod(method);
@@ -575,6 +614,52 @@ export default function Checkout() {
             inkl. moms
           </Typography>
         )}
+
+        {productsRemoved &&
+          productsRemoved.map((item) => {
+            return (
+              <Box>
+                <Typography>Produkter som är slut i lager</Typography>
+                <Box
+                  key={item.id}
+                  sx={{
+                    backgroundColor: "lightgrey",
+                    display: "flex",
+                    flexDirection: { xs: "column", sm: "row" },
+                    alignItems: "center",
+                    padding: 1,
+                    marginY: 4,
+                    borderRadius: "8px",
+                    boxShadow: "0 3px 6px rgba(0, 0, 0, 0.1)",
+                    marginX: 2,
+                  }}
+                >
+                  <img
+                    src={item?.imageUrl}
+                    alt={item?.name}
+                    style={{
+                      height: 100,
+                      width: 80,
+                      objectFit: "cover",
+                      borderRadius: "4px",
+                    }}
+                  />
+                  <Box
+                    sx={{
+                      paddingX: { xs: 2, sm: 4 },
+                      width: "100%",
+                      textAlign: { xs: "center", sm: "left" },
+                      marginBottom: { xs: 1, sm: 0 },
+                    }}
+                  >
+                    <Typography sx={{ fontSize: 18, fontWeight: 600 }}>
+                      {item?.name}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+            );
+          })}
 
         {products &&
           order &&
