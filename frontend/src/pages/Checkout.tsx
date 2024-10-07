@@ -462,16 +462,22 @@ export default function Checkout() {
         const productInOrder = products.find((p) => p.id === o.product_id);
 
         if (productInOrder) {
-          productsRemoved.push(productInOrder);
-          setProductsRemoved([...productsRemoved]);
-
           if (o.quantity > productInOrder.amount) {
+            if (productsRemoved.find((p) => p.id != productInOrder.id)) {
+              productsRemoved.push(productInOrder);
+              setProductsRemoved([productInOrder, ...productsRemoved]);
+            }
             return {
               ...o,
               quantity: productInOrder.amount,
             };
           }
           if (productInOrder.amount === 0) {
+            if (productsRemoved.find((p) => p.id != productInOrder.id)) {
+              productsRemoved.push(productInOrder);
+              setProductsRemoved([productInOrder, ...productsRemoved]);
+            }
+
             return null;
           }
         }
@@ -488,8 +494,10 @@ export default function Checkout() {
       };
 
       dispatch(updateOrderAsync(updatedOrder));
+      //och uppdatera CART med items.
+      //vad göra med dom som tog slut i lager under tiden? spara med boolean slut i lager?
     }
-  }, [order, products]);
+  }, [products, dispatch]);
 
   const handleShippingMethodChange = (method: string) => {
     setSelectedShippingMethod(method);
@@ -615,52 +623,6 @@ export default function Checkout() {
           </Typography>
         )}
 
-        {productsRemoved &&
-          productsRemoved.map((item) => {
-            return (
-              <Box>
-                <Typography>Produkter som är slut i lager</Typography>
-                <Box
-                  key={item.id}
-                  sx={{
-                    backgroundColor: "lightgrey",
-                    display: "flex",
-                    flexDirection: { xs: "column", sm: "row" },
-                    alignItems: "center",
-                    padding: 1,
-                    marginY: 4,
-                    borderRadius: "8px",
-                    boxShadow: "0 3px 6px rgba(0, 0, 0, 0.1)",
-                    marginX: 2,
-                  }}
-                >
-                  <img
-                    src={item?.imageUrl}
-                    alt={item?.name}
-                    style={{
-                      height: 100,
-                      width: 80,
-                      objectFit: "cover",
-                      borderRadius: "4px",
-                    }}
-                  />
-                  <Box
-                    sx={{
-                      paddingX: { xs: 2, sm: 4 },
-                      width: "100%",
-                      textAlign: { xs: "center", sm: "left" },
-                      marginBottom: { xs: 1, sm: 0 },
-                    }}
-                  >
-                    <Typography sx={{ fontSize: 18, fontWeight: 600 }}>
-                      {item?.name}
-                    </Typography>
-                  </Box>
-                </Box>
-              </Box>
-            );
-          })}
-
         {products &&
           order &&
           order.items.map((item) => {
@@ -723,6 +685,51 @@ export default function Checkout() {
         <Typography sx={{ fontSize: 16, color: "#555" }}>
           Fraktkostnad: {order?.shippingCost} kr
         </Typography>
+        {productsRemoved &&
+          productsRemoved.map((item) => {
+            return (
+              <Box>
+                <Typography>Produkter som är slut i lager</Typography>
+                <Box
+                  key={item.id}
+                  sx={{
+                    backgroundColor: "lightgrey",
+                    display: "flex",
+                    flexDirection: { xs: "column", sm: "row" },
+                    alignItems: "center",
+                    padding: 1,
+                    marginY: 4,
+                    borderRadius: "8px",
+                    boxShadow: "0 3px 6px rgba(0, 0, 0, 0.1)",
+                    marginX: 2,
+                  }}
+                >
+                  <img
+                    src={item?.imageUrl}
+                    alt={item?.name}
+                    style={{
+                      height: 100,
+                      width: 80,
+                      objectFit: "cover",
+                      borderRadius: "4px",
+                    }}
+                  />
+                  <Box
+                    sx={{
+                      paddingX: { xs: 2, sm: 4 },
+                      width: "100%",
+                      textAlign: { xs: "center", sm: "left" },
+                      marginBottom: { xs: 1, sm: 0 },
+                    }}
+                  >
+                    <Typography sx={{ fontSize: 18, fontWeight: 600 }}>
+                      {item?.name}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+            );
+          })}
       </Box>
       <Box
         sx={{
