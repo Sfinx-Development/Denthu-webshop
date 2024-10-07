@@ -8,6 +8,7 @@ import {
   ListSubheader,
   Grid,
   Checkbox,
+  Button
 } from "@mui/material";
 import { fetchAllOrdersAsync, Order, OrderItem } from "../slices/orderSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
@@ -53,6 +54,24 @@ export default function OrdersForShipping() {
       [orderId]: !prevSelected[orderId],
     }));
   };
+
+  const handleShippingOrder = () => {
+    // Logic to mark orders as shipped
+  };
+
+  const handlePickupOrder = () => {
+    // Logic to mark orders as picked up
+  };
+
+  // const handleMarkAsPickedUp = () => {
+  //   // Logic to mark selected pickup orders as picked up
+  //   console.log("Marking as picked up:", selectedOrders);
+  // };
+
+  // const handleMarkAsShipped = () => {
+  //   // Logic to mark selected shipping orders as shipped
+  //   console.log("Marking as shipped:", selectedOrders);
+  // };
 
   return (
     <Box p={2}>
@@ -130,6 +149,9 @@ export default function OrdersForShipping() {
                 </ListItem>
               ))}
           </List>
+          {/* <Button variant="contained" color="primary" onClick={handleMarkAsShipped}>
+            Order Skickad
+          </Button> */}
         </Grid>
 
         <Grid item xs={12} sm={6}>
@@ -205,8 +227,27 @@ export default function OrdersForShipping() {
                 </ListItem>
               ))}
           </List>
+          {/* <Button variant="contained" color="primary" onClick={handleMarkAsPickedUp}>
+            Order Hämtad
+          </Button> */}
         </Grid>
       </Grid>
+      <Box display="flex" justifyContent="space-between" mt="auto">
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handlePickupOrder}
+        >
+          Order hämtad
+        </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleShippingOrder}
+        >
+          Order skickad
+        </Button>
+      </Box>
     </Box>
   );
 }
