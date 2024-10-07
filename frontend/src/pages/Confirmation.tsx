@@ -2,6 +2,7 @@ import { Box, Typography, useMediaQuery, useTheme } from "@mui/material";
 import emailjs from "emailjs-com";
 import { useEffect } from "react";
 import { OutgoingTransaction } from "../../swedbankTypes";
+import { sendOrderConfirmationWithLink } from "../emailTemplates";
 import { clearCart } from "../slices/cartSlice";
 import {
   clearOrder,
@@ -112,7 +113,7 @@ export default function Confirmation() {
       paymentInfo?.paymentOrder.status == "Paid" &&
       emailSent == false
     ) {
-      sendEmailWithLink(order);
+      sendOrderConfirmationWithLink(order, products);
       dispatch(setEmailSent(true));
       dispatch(clearCart());
       dispatch(clearPaymentInfo());
@@ -124,35 +125,6 @@ export default function Confirmation() {
   }, [order]);
 
   emailjs.init("C8CxNnxZg6mg-d2tq");
-
-  const sendEmailWithLink = (order: Order) => {
-    const priceExVat = (order.total_amount / 100).toFixed(2);
-    const receipt = `
-    <p>Din betalning är genomförd. Nedan visas betalningsdetaljer:</p>
-    <ul>
-      <li>Datum: ${new Date(order.created_date).toLocaleString()}</li>
-      <li>Pris (exkl. moms): ${priceExVat} SEK</li>
-      <li>Moms: ${(order.vat_amount / 100).toFixed(2)} SEK</li>
-      <li><strong>Totalt belopp: ${(order.total_amount / 100).toFixed(
-        2
-      )} SEK</strong></li>
-      <li>Betalningsmetod: ${order.paymentInfo?.instrument}</li>
-    </ul>
-    <p>Vid frågor, tveka inte att kontakta oss på denthu.webshop@outlook.com!</p>
-  `;
-    const body = receipt;
-
-    const templateParams = {
-      from_name: "DenThu",
-      to_email: order.guestEmail,
-      order_number: order.reference,
-      store_name: "DenThu Webshop",
-      reply_to: "denthu.webshop@outlook.com",
-      message: ` ${body}`,
-    };
-
-    emailjs.send("service_9phhhzn", "template_d2buzz5", templateParams);
-  };
 
   return (
     <Box
