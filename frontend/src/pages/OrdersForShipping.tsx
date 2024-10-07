@@ -1,37 +1,33 @@
-import { useEffect, useState } from "react";
 import {
   Box,
-  Typography,
+  Button,
+  Checkbox,
+  Grid,
   List,
   ListItem,
   ListItemText,
   ListSubheader,
-  Grid,
-  Checkbox,
-  Button
+  Typography,
 } from "@mui/material";
+import { useEffect, useState } from "react";
 import { fetchAllOrdersAsync, Order, OrderItem } from "../slices/orderSlice";
-import { useAppDispatch, useAppSelector } from "../slices/store";
 import { getProductsAsync, Product } from "../slices/productSlice";
+import { useAppDispatch, useAppSelector } from "../slices/store";
 
 export default function OrdersForShipping() {
   const dispatch = useAppDispatch();
   const orders = useAppSelector((state) => state.orderSlice.orders);
   const [shippingOrders, setShippingOrders] = useState<Order[]>([]);
   const [pickupOrders, setPickupOrders] = useState<Order[]>([]);
-  const [selectedOrders, setSelectedOrders] = useState<{ [key: string]: boolean }>({});
+  const [selectedOrders, setSelectedOrders] = useState<{
+    [key: string]: boolean;
+  }>({});
   const products = useAppSelector((state) => state.productSlice.products);
 
   useEffect(() => {
     dispatch(getProductsAsync());
-  }, [dispatch]);
-
-  useEffect(() => {
-    const fetchOrders = async () => {
-      await dispatch(fetchAllOrdersAsync());
-    };
-    fetchOrders();
-  }, [dispatch]);
+    dispatch(fetchAllOrdersAsync());
+  }, []);
 
   useEffect(() => {
     if (orders) {
@@ -88,13 +84,16 @@ export default function OrdersForShipping() {
                   new Date(a.created_date).getTime()
               )
               .map((order: Order) => (
-                <ListItem key={order.id} secondaryAction={
-                  <Checkbox
-                    edge="end"
-                    checked={!!selectedOrders[order.id]}
-                    onChange={() => handleCheckboxChange(order.id)}
-                  />
-                }>
+                <ListItem
+                  key={order.id}
+                  secondaryAction={
+                    <Checkbox
+                      edge="end"
+                      checked={!!selectedOrders[order.id]}
+                      onChange={() => handleCheckboxChange(order.id)}
+                    />
+                  }
+                >
                   <ListItemText
                     primary={`Order ID: ${order.id}`}
                     secondary={
@@ -166,13 +165,16 @@ export default function OrdersForShipping() {
                   new Date(a.created_date).getTime()
               )
               .map((order: Order) => (
-                <ListItem key={order.id} secondaryAction={
-                  <Checkbox
-                    edge="end"
-                    checked={!!selectedOrders[order.id]}
-                    onChange={() => handleCheckboxChange(order.id)}
-                  />
-                }>
+                <ListItem
+                  key={order.id}
+                  secondaryAction={
+                    <Checkbox
+                      edge="end"
+                      checked={!!selectedOrders[order.id]}
+                      onChange={() => handleCheckboxChange(order.id)}
+                    />
+                  }
+                >
                   <ListItemText
                     primary={`Order ID: ${order.id}`}
                     secondary={
@@ -233,11 +235,7 @@ export default function OrdersForShipping() {
         </Grid>
       </Grid>
       <Box display="flex" justifyContent="space-between" mt="auto">
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handlePickupOrder}
-        >
+        <Button variant="contained" color="primary" onClick={handlePickupOrder}>
           Order hämtad
         </Button>
         <Button

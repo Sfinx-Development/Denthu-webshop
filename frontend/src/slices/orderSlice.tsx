@@ -1,8 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Paid } from "../../swedbankTypes";
-import { addOrderToDB, editOrderInDB, getOrderFromDB, getAllOrdersFromDB } from "../api/order";
-import OrdersForShipping from "../pages/OrdersForShipping";
+import {
+  addOrderToDB,
+  editOrderInDB,
+  getAllOrdersFromDB,
+  getOrderFromDB,
+} from "../api/order";
 import { Product } from "./productSlice";
 
 export interface Order {
@@ -49,9 +53,14 @@ const getInitialOrderState = (): OrderState => {
         order: JSON.parse(storedOrder),
         error: null,
         emailSent: storedEmailSent ? true : false,
-        orders: storedOrders ? JSON.parse(storedOrders) : []
+        orders: storedOrders ? JSON.parse(storedOrders) : [],
       }
-    : { order: null, error: null, emailSent: false,orders:storedOrders ? storedOrders : [] };
+    : {
+        order: null,
+        error: null,
+        emailSent: false,
+        orders: storedOrders ? storedOrders : [],
+      };
 };
 
 const initialState: OrderState = getInitialOrderState();
@@ -68,7 +77,10 @@ const calculateTotalVat = (items: OrderItem[]): number => {
   );
 };
 
-function getProduct(productId: string, products:Product[]): Product | undefined {
+function getProduct(
+  productId: string,
+  products: Product[]
+): Product | undefined {
   return products.find((p) => p.id == productId);
 }
 
@@ -79,21 +91,20 @@ const calculateTotalAmount = (items: OrderItem[]): number => {
 function getShippingCost(order: Order, products: Product[]) {
   // Plussa ihop alla produkters vikt och hämta kostnaden
   console.log("ORDER", order);
-  
+
   const productWeightTogether = order.items.reduce((total, item) => {
     const product = getProduct(item.product_id, products);
     // Multiplicera produktens vikt med antalet av den produkten
-    return total + (product.weight * item.quantity);
+    return total + product.weight * item.quantity;
   }, 0);
 
   const cost = availableShippingOptions(productWeightTogether);
-  console.log("COST: ", cost)
+  console.log("COST: ", cost);
   return cost;
 }
 
-
 const availableShippingOptions = (weight: number): number => {
-  console.log("IN  MED VIKTEN: ", weight)
+  console.log("IN  MED VIKTEN: ", weight);
   if (weight > 0 && weight <= 1000) {
     return 80;
   } else if (weight > 1000 && weight <= 2000) {
@@ -114,7 +125,6 @@ const availableShippingOptions = (weight: number): number => {
   }
 };
 
-
 export const fetchAllOrdersAsync = createAsyncThunk<
   Order[],
   undefined,
@@ -122,7 +132,7 @@ export const fetchAllOrdersAsync = createAsyncThunk<
 >("orders/fetchAllOrders", async (_, thunkAPI) => {
   try {
     const orders = await getAllOrdersFromDB();
-    if(orders){
+    if (orders) {
       localStorage.setItem("orders", JSON.stringify(orders));
     }
     return orders;
@@ -136,9 +146,7 @@ export const addOrderAsync = createAsyncThunk<
   Order, // Resultatet som returneras när thunk är klar
   [Order, Product[]], // Två argument: Order och en string (exempelvis ett användar-id eller annat värde)
   { rejectValue: string } // Hantering av fel
->(
-  "orders/addOrder",
-  async ([order, products], thunkAPI) => {
+>("orders/addOrder", async ([order, products], thunkAPI) => {
   try {
     order.items.forEach((item) => {
       item.vatPercent = 25; // 25% VATPERCENT
@@ -167,6 +175,7 @@ export const updateOrderAsync = createAsyncThunk<
   { rejectValue: string }
 >("orders/updateOrder", async (order, thunkAPI) => {
   try {
+    console.log("ORDER SOM KOMME RNI : ", order);
     const updatedItems = order.items.map((item) => {
       const newItem = { ...item };
       newItem.vatPercent = item.vatAmount || 25; // 25% VAT
@@ -201,8 +210,6 @@ export const updateOrderAsync = createAsyncThunk<
   }
 });
 
-
-
 export const getOrderAsync = createAsyncThunk<
   Order,
   string,
@@ -223,27 +230,26 @@ export const getOrderAsync = createAsyncThunk<
 
 export const updateOrderFrakt = createAsyncThunk<
   Order,
-  [Order, Product[], string], 
+  [Order, Product[], string],
   { rejectValue: string }
 >("orders/updateOrderFrakt", async ([order, products, method], thunkAPI) => {
   try {
-    
     // const updatedItems = order.items.map((item) => {
     //   const newItem = { ...item };
-    //   newItem.vatPercent = item.vatAmount || 25; 
+    //   newItem.vatPercent = item.vatAmount || 25;
     //   newItem.vatAmount = calculateVatAmount(newItem.price, newItem.vatPercent);
     //   return newItem;
     // });
 
     // Hantera frakt
-    const cost  = getShippingCost(order, products);
-    const totalShippingCost= cost * 100
-    console.log("SHIPPPING COST BLEV", order.shippingCost)
-    const updatedOrder : Order = {
+    const cost = getShippingCost(order, products);
+    const totalShippingCost = cost * 100;
+    console.log("SHIPPPING COST BLEV", order.shippingCost);
+    const updatedOrder: Order = {
       ...order,
       total_amount: order.total_amount + totalShippingCost,
       shippingCost: cost,
-      shippingMethod: method
+      shippingMethod: method,
     };
 
     const response = await editOrderInDB(updatedOrder);
@@ -263,7 +269,6 @@ export const updateOrderFrakt = createAsyncThunk<
     );
   }
 });
-
 
 const orderSlice = createSlice({
   name: "order",
@@ -338,9 +343,7 @@ const orderSlice = createSlice({
       localStorage.removeItem("order");
     },
   },
-  
- 
-  
+
   extraReducers: (builder) => {
     builder
       .addCase(getOrderAsync.fulfilled, (state, action) => {
@@ -357,9 +360,10 @@ const orderSlice = createSlice({
         }
       })
       .addCase(updateOrderFrakt.rejected, (state) => {
-        state.error = "Något gick fel när ordern uppdaterades. Försök igen senare.";
+        state.error =
+          "Något gick fel när ordern uppdaterades. Försök igen senare.";
       })
-  
+
       .addCase(getOrderAsync.rejected, (state) => {
         state.error = "Något gick fel när ordern hämtades. Försök igen senare.";
       })
@@ -387,6 +391,13 @@ const orderSlice = createSlice({
   },
 });
 
-export const { setOrder, addItem, removeItem, clearOrder, updateItem, setEmailSent, clearEmailSent } =
-  orderSlice.actions;
+export const {
+  setOrder,
+  addItem,
+  removeItem,
+  clearOrder,
+  updateItem,
+  setEmailSent,
+  clearEmailSent,
+} = orderSlice.actions;
 export const OrderReducer = orderSlice.reducer;
