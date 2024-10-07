@@ -616,11 +616,16 @@ export default function Checkout() {
     >
       <Box sx={{ display: "flex", flexDirection: "column", flex: 1 / 2 }}>
         {order && order.total_amount && (
-          <Typography variant="h6" sx={{ marginBottom: 2 }}>
-            Totalbelopp:{" "}
-            {order.total_amount / 100 + (isShipping ? totalShippingCost : 0)} kr
-            inkl. moms
-          </Typography>
+          <>
+            <Typography variant="h6">
+              Totalbelopp:{" "}
+              {order.total_amount / 100 + (isShipping ? totalShippingCost : 0)}{" "}
+              kr
+            </Typography>
+            <Typography sx={{ fontSize: 14, marginBottom: "" }}>
+              Inkl. moms
+            </Typography>
+          </>
         )}
 
         {products &&
