@@ -450,3 +450,9 @@ interface CallbackPaymentOrder {
   instrument: string;
   number?: number;
 }
+
+// CANCEL REQUEST
+export interface CancelRequestOutgoing {
+  description: string;
+  payeeReference: string;
+}
