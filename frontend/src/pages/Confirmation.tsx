@@ -2,7 +2,7 @@ import { Box, Typography, useMediaQuery, useTheme } from "@mui/material";
 import emailjs from "emailjs-com";
 import { useEffect } from "react";
 import { OutgoingTransaction } from "../../swedbankTypes";
-import { sendOrderConfirmationWithLink } from "../emailTemplates";
+import { sendOrderConfirmationWithLink, sendNewOrderNotificationToDenthu } from "../emailTemplates";
 import { clearCart } from "../slices/cartSlice";
 import {
   clearOrder,
@@ -114,6 +114,7 @@ export default function Confirmation() {
       emailSent == false
     ) {
       sendOrderConfirmationWithLink(order, products);
+      sendNewOrderNotificationToDenthu(order, products);
       dispatch(setEmailSent(true));
       dispatch(clearCart());
       dispatch(clearPaymentInfo());
