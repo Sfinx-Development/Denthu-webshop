@@ -176,3 +176,68 @@ export const sendEmailOrderSent = (order: Order, products: Product[]) => {
       console.error("Failed to send email. Error: ", error);
     });
 };
+
+export const sendNewOrderNotificationToDenthu = (
+  order: Order,
+  products: Product[]
+) => {
+  const getProduct = (productId: string): Product | undefined => {
+    return products.find((p) => p.id == productId);
+  };
+
+  const shippingAddress = order.shippingAddress || "Hämtas upp på plats";
+
+  const itemsList = order.items
+    .map((i) => {
+      const item = getProduct(i.product_id);
+      if (!item) return "";
+      return `
+        <li>
+          ${item.name} (${item.id}) - ${i.quantity} st / ${(
+        (item.price * i.quantity) / 100
+      ).toFixed(2)} SEK
+        </li>
+      `;
+    })
+    .join("");
+
+  const orderInfo = `
+    <h4>Ny order mottagen!</h4>
+    <p><strong>Beställning nr:</strong> ${order.reference}</p>
+    <p><strong>Kundens email:</strong> ${order.guestEmail}</p>
+    <p><strong>Leveransmetod:</strong> ${
+      order.shippingMethod === "shipping"
+        ? "Standardleverans till hemmet"
+        : "Hämtas upp på plats"
+    }</p>
+    <p><strong>Leveransadress:</strong> ${shippingAddress}</p>
+    
+    <h3>Beställningsdetaljer:</h3>
+    <ul>
+      ${itemsList}
+    </ul>
+
+    <p><strong>Totalt belopp: ${(order.total_amount / 100).toFixed(
+      2
+    )} SEK</strong></p>
+  `;
+
+  const templateParams = {
+    from_name: "DenThu Webshop",
+    to_email: "denthu.webshop@outlook.com", // Dennis' email
+    order_number: order.reference,
+    store_name: "DenThu Webshop",
+    reply_to: "denthu.webshop@outlook.com",
+    message: orderInfo,
+  };
+
+  emailjs
+    .send("service_9phhhzn", "template_order_notification", templateParams)
+    .then((response) => {
+      console.log("Notification sent to DenThu successfully!", response);
+    })
+    .catch((error) => {
+      console.error("Failed to send notification. Error: ", error);
+    });
+};
+
