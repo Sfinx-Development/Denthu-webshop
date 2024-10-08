@@ -160,7 +160,7 @@ export const sendEmailOrderSent = (order: Order, products: Product[]) => {
 
   const templateParams = {
     from_name: "DenThu",
-    to_email: order.guestEmail,
+    to_email: "denthu.webshop@outlook.com",
     order_number: order.reference,
     store_name: "DenThu Webshop",
     reply_to: "denthu.webshop@outlook.com",
@@ -232,7 +232,7 @@ export const sendNewOrderNotificationToDenthu = (
   };
 
   emailjs
-    .send("service_9phhhzn", "template_order_notification", templateParams)
+    .send("service_9phhhzn", "template_85vmukh", templateParams)
     .then((response) => {
       console.log("Notification sent to DenThu successfully!", response);
     })
