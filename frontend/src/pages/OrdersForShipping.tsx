@@ -10,8 +10,9 @@ import {
   Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { fetchAllOrdersAsync, Order, OrderItem } from "../slices/orderSlice";
-import { getProductsAsync, Product } from "../slices/productSlice";
+import { useNavigate } from "react-router-dom";
+import { fetchAllOrdersAsync, Order } from "../slices/orderSlice";
+import { getProductsAsync } from "../slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
 
 export default function OrdersForShipping() {
@@ -27,17 +28,16 @@ export default function OrdersForShipping() {
   useEffect(() => {
     dispatch(getProductsAsync());
     dispatch(fetchAllOrdersAsync());
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     if (orders) {
       const shipping = orders.filter(
-        (order: Order) =>
+        (order) =>
           order.shippingMethod === "shipping" && order.status !== "Paid"
       );
       const pickup = orders.filter(
-        (order: Order) =>
-          order.shippingMethod === "pickup" && order.status !== "Paid"
+        (order) => order.shippingMethod === "pickup" && order.status !== "Paid"
       );
       setShippingOrders(shipping);
       setPickupOrders(pickup);
@@ -59,182 +59,164 @@ export default function OrdersForShipping() {
     // Logic to mark orders as picked up
   };
 
-  // const handleMarkAsPickedUp = () => {
-  //   // Logic to mark selected pickup orders as picked up
-  //   console.log("Marking as picked up:", selectedOrders);
-  // };
-
-  // const handleMarkAsShipped = () => {
-  //   // Logic to mark selected shipping orders as shipped
-  //   console.log("Marking as shipped:", selectedOrders);
-  // };
+  const navigate = useNavigate();
 
   return (
-    <Box p={2}>
-      <Grid container spacing={2}>
-        <Grid item xs={12} sm={6}>
-          <Typography variant="h4" gutterBottom>
-            Ordrar för frakt
-          </Typography>
-          <List>
-            {shippingOrders
-              .sort(
-                (a, b) =>
-                  new Date(b.created_date).getTime() -
-                  new Date(a.created_date).getTime()
-              )
-              .map((order: Order) => (
-                <ListItem
-                  key={order.id}
-                  secondaryAction={
-                    <Checkbox
-                      edge="end"
-                      checked={!!selectedOrders[order.id]}
-                      onChange={() => handleCheckboxChange(order.id)}
-                    />
-                  }
-                >
-                  <ListItemText
-                    primary={`Order ID: ${order.id}`}
-                    secondary={
-                      <Box>
-                        <Typography variant="body2">
-                          Kund: {order.guestFirstName} {order.guestLastName}
-                        </Typography>
-                        <Typography variant="body2">
-                          Telefon: {order.guestPhone}
-                        </Typography>
-                        <Typography variant="body2">
-                          E-post: {order.guestEmail}
-                        </Typography>
-                      </Box>
+    <Box display="flex" flexDirection="column" height="100vh">
+      <Box flexGrow={1} p={2} overflow="auto">
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <Typography variant="h4" gutterBottom>
+              Ordrar för frakt
+            </Typography>
+            <List>
+              {shippingOrders
+                .sort(
+                  (a, b) =>
+                    new Date(b.created_date).getTime() -
+                    new Date(a.created_date).getTime()
+                )
+                .map((order) => (
+                  <ListItem
+                    key={order.id}
+                    secondaryAction={
+                      <Checkbox
+                        edge="end"
+                        checked={!!selectedOrders[order.id]}
+                        onChange={() => handleCheckboxChange(order.id)}
+                      />
                     }
-                  />
-
-                  <ListSubheader>Produkter:</ListSubheader>
-                  <List>
-                    {order.items &&
-                      order.items.map((item: OrderItem) => {
-                        const product = products.find(
-                          (p: Product) => p.id === item.product_id
-                        );
-                        return (
-                          <ListItem key={item.id}>
-                            <ListItemText
-                              primary={`${
-                                product ? product.name : "Produkt okänd"
-                              } (Antal: ${item.quantity})`}
-                              secondary={
-                                <Box>
-                                  <Typography variant="body2">
-                                    Pris: {item.price / 100} SEK
-                                  </Typography>
-                                  <Typography variant="body2">
-                                    Produkt ID: {item.product_id}
-                                  </Typography>{" "}
-                                  {/* Display product ID */}
-                                  <Typography variant="body2">
-                                    Total summa:{" "}
-                                    {(item.quantity * item.price) / 100} kr{" "}
-                                  </Typography>{" "}
-                                  {/* Display product ID */}
-                                </Box>
-                              }
-                            />
-                          </ListItem>
-                        );
-                      })}
-                  </List>
-                </ListItem>
-              ))}
-          </List>
-          {/* <Button variant="contained" color="primary" onClick={handleMarkAsShipped}>
-            Order Skickad
-          </Button> */}
-        </Grid>
-
-        <Grid item xs={12} sm={6}>
-          <Typography variant="h4" gutterBottom>
-            Ordrar för upphämtning
-          </Typography>
-          <List>
-            {pickupOrders
-              .sort(
-                (a, b) =>
-                  new Date(b.created_date).getTime() -
-                  new Date(a.created_date).getTime()
-              )
-              .map((order: Order) => (
-                <ListItem
-                  key={order.id}
-                  secondaryAction={
-                    <Checkbox
-                      edge="end"
-                      checked={!!selectedOrders[order.id]}
-                      onChange={() => handleCheckboxChange(order.id)}
+                  >
+                    <ListItemText
+                      sx={{ cursor: "pointer" }}
+                      onClick={() => navigate(`/admin/orderdetail/${order.id}`)}
+                      primary={`Order ID: ${order.id}`}
+                      secondary={
+                        <Box>
+                          <Typography variant="body2">
+                            Kund: {order.guestFirstName} {order.guestLastName}
+                          </Typography>
+                          <Typography variant="body2">
+                            Telefon: {order.guestPhone}
+                          </Typography>
+                          <Typography variant="body2">
+                            E-post: {order.guestEmail}
+                          </Typography>
+                        </Box>
+                      }
                     />
-                  }
-                >
-                  <ListItemText
-                    primary={`Order ID: ${order.id}`}
-                    secondary={
-                      <Box>
-                        <Typography variant="body2">
-                          Kund: {order.guestFirstName} {order.guestLastName}
-                        </Typography>
-                        <Typography variant="body2">
-                          Telefon: {order.guestPhone}
-                        </Typography>
-                        <Typography variant="body2">
-                          E-post: {order.guestEmail}
-                        </Typography>
-                      </Box>
-                    }
-                  />
+                    <ListSubheader>Produkter:</ListSubheader>
+                    <List>
+                      {order.items &&
+                        order.items.map((item) => {
+                          const product = products.find(
+                            (p) => p.id === item.product_id
+                          );
+                          return (
+                            <ListItem key={item.id}>
+                              <ListItemText
+                                primary={`${
+                                  product ? product.name : "Produkt okänd"
+                                } (Antal: ${item.quantity})`}
+                                secondary={
+                                  <Box>
+                                    <Typography variant="body2">
+                                      Pris: {item.price / 100} SEK
+                                    </Typography>
+                                    <Typography variant="body2">
+                                      Total summa:{" "}
+                                      {(item.quantity * item.price) / 100} kr
+                                    </Typography>
+                                  </Box>
+                                }
+                              />
+                            </ListItem>
+                          );
+                        })}
+                    </List>
+                  </ListItem>
+                ))}
+            </List>
+          </Grid>
 
-                  <ListSubheader>Produkter:</ListSubheader>
-                  <List>
-                    {order.items &&
-                      order.items.map((item: OrderItem) => {
-                        const product = products.find(
-                          (p: Product) => p.id === item.product_id
-                        );
-                        return (
-                          <ListItem key={item.id}>
-                            <ListItemText
-                              primary={`${
-                                product ? product.name : "Produkt okänd"
-                              } (Antal: ${item.quantity})`}
-                              secondary={
-                                <Box>
-                                  <Typography variant="body2">
-                                    Pris: {item.price / 100} SEK
-                                  </Typography>
-                                  <Typography variant="body2">
-                                    Produkt ID: {item.product_id}
-                                  </Typography>{" "}
-                                  {/* Display product ID */}
-                                  <Typography variant="body2">
-                                    Total summa:{" "}
-                                    {(item.quantity * item.price) / 100} kr{" "}
-                                  </Typography>{" "}
-                                  {/* Display product ID */}
-                                </Box>
-                              }
-                            />
-                          </ListItem>
-                        );
-                      })}
-                  </List>
-                </ListItem>
-              ))}
-          </List>
-          {/* <Button variant="contained" color="primary" onClick={handleMarkAsPickedUp}>
-            Order Hämtad
-          </Button> */}
+          <Grid item xs={12} sm={6}>
+            <Typography variant="h4" gutterBottom>
+              Ordrar för upphämtning
+            </Typography>
+            <List>
+              {pickupOrders
+                .sort(
+                  (a, b) =>
+                    new Date(b.created_date).getTime() -
+                    new Date(a.created_date).getTime()
+                )
+                .map((order) => (
+                  <ListItem
+                    key={order.id}
+                    sx={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/admin/orderdetail/${order.id}`)}
+                    secondaryAction={
+                      <Checkbox
+                        edge="end"
+                        checked={!!selectedOrders[order.id]}
+                        onChange={() => handleCheckboxChange(order.id)}
+                      />
+                    }
+                  >
+                    <ListItemText
+                      primary={`Order ID: ${order.id}`}
+                      secondary={
+                        <Box>
+                          <Typography variant="body2">
+                            Kund: {order.guestFirstName} {order.guestLastName}
+                          </Typography>
+                          <Typography variant="body2">
+                            Telefon: {order.guestPhone}
+                          </Typography>
+                          <Typography variant="body2">
+                            E-post: {order.guestEmail}
+                          </Typography>
+                        </Box>
+                      }
+                    />
+                    <ListSubheader>Produkter:</ListSubheader>
+                    <List>
+                      {order.items &&
+                        order.items.map((item) => {
+                          const product = products.find(
+                            (p) => p.id === item.product_id
+                          );
+                          return (
+                            <ListItem key={item.id}>
+                              <ListItemText
+                                primary={`${
+                                  product ? product.name : "Produkt okänd"
+                                } (Antal: ${item.quantity})`}
+                                secondary={
+                                  <Box>
+                                    <Typography variant="body2">
+                                      Pris: {item.price / 100} SEK
+                                    </Typography>
+                                    <Typography variant="body2">
+                                      Total summa:{" "}
+                                      {(item.quantity * item.price) / 100} kr
+                                    </Typography>
+                                  </Box>
+                                }
+                              />
+                            </ListItem>
+                          );
+                        })}
+                    </List>
+                  </ListItem>
+                ))}
+            </List>
+          </Grid>
         </Grid>
-      </Grid>
-      <Box display="flex" justifyContent="space-between" mt="auto">
+      </Box>
+
+      {/* Fixed Action Buttons at the Bottom */}
+      <Box display="flex" justifyContent="space-between" p={2}>
         <Button variant="contained" color="primary" onClick={handlePickupOrder}>
           Order hämtad
         </Button>

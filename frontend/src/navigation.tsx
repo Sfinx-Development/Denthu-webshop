@@ -13,6 +13,7 @@ import Error from "./pages/Error";
 import Index from "./pages/Index";
 import OrdersForShipping from "./pages/OrdersForShipping";
 
+import OrderDetail from "./pages/OrderDetail";
 import {
   default as Product,
   default as ProductDetails,
@@ -43,11 +44,14 @@ const Navigation = () => {
           path="admin/product/:param"
           element={<ProtectedRoute element={AdminAddAndEdit} />}
         />
-         <Route
+        <Route
           path="admin/ordersForShipping"
           element={<ProtectedRoute element={OrdersForShipping} />}
         />
-
+        <Route
+          path="admin/orderDetail/:orderId"
+          element={<OrderDetail />}
+        ></Route>
         <Route path="admin/signin" element={<AdminSignIn />}></Route>
 
         <Route path="*" element={<Error />}></Route>
