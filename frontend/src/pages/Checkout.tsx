@@ -627,6 +627,7 @@ export default function Checkout() {
             </Typography>
           </>
         )}
+        {/* /hejsan hoppsan */}
 
         {products &&
           order &&
