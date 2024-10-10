@@ -51,14 +51,6 @@ export default function OrdersForShipping() {
     }));
   };
 
-  const handleShippingOrder = () => {
-    // Logic to mark orders as shipped
-  };
-
-  const handlePickupOrder = () => {
-    // Logic to mark orders as picked up
-  };
-
   const navigate = useNavigate();
 
   return (
@@ -213,20 +205,6 @@ export default function OrdersForShipping() {
             </List>
           </Grid>
         </Grid>
-      </Box>
-
-      {/* Fixed Action Buttons at the Bottom */}
-      <Box display="flex" justifyContent="space-between" p={2}>
-        <Button variant="contained" color="primary" onClick={handlePickupOrder}>
-          Order hämtad
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleShippingOrder}
-        >
-          Order skickad
-        </Button>
       </Box>
     </Box>
   );

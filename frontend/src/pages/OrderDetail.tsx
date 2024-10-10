@@ -44,6 +44,14 @@ export default function OrderDetail() {
 
   const handleRevokePayment = () => {};
 
+  const handleShippingOrder = () => {
+    // Logic to mark orders as shipped
+  };
+
+  const handlePickupOrder = () => {
+    // Logic to mark orders as picked up
+  };
+
   if (!order) {
     return <Typography variant="h6">Order not found.</Typography>;
   }
@@ -107,6 +115,16 @@ export default function OrderDetail() {
           onClick={handleRevokePayment}
         >
           Återkalla betalning
+        </Button>
+        <Button variant="contained" color="primary" onClick={handlePickupOrder}>
+          Order hämtad
+        </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleShippingOrder}
+        >
+          Order skickad
         </Button>
       </Box>
     </Box>
