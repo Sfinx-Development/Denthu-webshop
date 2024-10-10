@@ -152,8 +152,7 @@ export const addOrderAsync = createAsyncThunk<
       item.vatPercent = 25; // 25% VATPERCENT
       item.vatAmount = calculateVatAmount(item.price, item.vatPercent);
     });
-    order.shippingCost = getShippingCost(order, products);
-    order.total_amount = calculateTotalAmount(order.items) + order.shippingCost;
+    order.total_amount = calculateTotalAmount(order.items);
     order.vat_amount = calculateTotalVat(order.items);
 
     const createdOrder = await addOrderToDB(order);
@@ -244,7 +243,7 @@ export const updateOrderFrakt = createAsyncThunk<
     // Hantera frakt
     const cost = getShippingCost(order, products);
     const totalShippingCost = cost * 100;
-    console.log("SHIPPPING COST BLEV", order.shippingCost);
+    console.log("SHIPPPING COST BLEV", totalShippingCost);
     const updatedOrder: Order = {
       ...order,
       total_amount: order.total_amount + totalShippingCost,
