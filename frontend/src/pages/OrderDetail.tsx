@@ -99,6 +99,7 @@ export default function OrderDetail() {
   };
 
   const handlePickupOrder = () => {
+    capturePayment();
     // Logic to mark orders as picked up
   };
 
