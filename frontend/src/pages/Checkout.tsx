@@ -421,6 +421,7 @@ import {
 import { addPaymentOrderOutgoing } from "../slices/paymentSlice";
 import { getProductsAsync, Product } from "../slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
+import { OrderItemType } from "../../swedbankTypes";
 
 export default function Checkout() {
   const incomingPaymentOrder = useAppSelector(
@@ -556,6 +557,16 @@ export default function Checkout() {
       setIsOrderUpdated(true);
     }
   }, [order]);
+
+  useEffect(() => {
+    if (order && incomingPaymentOrder) {
+      const updatedOrder: Order = {
+        ...order,
+        incomingPaymentOrderId: incomingPaymentOrder.id,
+      };
+      dispatch(updateOrderAsync(updatedOrder));
+    }
+  }, [incomingPaymentOrder]);
 
   const handleMakeOrder = () => {
     //göra denna asyjc?
