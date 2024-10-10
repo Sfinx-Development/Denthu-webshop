@@ -3,11 +3,12 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
   CallbackData,
+  CancelRequestOutgoing,
   CaptureResponse,
   OutgoingTransaction,
   PaymentAborted,
-  PaymentCancelled,
   PaymentFailed,
+  PaymentOrderIn,
   PaymentOrderIncoming,
   PaymentOrderResponse,
   ValidPaymentOrder,
@@ -15,8 +16,12 @@ import {
 import { PaymentOrderOutgoing } from "../../types";
 import { getCallbackFromDb } from "../api/callback";
 import { getCaptureFromDb, PostCaptureToInternalApiDB } from "../api/capture";
-import { addPaymentOrderIncomingToDB } from "../api/paymentOrder";
 import {
+  addPaymentOrderIncomingToDB,
+  getPaymentOrderFromDB,
+} from "../api/paymentOrder";
+import {
+  CancelRequest,
   GetPaymentById,
   GetPaymentPaidValidation,
   PostPaymentOrder,
@@ -29,7 +34,7 @@ interface PaymentState {
   paymentInfo: ValidPaymentOrder | null;
   paymentFailed: PaymentFailed | null;
   paymentAborted: PaymentAborted | null;
-  paymentCancelled: PaymentCancelled | null;
+  paymentCancelled: PaymentOrderIn | null;
   paymentCapture: PaymentOrderResponse | null;
   callbackData: CallbackData | null;
   capture: CaptureResponse | null;
@@ -43,7 +48,7 @@ export const initialState: PaymentState = {
   paymentInfo: getPaymentInfoFromLocalStorage(),
   paymentFailed: null,
   paymentAborted: null,
-  paymentCancelled: null,
+  paymentCancelled: getPaymentCancelledFromLocalStorage(),
   paymentCapture: null,
   callbackData: null,
   capture: getCaptureFromLocalStorage(),
@@ -121,6 +126,40 @@ function getCaptureFromLocalStorage(): CaptureResponse | null {
   return null;
 }
 
+// CANCEL LOCALSTORAGE
+function savePaymentCancelledToLS(paymentInfo: PaymentOrderIn | null) {
+  if (paymentInfo) {
+    try {
+      localStorage.setItem("paymentOrderIn", JSON.stringify(paymentInfo));
+    } catch (error) {
+      console.error(
+        "Error saving cancelled paymentOrderIn to localStorage:",
+        error
+      );
+    }
+  } else {
+    localStorage.removeItem("paymentOrderIn");
+  }
+}
+
+function getPaymentCancelledFromLocalStorage(): PaymentOrderIn | null {
+  const paymentInfo = localStorage.getItem("paymentOrderIn");
+
+  if (paymentInfo) {
+    try {
+      return JSON.parse(paymentInfo) as PaymentOrderIn;
+    } catch (error) {
+      console.error(
+        "Error parsing cancelled payment paymentOrderIn from localStorage:",
+        error
+      );
+      return null;
+    }
+  }
+
+  return null;
+}
+
 export const addPaymentOrderOutgoing = createAsyncThunk<
   PaymentOrderIncoming,
   PaymentOrderOutgoing,
@@ -143,22 +182,25 @@ export const addPaymentOrderOutgoing = createAsyncThunk<
   }
 });
 
-// export const getPaymentOrderIncoming = createAsyncThunk<
-//   PaymentOrderIncoming,
-//   string,
-//   { rejectValue: string }
-// >("payments/getPaymentOrderIncoming", async (orderReference, thunkAPI) => {
-//   try {
-//     const response = await getPaymentOrderFromDBByReference(orderReference);
-//     if (response) {
-//       return response;
-//     } else {
-//       return thunkAPI.rejectWithValue("failed to create payment ordcer");
-//     }
-//   } catch (error) {
-//     throw new Error("Något gick fel vid .");
-//   }
-// });
+export const getPaymentOrderIncoming = createAsyncThunk<
+  PaymentOrderIncoming,
+  string,
+  { rejectValue: string }
+>("payments/getPaymentOrderIncoming", async (id, thunkAPI) => {
+  try {
+    const response = await getPaymentOrderFromDB(id);
+    if (response) {
+      return response;
+    } else {
+      return thunkAPI.rejectWithValue("failed to get payment order");
+    }
+  } catch (error) {
+    return thunkAPI.rejectWithValue(
+      "Något gick fel när vi hämtade paymentorder."
+    );
+  }
+});
+
 export const getPaymentPaidValidation = createAsyncThunk<
   ValidPaymentOrder,
   PaymentOrderIncoming,
@@ -274,6 +316,31 @@ export const getCaptureAsync = createAsyncThunk<
   }
 });
 
+// CANCEL
+export const makeCancelRequest = createAsyncThunk<
+  PaymentOrderIn,
+  { cancelRequest: CancelRequestOutgoing; cancelUrl: string },
+  { rejectValue: string }
+>("payments/make", async ({ cancelRequest, cancelUrl }, thunkAPI) => {
+  try {
+    const response = await CancelRequest({
+      cancelRequestOutgoing: cancelRequest,
+      cancelUrl,
+    });
+    if (response) {
+      console.log(response);
+      savePaymentCancelledToLS(response);
+      return response as PaymentOrderIn;
+    } else {
+      return thunkAPI.rejectWithValue("failed to get cancelled payment");
+    }
+  } catch (error) {
+    return thunkAPI.rejectWithValue(
+      "Något gick fel vid hämtning av avbruten betalning."
+    );
+  }
+});
+
 const paymentSlice = createSlice({
   name: "payments",
   initialState,
@@ -333,6 +400,14 @@ const paymentSlice = createSlice({
       })
       .addCase(postCaptureToInternalApi.fulfilled, (state, action) => {
         state.capture = action.payload;
+        state.error = null;
+      })
+      .addCase(getPaymentOrderIncoming.rejected, (state) => {
+        state.error =
+          "Något gick fel när paymentorder incoming datan hämtades. Försök igen senare.";
+      })
+      .addCase(getPaymentOrderIncoming.fulfilled, (state, action) => {
+        state.paymentOrderIncoming = action.payload;
         state.error = null;
       });
   },
