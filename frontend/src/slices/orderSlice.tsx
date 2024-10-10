@@ -25,6 +25,7 @@ export interface Order {
   guestPhone?: string;
   shippingMethod?: string;
   shippingCost?: number;
+  incomingPaymentOrderId?: string;
 }
 
 export interface OrderItem {

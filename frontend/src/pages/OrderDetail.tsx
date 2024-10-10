@@ -9,7 +9,13 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { OutgoingTransaction } from "../../swedbankTypes";
 import { Order } from "../slices/orderSlice";
+import {
+  getPaymentOrderIncoming,
+  getPaymentPaidValidation,
+  postCaptureToInternalApi,
+} from "../slices/paymentSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
 
 export default function OrderDetail() {
@@ -17,6 +23,10 @@ export default function OrderDetail() {
   const dispatch = useAppDispatch();
   const orders = useAppSelector((state) => state.orderSlice.orders);
   const products = useAppSelector((state) => state.productSlice.products);
+  const incomingPaymentOrder = useAppSelector(
+    (state) => state.paymentSlice.paymentOrderIncoming
+  );
+  const paymentInfo = useAppSelector((state) => state.paymentSlice.paymentInfo);
   const [order, setOrder] = useState<Order>();
 
   useEffect(() => {
@@ -25,6 +35,42 @@ export default function OrderDetail() {
       setOrder(foundOrder);
     }
   }, [orderId]);
+
+  useEffect(() => {
+    if (order && order.incomingPaymentOrderId) {
+      dispatch(getPaymentOrderIncoming(order.incomingPaymentOrderId));
+    }
+  }, [order]);
+
+  useEffect(() => {
+    if (incomingPaymentOrder) {
+      dispatch(getPaymentPaidValidation(incomingPaymentOrder));
+    }
+  }, [incomingPaymentOrder]);
+
+  const capturePayment = () => {
+    if (
+      paymentInfo &&
+      paymentInfo.paymentOrder.paid.instrument == "CreditCard" &&
+      order &&
+      order.paymentInfo
+    ) {
+      //OCH OMO INTE FRAKT ÄR ATT SKICKA
+      const operation = paymentInfo.operations.find((o) => o.rel === "capture");
+      if (operation) {
+        const outgoingTransaction: OutgoingTransaction = {
+          transaction: {
+            description: new Date().toLocaleDateString(),
+            amount: paymentInfo.paymentOrder.amount,
+            vatAmount: paymentInfo.paymentOrder.vatAmount,
+            payeeReference: order.paymentInfo.payeeReference,
+            captureUrl: operation.href,
+          },
+        };
+        dispatch(postCaptureToInternalApi(outgoingTransaction));
+      }
+    }
+  };
 
   //LÄS HÄR NEDAN ANGELINA
 
@@ -45,7 +91,11 @@ export default function OrderDetail() {
   const handleRevokePayment = () => {};
 
   const handleShippingOrder = () => {
-    // Logic to mark orders as shipped
+    capturePayment();
+    //vi hämtar incomingpaymentorder som ordern har KLART
+    //när incomingpaymentorder finns - så hämtar vi dess paymentinfo  KLART
+    //när paymentinfo finns hämtar vi capture adressen
+    //gör ett capture anrop
   };
 
   const handlePickupOrder = () => {

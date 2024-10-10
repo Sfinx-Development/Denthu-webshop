@@ -1,8 +1,10 @@
 import { Box, Typography, useMediaQuery, useTheme } from "@mui/material";
 import emailjs from "emailjs-com";
 import { useEffect } from "react";
-import { OutgoingTransaction } from "../../swedbankTypes";
-import { sendOrderConfirmationWithLink, sendNewOrderNotificationToDenthu } from "../emailTemplates";
+import {
+  sendNewOrderNotificationToDenthu,
+  sendOrderConfirmationWithLink,
+} from "../emailTemplates";
 import { clearCart } from "../slices/cartSlice";
 import {
   clearOrder,
@@ -16,7 +18,6 @@ import {
   clearPaymentInfo,
   clearPaymentOrder,
   getPaymentPaidValidation,
-  postCaptureToInternalApi,
 } from "../slices/paymentSlice";
 import { Product, updateProductAsync } from "../slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
@@ -71,29 +72,29 @@ export default function Confirmation() {
     }
   }, [paymentInfo]);
 
-  useEffect(() => {
-    if (
-      paymentInfo &&
-      paymentInfo.paymentOrder.paid.instrument == "CreditCard" &&
-      order &&
-      order.paymentInfo
-    ) {
-      //OCH OMO INTE FRAKT ÄR ATT SKICKA
-      const operation = paymentInfo.operations.find((o) => o.rel === "capture");
-      if (operation) {
-        const outgoingTransaction: OutgoingTransaction = {
-          transaction: {
-            description: new Date().toLocaleDateString(),
-            amount: paymentInfo.paymentOrder.amount,
-            vatAmount: paymentInfo.paymentOrder.vatAmount,
-            payeeReference: order.paymentInfo.payeeReference,
-            captureUrl: operation.href,
-          },
-        };
-        dispatch(postCaptureToInternalApi(outgoingTransaction));
-      }
-    }
-  }, [callbacks]);
+  // useEffect(() => {
+  //   if (
+  //     paymentInfo &&
+  //     paymentInfo.paymentOrder.paid.instrument == "CreditCard" &&
+  //     order &&
+  //     order.paymentInfo
+  //   ) {
+  //     //OCH OMO INTE FRAKT ÄR ATT SKICKA
+  //     const operation = paymentInfo.operations.find((o) => o.rel === "capture");
+  //     if (operation) {
+  //       const outgoingTransaction: OutgoingTransaction = {
+  //         transaction: {
+  //           description: new Date().toLocaleDateString(),
+  //           amount: paymentInfo.paymentOrder.amount,
+  //           vatAmount: paymentInfo.paymentOrder.vatAmount,
+  //           payeeReference: order.paymentInfo.payeeReference,
+  //           captureUrl: operation.href,
+  //         },
+  //       };
+  //       dispatch(postCaptureToInternalApi(outgoingTransaction));
+  //     }
+  //   }
+  // }, [callbacks]);
 
   useEffect(() => {
     if (paymentInfo && order && callbacks) {
