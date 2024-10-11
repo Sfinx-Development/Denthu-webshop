@@ -444,7 +444,6 @@ export default function Checkout() {
   const [postalCode, setPostalCode] = useState("");
   const [city, setCity] = useState("");
   const [shippingError, setShippingError] = useState(false);
-  const [totalShippingCost, setTotalShippingCost] = useState(0);
   const [selectedShippingMethod, setSelectedShippingMethod] = useState<
     string | null
   >(null);
@@ -503,7 +502,11 @@ export default function Checkout() {
   const handleShippingMethodChange = (method: string) => {
     setSelectedShippingMethod(method);
     if (order) {
-      dispatch(updateOrderFrakt([order, products, method]));
+      if(method == "pickup"){
+        dispatch(updateOrderAsync(order));
+      }else{
+        dispatch(updateOrderFrakt([order, products, method]));
+      }
     }
   };
 
@@ -529,7 +532,7 @@ export default function Checkout() {
           guestPhone: phone,
           shippingMethod: isShipping ? "shipping" : "pickup",
           shippingAddress: isShipping ? fullShippingAddress : "",
-          shippingCost: isShipping ? totalShippingCost : 0,
+          shippingCost: isShipping ? order.shippingCost : 0,
         };
 
         dispatch(updateOrderAsync(updatedOrder));
@@ -630,7 +633,7 @@ export default function Checkout() {
           <>
             <Typography variant="h6">
               Totalbelopp:{" "}
-              {order.total_amount / 100 + (isShipping ? totalShippingCost : 0)}{" "}
+              {order.total_amount/100}{" "}
               kr
             </Typography>
             <Typography sx={{ fontSize: 14, marginBottom: "" }}>
@@ -638,6 +641,7 @@ export default function Checkout() {
             </Typography>
           </>
         )}
+        {/* /hejsan hoppsan */}
 
         {products &&
           order &&
@@ -698,9 +702,10 @@ export default function Checkout() {
               </Box>
             );
           })}
+           {isShipping && 
         <Typography sx={{ fontSize: 16, color: "#555" }}>
-          Fraktkostnad: {order?.shippingCost} kr
-        </Typography>
+         Fraktkostnad: {order?.shippingCost} kr
+        </Typography>}
         {productsRemoved &&
           productsRemoved.map((item) => {
             return (
