@@ -1,16 +1,16 @@
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
 import { Box, CardMedia, IconButton, Typography } from "@mui/material";
 import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { v4 as uuidv4 } from "uuid";
 import { db } from "../api/config";
-import AddIcon from "@mui/icons-material/Add";
-import RemoveIcon from "@mui/icons-material/Remove";
-import { CartItem, updateItem } from "../slices/cartSlice";
 import AddtoCartButton from "../components/AddToCartButton";
+import { CartItem, updateItem } from "../slices/cartSlice";
 import { clearEmailSent } from "../slices/orderSlice";
 import { Product } from "../slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
-import { v4 as uuidv4 } from "uuid";
 
 export default function ProductDetails() {
   const { productId } = useParams<{ productId: string }>();
@@ -18,7 +18,7 @@ export default function ProductDetails() {
   const [loading, setLoading] = useState(true);
   const dispatch = useAppDispatch();
   const cart = useAppSelector((state) => state.cartSlice.cart);
-  const [isProductAdded, setIsProductAdded] = useState(false); // Track visibility of '+' and '-'
+  const [isProductAdded, setIsProductAdded] = useState(false);
 
   useEffect(() => {
     dispatch(clearEmailSent(false));
