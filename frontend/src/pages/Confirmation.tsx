@@ -19,7 +19,7 @@ import {
   clearPaymentOrder,
   getPaymentPaidValidation,
 } from "../slices/paymentSlice";
-import { Product, updateProductAsync } from "../slices/productSlice";
+import { Product } from "../slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
 
 export default function Confirmation() {
@@ -58,17 +58,16 @@ export default function Confirmation() {
         status: "Paid/Not captured",
         paymentInfo: paymentInfo.paymentOrder.paid,
       };
-      dispatch(updateOrderAsync(orderUpdatedPayment));
-      order.items.forEach((o) => {
-        const productToUpdate = products.find((p) => p.id == o.product_id);
-        if (productToUpdate) {
-          const product: Product = {
-            ...productToUpdate,
-            amount: productToUpdate.amount - o.quantity,
-          };
-          dispatch(updateProductAsync(product));
-        }
-      });
+      // dispatch(updateOrderAsync(orderUpdatedPayment));
+      // order.items.forEach((o) => {
+      //   const productToUpdate = products.find((p) => p.id == o.product_id);
+      //   if (productToUpdate) {
+      //     const product: Product = {
+      //       ...productToUpdate
+      //     };
+      //     dispatch(updateProductAsync(product));
+      //   }
+      // });
     }
   }, [paymentInfo]);
 
@@ -191,10 +190,6 @@ export default function Confirmation() {
             <Typography sx={{ fontWeight: 600 }}>Ordernummer</Typography>
             <Typography>{order?.reference}</Typography>
           </Box>
-          <Box>
-            <Typography sx={{ fontWeight: 600 }}>Totalt belopp</Typography>
-            <Typography>{order?.total_amount}</Typography>
-          </Box>
         </Box>
         <Box sx={{ padding: 2 }}>
           {order?.items.map((item) => {
@@ -244,6 +239,10 @@ export default function Confirmation() {
               </Box>
             );
           })}
+          <Box>
+            <Typography sx={{ fontWeight: 600 }}>Totalt belopp</Typography>
+            <Typography>{order?.total_amount / 100} kr</Typography>
+          </Box>
         </Box>
       </Box>
     </Box>

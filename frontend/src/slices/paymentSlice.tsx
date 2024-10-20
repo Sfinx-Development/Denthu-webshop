@@ -25,6 +25,7 @@ import {
   GetPaymentById,
   GetPaymentPaidValidation,
   PostPaymentOrder,
+  PostUpdatePaymentOrder,
 } from "../api/swedbank";
 
 interface PaymentState {
@@ -181,6 +182,33 @@ export const addPaymentOrderOutgoing = createAsyncThunk<
     throw new Error("Något gick fel vid .");
   }
 });
+
+export const updatePaymentOrderOutgoing = createAsyncThunk<
+  PaymentOrderIncoming,
+  { paymentOrder: PaymentOrderOutgoing; url: string },
+  { rejectValue: string }
+>(
+  "payments/updatePaymentOrderOutgoing",
+  async ({ paymentOrder, url }, thunkAPI) => {
+    try {
+      const response = await PostUpdatePaymentOrder(paymentOrder, url);
+      if (response) {
+        const paymentOrderIncoming = await addPaymentOrderIncomingToDB(
+          response
+        );
+        if (paymentOrderIncoming) {
+          return paymentOrderIncoming;
+        } else {
+          return thunkAPI.rejectWithValue("failed to create payment ordcer");
+        }
+      } else {
+        return thunkAPI.rejectWithValue("failed to create payment ordcer");
+      }
+    } catch (error) {
+      throw new Error("Något gick fel vid .");
+    }
+  }
+);
 
 export const getPaymentOrderIncoming = createAsyncThunk<
   PaymentOrderIncoming,

@@ -16,10 +16,12 @@ import {
   updateOrderAsync,
   updateOrderFrakt,
 } from "../slices/orderSlice";
-import { addPaymentOrderOutgoing } from "../slices/paymentSlice";
+import {
+  addPaymentOrderOutgoing,
+  updatePaymentOrderOutgoing,
+} from "../slices/paymentSlice";
 import { getProductsAsync, Product } from "../slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
-import { OrderItemType } from "../../swedbankTypes";
 
 export default function Checkout() {
   const incomingPaymentOrder = useAppSelector(
@@ -34,9 +36,11 @@ export default function Checkout() {
   const [emailError, setEmailError] = useState(false);
   const [isOrderUpdated, setIsOrderUpdated] = useState(false);
   const dispatch = useAppDispatch();
-
+  const paymentInfo = useAppSelector((state) => state.paymentSlice.paymentInfo);
   const [isPickup, setIsPickup] = useState(false);
-  const [isShipping, setIsShipping] = useState(false);
+  const [isShipping, setIsShipping] = useState(
+    localStorage.getItem("isShipping") ? true : false
+  );
   const [shippingAddress, setShippingAddress] = useState("");
   const [street, setStreet] = useState("");
   const [postalCode, setPostalCode] = useState("");
@@ -90,8 +94,13 @@ export default function Checkout() {
         ...order,
         items: filteredItems,
       };
-
       dispatch(updateOrderAsync(updatedOrder));
+
+      //ANROPA IGEN KANSKE?
+      if (incomingPaymentOrder) {
+        handleUpdateOrderToSwedbank();
+      }
+
       //och uppdatera CART med items.
       //vad göra med dom som tog slut i lager under tiden? spara med boolean slut i lager?
     }
@@ -99,11 +108,21 @@ export default function Checkout() {
 
   const handleShippingMethodChange = (method: string) => {
     setSelectedShippingMethod(method);
+    localStorage.setItem(
+      "selectedShippingMethod",
+      JSON.stringify(selectedShippingMethod)
+    );
     if (order) {
-      if(method == "pickup"){
+      if (method == "pickup") {
         dispatch(updateOrderAsync(order));
-      }else{
+        if (incomingPaymentOrder) {
+          handleUpdateOrderToSwedbank();
+        }
+      } else {
         dispatch(updateOrderFrakt([order, products, method]));
+        if (incomingPaymentOrder) {
+          handleUpdateOrderToSwedbank();
+        }
       }
     }
   };
@@ -134,6 +153,7 @@ export default function Checkout() {
         };
 
         dispatch(updateOrderAsync(updatedOrder));
+
         setIsOrderUpdated(true);
       } else {
         setEmailError(true);
@@ -165,7 +185,17 @@ export default function Checkout() {
         ...order,
         incomingPaymentOrderId: incomingPaymentOrder.id,
       };
-      dispatch(updateOrderAsync(updatedOrder));
+      if (isShipping) {
+        dispatch(
+          updateOrderFrakt([
+            updatedOrder,
+            products,
+            selectedShippingMethod || "pickup",
+          ])
+        );
+      } else {
+        dispatch(updateOrderAsync(updatedOrder));
+      }
     }
   }, [incomingPaymentOrder]);
 
@@ -210,6 +240,49 @@ export default function Checkout() {
     }
   };
 
+  const handleUpdateOrderToSwedbank = () => {
+    if (order && !shippingError && !emailError) {
+      const payeeId = import.meta.env.VITE_SWEDBANK_PAYEEID;
+      const payeeName = import.meta.env.VITE_SWEDBANK_PAYEENAME;
+      const paymentOrder: PaymentOrderOutgoing = {
+        operation: "Purchase",
+        currency: "SEK",
+        amount: order.total_amount,
+        vatAmount: order.vat_amount,
+        description: "Test Purchase",
+        userAgent: "Mozilla/5.0...",
+        language: "sv-SE",
+        urls: {
+          hostUrls: ["https://localhost:5173/checkout"], //Seamless View only
+          paymentUrl: "https://localhost:5173/checkout", //Seamless View only
+          completeUrl: "https://localhost:5173/confirmation",
+          cancelUrl: "https://localhost:5173/checkout", //Redirect only
+          callbackUrl:
+            "https://swedbankpay-gad0dfg6fha9bpfh.swedencentral-01.azurewebsites.net/swedbankpay/callbackDenthu",
+          logoUrl: "", //Redirect only
+        },
+        payeeInfo: {
+          payeeId: payeeId,
+          payeeReference: generatePayeeReference(true),
+          payeeName: payeeName,
+          orderReference: order.reference,
+        },
+      };
+      const updateOrderUrl = paymentInfo?.operations.find(
+        (o) => o.rel === "update-order"
+      );
+
+      if (isShipping) {
+        // Om frakt krävs, capture sker senare via admin
+        // dispatch(someAdminActionToCaptureLater());
+        dispatch(updatePaymentOrderOutgoing(paymentOrder, updateOrderUrl));
+      } else {
+        // Capture sker som vanligt om det inte är frakt
+        dispatch(updatePaymentOrderOutgoing(paymentOrder, updateOrderUrl));
+      }
+    }
+  };
+
   function getProduct(productId: string): Product | undefined {
     return products.find((p) => p.id == productId);
   }
@@ -230,9 +303,7 @@ export default function Checkout() {
         {order && order.total_amount && (
           <>
             <Typography variant="h6">
-              Totalbelopp:{" "}
-              {order.total_amount/100}{" "}
-              kr
+              Totalbelopp: {order.total_amount / 100} kr
             </Typography>
             <Typography sx={{ fontSize: 14, marginBottom: "" }}>
               Inkl. moms
@@ -300,10 +371,11 @@ export default function Checkout() {
               </Box>
             );
           })}
-           {isShipping && 
-        <Typography sx={{ fontSize: 16, color: "#555" }}>
-         Fraktkostnad: {order?.shippingCost} kr
-        </Typography>}
+        {isShipping && (
+          <Typography sx={{ fontSize: 16, color: "#555" }}>
+            Fraktkostnad: {order?.shippingCost} kr
+          </Typography>
+        )}
         {productsRemoved &&
           productsRemoved.map((item) => {
             return (
@@ -402,6 +474,7 @@ export default function Checkout() {
               onChange={(event) => {
                 setIsPickup(event.target.checked);
                 setIsShipping(false);
+                localStorage.removeItem("isShipping");
                 handleShippingMethodChange("pickup");
               }}
             />
@@ -414,6 +487,7 @@ export default function Checkout() {
               checked={isShipping}
               onChange={(event) => {
                 setIsShipping(event.target.checked);
+                localStorage.setItem("isShipping", JSON.stringify("true"));
                 setIsPickup(false);
                 handleShippingMethodChange("shipping");
               }}

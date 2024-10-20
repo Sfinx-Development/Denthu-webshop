@@ -40,6 +40,43 @@ export async function PostPaymentOrder(paymentOrder: PaymentOrderOutgoing) {
     });
 }
 
+export async function PostUpdatePaymentOrder(
+  paymentOrder: PaymentOrderOutgoing,
+  url: string
+) {
+  const uri = url;
+  const requestBody = {
+    paymentOrder,
+  };
+  const bearer = import.meta.env.VITE_SWEDBANK_BEARER;
+  console.log(bearer);
+  // const sessionId = import.meta.env.VITE_SWEDBANK_SESSIONID;
+  console.log(bearer);
+  return fetch(uri, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json;version=3.1",
+      Authorization: `Bearer ${bearer}`,
+      Host: "api.externalintegration.payex.com",
+    },
+    body: JSON.stringify(requestBody),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`Nätverksfel - ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log("RESPONSE PÅ PAYMENT ORDER: ", data);
+      return data as PaymentOrderIncoming;
+    })
+    .catch((error) => {
+      console.error(error);
+      return null;
+    });
+}
+
 export async function GetPaymentPaidValidation(paidUrl: string) {
   const uri = paidUrl;
   const bearer = import.meta.env.VITE_SWEDBANK_BEARER;
