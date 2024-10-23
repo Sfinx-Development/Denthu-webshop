@@ -106,26 +106,47 @@ export default function Checkout() {
     }
   }, [products, dispatch]);
 
-  const handleShippingMethodChange = (method: string) => {
-    setSelectedShippingMethod(method);
-    localStorage.setItem(
-      "selectedShippingMethod",
-      JSON.stringify(selectedShippingMethod)
-    );
+
+  const handleShippingMethodChange = () => {
+    const newShippingState = !isShipping; // Toggle shipping state
+    setIsShipping(newShippingState);
+    localStorage.setItem("isShipping", JSON.stringify(newShippingState)); // Update local storage
+
     if (order) {
-      if (method == "pickup") {
-        dispatch(updateOrderAsync(order));
-        if (incomingPaymentOrder) {
-          handleUpdateOrderToSwedbank();
-        }
+      if (newShippingState) {
+        // If shipping is now selected, dispatch the update order with shipping
+        dispatch(updateOrderFrakt([order, products, selectedShippingMethod || "pickup"]));
       } else {
-        dispatch(updateOrderFrakt([order, products, method]));
-        if (incomingPaymentOrder) {
-          handleUpdateOrderToSwedbank();
-        }
+        // If shipping is deselected, just update the order without shipping
+        dispatch(updateOrderAsync(order));
+      }
+
+      if (incomingPaymentOrder) {
+        handleUpdateOrderToSwedbank();
       }
     }
   };
+
+  // const handleShippingMethodChange = (method: string) => {
+  //   setSelectedShippingMethod(method);
+  //   localStorage.setItem(
+  //     "selectedShippingMethod",
+  //     JSON.stringify(selectedShippingMethod)
+  //   );
+  //   if (order) {
+  //     if (method == "pickup") {
+  //       dispatch(updateOrderAsync(order));
+  //       if (incomingPaymentOrder) {
+  //         handleUpdateOrderToSwedbank();
+  //       }
+  //     } else {
+  //       dispatch(updateOrderFrakt([order, products, method]));
+  //       if (incomingPaymentOrder) {
+  //         handleUpdateOrderToSwedbank();
+  //       }
+  //     }
+  //   }
+  // };
 
   const handleAddToOrder = async () => {
     setEmailError(false);
