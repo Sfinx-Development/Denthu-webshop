@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  Checkbox,
   Grid,
   List,
   ListItem,
@@ -44,12 +43,7 @@ export default function OrdersForShipping() {
     }
   }, [orders]);
 
-  const handleCheckboxChange = (orderId: string) => {
-    setSelectedOrders((prevSelected) => ({
-      ...prevSelected,
-      [orderId]: !prevSelected[orderId],
-    }));
-  };
+ 
 
   const navigate = useNavigate();
 
@@ -71,13 +65,7 @@ export default function OrdersForShipping() {
                 .map((order) => (
                   <ListItem
                     key={order.id}
-                    secondaryAction={
-                      <Checkbox
-                        edge="end"
-                        checked={!!selectedOrders[order.id]}
-                        onChange={() => handleCheckboxChange(order.id)}
-                      />
-                    }
+               
                   >
                     <ListItemText
                       sx={{ cursor: "pointer" }}
@@ -147,13 +135,7 @@ export default function OrdersForShipping() {
                     key={order.id}
                     sx={{ cursor: "pointer" }}
                     onClick={() => navigate(`/admin/orderdetail/${order.id}`)}
-                    secondaryAction={
-                      <Checkbox
-                        edge="end"
-                        checked={!!selectedOrders[order.id]}
-                        onChange={() => handleCheckboxChange(order.id)}
-                      />
-                    }
+                
                   >
                     <ListItemText
                       primary={`Order ID: ${order.id}`}
