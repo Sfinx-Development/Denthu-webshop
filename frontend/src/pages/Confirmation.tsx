@@ -19,7 +19,7 @@ import {
   clearPaymentOrder,
   getPaymentPaidValidation,
 } from "../slices/paymentSlice";
-import { Product } from "../slices/productSlice";
+import { Product, updateProductAsync } from "../slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
 
 export default function Confirmation() {
@@ -58,16 +58,16 @@ export default function Confirmation() {
         status: "Paid/Not captured",
         paymentInfo: paymentInfo.paymentOrder.paid,
       };
-      // dispatch(updateOrderAsync(orderUpdatedPayment));
-      // order.items.forEach((o) => {
-      //   const productToUpdate = products.find((p) => p.id == o.product_id);
-      //   if (productToUpdate) {
-      //     const product: Product = {
-      //       ...productToUpdate
-      //     };
-      //     dispatch(updateProductAsync(product));
-      //   }
-      // });
+      dispatch(updateOrderAsync(orderUpdatedPayment));
+      order.items.forEach((o) => {
+        const productToUpdate = products.find((p) => p.id == o.product_id);
+        if (productToUpdate) {
+          const product: Product = {
+            ...productToUpdate,
+          };
+          dispatch(updateProductAsync(product));
+        }
+      });
     }
   }, [paymentInfo]);
 

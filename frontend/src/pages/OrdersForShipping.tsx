@@ -19,7 +19,7 @@
 //   const orders = useAppSelector((state) => state.orderSlice.orders);
 //   const [shippingOrders, setShippingOrders] = useState<Order[]>([]);
 //   const [pickupOrders, setPickupOrders] = useState<Order[]>([]);
-//   const [handledOrders, setHandledOrders] = useState<Order[]>([]); 
+//   const [handledOrders, setHandledOrders] = useState<Order[]>([]);
 //   // const [selectedOrders, setSelectedOrders] = useState<{
 //   //   [key: string]: boolean;
 //   // }>({});
@@ -47,8 +47,6 @@
 //     }
 //   }, [orders]);
 
- 
-
 //   const navigate = useNavigate();
 
 //   return (
@@ -69,7 +67,7 @@
 //                 .map((order) => (
 //                   <ListItem
 //                     key={order.id}
-               
+
 //                   >
 //                     <ListItemText
 //                       sx={{ cursor: "pointer" }}
@@ -139,7 +137,7 @@
 //                     key={order.id}
 //                     sx={{ cursor: "pointer" }}
 //                     onClick={() => navigate(`/admin/orderdetail/${order.id}`)}
-                
+
 //                   >
 //                     <ListItemText
 //                       primary={`Order ID: ${order.id}`}
@@ -294,11 +292,10 @@ export default function OrdersForShipping() {
   useEffect(() => {
     if (orders) {
       const shipping = orders.filter(
-        (order) =>
-          order.shippingMethod === "shipping" && order.status !== "Paid"
+        (order) => order.shippingMethod === "shipping" && !order.isShipped
       );
       const pickup = orders.filter(
-        (order) => order.shippingMethod === "pickup" && order.status !== "Paid"
+        (order) => order.shippingMethod === "pickup" && !order.isPickedUp
       );
       setShippingOrders(shipping);
       setPickupOrders(pickup);
@@ -306,7 +303,9 @@ export default function OrdersForShipping() {
   }, [orders]);
 
   const handleFetchHandledOrders = () => {
-    const handled = orders.filter(order => order.status === "Handled");
+    const handled = orders.filter(
+      (order) => order.isShipped || order.isPickedUp
+    );
     setHandledOrders(handled);
     setShowHandledOrders(true); // Sätt till true när hanterade ordrar hämtas
   };
@@ -453,73 +452,83 @@ export default function OrdersForShipping() {
             <Typography variant="h4" gutterBottom>
               Hanterade Ordrar
             </Typography>
-            <Button onClick={handleFetchHandledOrders} variant="contained" color="primary">
+            <Button
+              onClick={handleFetchHandledOrders}
+              variant="contained"
+              color="primary"
+            >
               Visa Hanterade Ordrar
             </Button>
             <List>
-              {showHandledOrders && handledOrders.length > 0 ? ( // Kolla om hanterade ordrar ska visas
-                handledOrders
-                  .sort(
-                    (a, b) =>
-                      new Date(b.created_date).getTime() -
-                      new Date(a.created_date).getTime()
-                  )
-                  .map((order) => (
-                    <ListItem
-                      key={order.id}
-                      sx={{ cursor: "pointer" }}
-                      onClick={() => navigate(`/admin/orderdetail/${order.id}`)}
-                    >
-                      <ListItemText
-                        primary={`Order ID: ${order.id}`}
-                        secondary={
-                          <Box>
-                            <Typography variant="body2">
-                              Kund: {order.guestFirstName} {order.guestLastName}
-                            </Typography>
-                            <Typography variant="body2">
-                              Telefon: {order.guestPhone}
-                            </Typography>
-                            <Typography variant="body2">
-                              E-post: {order.guestEmail}
-                            </Typography>
-                          </Box>
+              {showHandledOrders && handledOrders.length > 0 // Kolla om hanterade ordrar ska visas
+                ? handledOrders
+                    .sort(
+                      (a, b) =>
+                        new Date(b.created_date).getTime() -
+                        new Date(a.created_date).getTime()
+                    )
+                    .map((order) => (
+                      <ListItem
+                        key={order.id}
+                        sx={{ cursor: "pointer" }}
+                        onClick={() =>
+                          navigate(`/admin/orderdetail/${order.id}`)
                         }
-                      />
-                      <ListSubheader>Produkter:</ListSubheader>
-                      <List>
-                        {order.items &&
-                          order.items.map((item) => {
-                            const product = products.find(
-                              (p) => p.id === item.product_id
-                            );
-                            return (
-                              <ListItem key={item.id}>
-                                <ListItemText
-                                  primary={`${
-                                    product ? product.name : "Produkt okänd"
-                                  } (Antal: ${item.quantity})`}
-                                  secondary={
-                                    <Box>
-                                      <Typography variant="body2">
-                                        Pris: {item.price / 100} SEK
-                                      </Typography>
-                                      <Typography variant="body2">
-                                        Total summa:{" "}
-                                        {(item.quantity * item.price) / 100} kr
-                                      </Typography>
-                                    </Box>
-                                  }
-                                />
-                              </ListItem>
-                            );
-                          })}
-                      </List>
-                    </ListItem>
-                  ))
-              ) : (
-                showHandledOrders && <Typography variant="body2">Inga hanterade ordrar hittades.</Typography>
-              )}
+                      >
+                        <ListItemText
+                          primary={`Order ID: ${order.id}`}
+                          secondary={
+                            <Box>
+                              <Typography variant="body2">
+                                Kund: {order.guestFirstName}{" "}
+                                {order.guestLastName}
+                              </Typography>
+                              <Typography variant="body2">
+                                Telefon: {order.guestPhone}
+                              </Typography>
+                              <Typography variant="body2">
+                                E-post: {order.guestEmail}
+                              </Typography>
+                            </Box>
+                          }
+                        />
+                        <ListSubheader>Produkter:</ListSubheader>
+                        <List>
+                          {order.items &&
+                            order.items.map((item) => {
+                              const product = products.find(
+                                (p) => p.id === item.product_id
+                              );
+                              return (
+                                <ListItem key={item.id}>
+                                  <ListItemText
+                                    primary={`${
+                                      product ? product.name : "Produkt okänd"
+                                    } (Antal: ${item.quantity})`}
+                                    secondary={
+                                      <Box>
+                                        <Typography variant="body2">
+                                          Pris: {item.price / 100} SEK
+                                        </Typography>
+                                        <Typography variant="body2">
+                                          Total summa:{" "}
+                                          {(item.quantity * item.price) / 100}{" "}
+                                          kr
+                                        </Typography>
+                                      </Box>
+                                    }
+                                  />
+                                </ListItem>
+                              );
+                            })}
+                        </List>
+                      </ListItem>
+                    ))
+                : showHandledOrders && (
+                    <Typography variant="body2">
+                      Inga hanterade ordrar hittades.
+                    </Typography>
+                  )}
             </List>
           </Grid>
         </Grid>
@@ -527,4 +536,3 @@ export default function OrdersForShipping() {
     </Box>
   );
 }
-

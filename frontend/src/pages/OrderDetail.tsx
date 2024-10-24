@@ -10,7 +10,7 @@ import {
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { OutgoingTransaction } from "../../swedbankTypes";
-import { Order } from "../slices/orderSlice";
+import { Order, updateOrderAsync } from "../slices/orderSlice";
 import {
   getPaymentOrderIncoming,
   getPaymentPaidValidation,
@@ -48,13 +48,14 @@ export default function OrderDetail() {
     }
   }, [incomingPaymentOrder]);
 
-  const capturePayment = () => {
+  const capturePayment = async () => {
     if (
       paymentInfo &&
       paymentInfo.paymentOrder.paid.instrument == "CreditCard" &&
       order &&
       order.paymentInfo
     ) {
+      console.log("KOMMER NI  I CAPTURE");
       //OCH OMO INTE FRAKT ÄR ATT SKICKA
       const operation = paymentInfo.operations.find((o) => o.rel === "capture");
       if (operation) {
@@ -90,17 +91,32 @@ export default function OrderDetail() {
 
   const handleRevokePayment = () => {};
 
-  const handleShippingOrder = () => {
-    capturePayment();
+  const handleShippingOrder = async () => {
+    await capturePayment().then(() => {
+      if (order) {
+        const updatedOrder: Order = {
+          ...order,
+          isShipped: true,
+        };
+        dispatch(updateOrderAsync(updatedOrder));
+      }
+    });
     //vi hämtar incomingpaymentorder som ordern har KLART
     //när incomingpaymentorder finns - så hämtar vi dess paymentinfo  KLART
     //när paymentinfo finns hämtar vi capture adressen
     //gör ett capture anrop
   };
 
-  const handlePickupOrder = () => {
-    capturePayment();
-    // Logic to mark orders as picked up
+  const handlePickupOrder = async () => {
+    await capturePayment().then(() => {
+      if (order) {
+        const updatedOrder: Order = {
+          ...order,
+          isPickedUp: true,
+        };
+        dispatch(updateOrderAsync(updatedOrder));
+      }
+    });
   };
 
   if (!order) {
