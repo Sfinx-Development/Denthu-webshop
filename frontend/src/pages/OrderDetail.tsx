@@ -9,11 +9,15 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { OutgoingTransaction } from "../../swedbankTypes";
+import {
+  CancelRequestOutgoing,
+  OutgoingTransaction,
+} from "../../swedbankTypes";
 import { Order, updateOrderAsync } from "../slices/orderSlice";
 import {
   getPaymentOrderIncoming,
   getPaymentPaidValidation,
+  makeCancelRequest,
   postCaptureToInternalApi,
 } from "../slices/paymentSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
@@ -76,17 +80,24 @@ export default function OrderDetail() {
   //LÄS HÄR NEDAN ANGELINA
 
   const handleCancelPayment = () => {
-    // if (order) {
-    //   //HÄMTA INCOMINGPAYMENTORDER FÖR ATT HÄMTA PAYMENTINO OCH SEN DETTA:
-    //   const operation = paymentInfo.operations.find((o) => o.rel === "capture");
-    //   if (operation && operation.href) {
-    //     dispatch(
-    //       makeCancelRequest({ cancelRequest: {}, cancelUrl: operation.href })
-    //     );
-    //   } else {
-    //     console.error("No valid operation found to cancel the payment.");
-    //   }
-    // }
+    //KOLLA FÖRST SÅ INTE DEN ÄR CAPTURED
+    if (paymentInfo) {
+      const operation = paymentInfo.operations.find((o) => o.rel === "cancel");
+      if (operation && operation.href && order?.paymentInfo) {
+        const cancelRequest: CancelRequestOutgoing = {
+          description: "Test Cancellation",
+          payeeReference: order.paymentInfo.payeeReference,
+        };
+        dispatch(
+          makeCancelRequest({
+            cancelRequest: cancelRequest,
+            cancelUrl: operation.href,
+          })
+        );
+      } else {
+        console.error("No valid operation found to cancel the payment.");
+      }
+    }
   };
 
   const handleRevokePayment = () => {};
@@ -183,13 +194,19 @@ export default function OrderDetail() {
         >
           Återkalla betalning
         </Button>
-        <Button variant="contained" color="primary" onClick={handlePickupOrder}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handlePickupOrder}
+          disabled={order.shippingMethod != "pickup" || order.isPickedUp}
+        >
           Order hämtad
         </Button>
         <Button
           variant="contained"
           color="primary"
           onClick={handleShippingOrder}
+          disabled={order.shippingMethod != "shipping" || order.isShipped}
         >
           Order skickad
         </Button>
