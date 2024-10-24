@@ -106,47 +106,26 @@ export default function Checkout() {
     }
   }, [products, dispatch]);
 
-
-  const handleShippingMethodChange = () => {
-    const newShippingState = !isShipping; // Toggle shipping state
-    setIsShipping(newShippingState);
-    localStorage.setItem("isShipping", JSON.stringify(newShippingState)); // Update local storage
-
+  const handleShippingMethodChange = (method: string) => {
+    setSelectedShippingMethod(method);
+    localStorage.setItem(
+      "selectedShippingMethod",
+      JSON.stringify(selectedShippingMethod)
+    );
     if (order) {
-      if (newShippingState) {
-        // If shipping is now selected, dispatch the update order with shipping
-        dispatch(updateOrderFrakt([order, products, selectedShippingMethod || "pickup"]));
-      } else {
-        // If shipping is deselected, just update the order without shipping
+      if (method == "pickup") {
         dispatch(updateOrderAsync(order));
-      }
-
-      if (incomingPaymentOrder) {
-        handleUpdateOrderToSwedbank();
+        if (incomingPaymentOrder) {
+          handleUpdateOrderToSwedbank();
+        }
+      } else {
+        dispatch(updateOrderFrakt([order, products, method]));
+        if (incomingPaymentOrder) {
+          handleUpdateOrderToSwedbank();
+        }
       }
     }
   };
-
-  // const handleShippingMethodChange = (method: string) => {
-  //   setSelectedShippingMethod(method);
-  //   localStorage.setItem(
-  //     "selectedShippingMethod",
-  //     JSON.stringify(selectedShippingMethod)
-  //   );
-  //   if (order) {
-  //     if (method == "pickup") {
-  //       dispatch(updateOrderAsync(order));
-  //       if (incomingPaymentOrder) {
-  //         handleUpdateOrderToSwedbank();
-  //       }
-  //     } else {
-  //       dispatch(updateOrderFrakt([order, products, method]));
-  //       if (incomingPaymentOrder) {
-  //         handleUpdateOrderToSwedbank();
-  //       }
-  //     }
-  //   }
-  // };
 
   const handleAddToOrder = async () => {
     setEmailError(false);
@@ -293,13 +272,23 @@ export default function Checkout() {
         (o) => o.rel === "update-order"
       );
 
-      if (isShipping) {
+      if (isShipping && updateOrderUrl) {
         // Om frakt krävs, capture sker senare via admin
         // dispatch(someAdminActionToCaptureLater());
-        dispatch(updatePaymentOrderOutgoing(paymentOrder, updateOrderUrl));
-      } else {
+        dispatch(
+          updatePaymentOrderOutgoing({
+            paymentOrder: paymentOrder,
+            url: updateOrderUrl.href,
+          })
+        );
+      } else if (isPickup && updateOrderUrl) {
         // Capture sker som vanligt om det inte är frakt
-        dispatch(updatePaymentOrderOutgoing(paymentOrder, updateOrderUrl));
+        dispatch(
+          updatePaymentOrderOutgoing({
+            paymentOrder: paymentOrder,
+            url: updateOrderUrl.href,
+          })
+        );
       }
     }
   };
@@ -488,28 +477,8 @@ export default function Checkout() {
           helperText={emailError ? "Ogiltig e-postadress" : ""}
           onChange={(event) => setEmail(event.target.value)}
         />
-            <FormControlLabel
-          control={
-            <Checkbox
-              checked={isPickup}
-              onChange={() => setIsPickup(!isPickup)}
-               disabled={isShipping}
-            />
-          }
-          label="Hämta upp"
-        />
-           <FormControlLabel
-          control={
-            <Checkbox
-              checked={isShipping}
-              onChange={handleShippingMethodChange}
-              disabled={isPickup}
-            />
-          }
-          label="Leverans"
-        />
-    
-        {/* <FormControlLabel
+
+        <FormControlLabel
           control={
             <Checkbox
               checked={isPickup}
@@ -536,7 +505,7 @@ export default function Checkout() {
             />
           }
           label="Leverans"
-        /> */}
+        />
         {isShipping && (
           <>
             <TextField
