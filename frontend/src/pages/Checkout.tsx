@@ -488,7 +488,28 @@ export default function Checkout() {
           helperText={emailError ? "Ogiltig e-postadress" : ""}
           onChange={(event) => setEmail(event.target.value)}
         />
-        <FormControlLabel
+            <FormControlLabel
+          control={
+            <Checkbox
+              checked={isPickup}
+              onChange={() => setIsPickup(!isPickup)}
+               disabled={isShipping}
+            />
+          }
+          label="Hämta upp"
+        />
+           <FormControlLabel
+          control={
+            <Checkbox
+              checked={isShipping}
+              onChange={handleShippingMethodChange}
+              disabled={isPickup}
+            />
+          }
+          label="Leverans"
+        />
+    
+        {/* <FormControlLabel
           control={
             <Checkbox
               checked={isPickup}
@@ -515,7 +536,7 @@ export default function Checkout() {
             />
           }
           label="Leverans"
-        />
+        /> */}
         {isShipping && (
           <>
             <TextField
