@@ -50,6 +50,59 @@ export default function Checkout() {
     string | null
   >(null);
   const [productsRemoved, setProductsRemoved] = useState<Product[]>([]);
+  
+const [phoneError, setPhoneError] = useState(false);
+const [postalCodeError, setPostalCodeError] = useState(false);
+const [streetError, setStreetError] = useState(false);
+
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const phonePattern = /^(\+46|0)(7[02369])(\d{7})$/; // Svenska mobilnummer
+const postalCodePattern = /^\d{5}$/; // Svenskt postnummer
+const streetPattern = /^[A-Za-zåäöÅÄÖ\s]+\s\d+[A-Za-z]?$/; // T.ex. "Storgatan 5"
+
+  const [fieldErrors, setFieldErrors] = useState({
+    firstName: false,
+    lastName: false,
+    phone: false,
+    email: false,
+    street: false,
+    postalCode: false,
+    city: false,
+  });
+
+  const validateForm = () => {
+    const emailIsValid = emailPattern.test(email);
+    const phoneIsValid = phonePattern.test(phone);
+    const postalCodeIsValid = postalCodePattern.test(postalCode);
+    const streetIsValid = streetPattern.test(street);
+  
+    setEmailError(!emailIsValid);
+    setPhoneError(!phoneIsValid);
+    setPostalCodeError(isShipping && !postalCodeIsValid);
+    setStreetError(isShipping && !streetIsValid);
+  
+    return (
+      emailIsValid &&
+      phoneIsValid &&
+      (!isShipping || (postalCodeIsValid && streetIsValid && city))
+    );
+  };
+
+  const isFormComplete = () => {
+    if (isShipping) {
+      return (
+        firstName &&
+        lastName &&
+        phone &&
+        email &&
+        street &&
+        postalCode &&
+        city &&
+        !emailError
+      );
+    }
+    return firstName && lastName && phone && email && !emailError;
+  };
 
   useEffect(() => {
     dispatch(getProductsAsync());
@@ -201,6 +254,7 @@ export default function Checkout() {
 
   const handleMakeOrder = () => {
     //göra denna asyjc?
+    if (validateForm()) {
     handleAddToOrder();
     if (order && !shippingError && !emailError) {
       const payeeId = import.meta.env.VITE_SWEDBANK_PAYEEID;
@@ -238,6 +292,7 @@ export default function Checkout() {
         dispatch(addPaymentOrderOutgoing(paymentOrder));
       }
     }
+  }
   };
 
   const handleUpdateOrderToSwedbank = () => {
@@ -297,6 +352,13 @@ export default function Checkout() {
     return products.find((p) => p.id == productId);
   }
 
+// Hantera onBlur för varje fält separat
+const handleBlur = (field) => {
+  if (field === "email") setEmailError(!emailPattern.test(email));
+  else if (field === "phone") setPhoneError(!phonePattern.test(phone));
+  else if (field === "postalCode") setPostalCodeError(!postalCodePattern.test(postalCode));
+  else if (field === "street") setStreetError(!streetPattern.test(street));
+};
   return (
     <Box
       sx={{
@@ -454,28 +516,51 @@ export default function Checkout() {
             label="Förnamn"
             variant="outlined"
             fullWidth
+            // error={fieldErrors.firstName}
+            // helperText={fieldErrors.firstName ? "Förnamn är obligatoriskt" : ""}
+            // onChange={(event) => setFirstName(event.target.value)}
+            // onBlur={() => handleBlur("firstName")}
+            error={!firstName}
+            helperText={!firstName ? "Förnamn är obligatoriskt" : ""}
             onChange={(event) => setFirstName(event.target.value)}
+            onBlur={() => handleBlur("firstName")}
           />
           <TextField
             label="Efternamn"
             variant="outlined"
             fullWidth
+            // error={fieldErrors.lastName}
+            // helperText={fieldErrors.lastName ? "Efternamn är obligatoriskt" : ""}
+            // onChange={(event) => setLastName(event.target.value)}
+            error={!lastName}
+            helperText={!lastName ? "Efternamn är obligatoriskt" : ""}
             onChange={(event) => setLastName(event.target.value)}
+            onBlur={() => handleBlur("lastName")}
           />
         </Box>
         <TextField
           label="Telefonnummer"
           variant="outlined"
           fullWidth
+          // error={fieldErrors.phone}
+          // helperText={fieldErrors.phone ? "Telefonnummer är obligatoriskt" : ""}
+          // onChange={(event) => setPhone(event.target.value)}
+          error={phoneError}
+          helperText={phoneError ? "Ange ett giltigt svenskt mobilnummer" : ""}
           onChange={(event) => setPhone(event.target.value)}
+          onBlur={() => handleBlur("phone")}
         />
         <TextField
           label="Email"
           variant="outlined"
           fullWidth
+          // error={fieldErrors.email}
+          // helperText={fieldErrors.email ? "Ogiltig e-postadress" : ""}
+          // onChange={(event) => setEmail(event.target.value)}
           error={emailError}
-          helperText={emailError ? "Ogiltig e-postadress" : ""}
+          helperText={emailError ? "Ange en giltig e-postadress" : ""}
           onChange={(event) => setEmail(event.target.value)}
+          onBlur={() => handleBlur("email")}
         />
 
         <FormControlLabel
@@ -512,22 +597,40 @@ export default function Checkout() {
               label="Gata"
               variant="outlined"
               fullWidth
-              error={shippingError && !street}
+              // error={shippingError && !street}
+              // error={fieldErrors.street}
+              // helperText={fieldErrors.street ? "Gata är obligatoriskt" : ""}
+              // onChange={(event) => setStreet(event.target.value)}
+              error={streetError}
+              helperText={streetError ? "Ange en giltig adress (t.ex. Storgatan 5)" : ""}
               onChange={(event) => setStreet(event.target.value)}
+              onBlur={() => handleBlur("street")}
             />
             <TextField
               label="Postnummer"
               variant="outlined"
               fullWidth
-              error={shippingError && !postalCode}
+              // error={shippingError && !postalCode}
+              // error={fieldErrors.postalCode}
+              // helperText={fieldErrors.postalCode ? "Postnummer är obligatoriskt" : ""}
+              // onChange={(event) => setPostalCode(event.target.value)}
+              error={postalCodeError}
+              helperText={postalCodeError ? "Ange ett giltigt postnummer (5 siffror)" : ""}
               onChange={(event) => setPostalCode(event.target.value)}
+              onBlur={() => handleBlur("postalCode")}
             />
             <TextField
               label="Stad"
               variant="outlined"
               fullWidth
-              error={shippingError && !city}
+              // error={shippingError && !city}
+              // error={fieldErrors.city}
+              // helperText={fieldErrors.city ? "Stad är obligatoriskt" : ""}
+              // onChange={(event) => setCity(event.target.value)}
+              error={!city}
+              helperText={!city ? "Stad är obligatoriskt" : ""}
               onChange={(event) => setCity(event.target.value)}
+              onBlur={() => handleBlur("city")}
             />
           </>
         )}
@@ -542,6 +645,7 @@ export default function Checkout() {
           variant="contained"
           onClick={() => handleMakeOrder()}
           sx={{ marginTop: 2 }}
+          disabled={!isFormComplete()}
         >
           Till betalning
         </Button>
