@@ -2,10 +2,12 @@ import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import { Badge, Box, IconButton, Typography } from "@mui/material";
 import { useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
+import { useAppSelector } from "../slices/store";
 
 export default function Rootlayout() {
   const [isWiggling, setIsWiggling] = useState(false);
   const navigate = useNavigate();
+  const admin = useAppSelector((state) => state.adminSlice.admin);
 
   const handleWiggle = () => {
     setIsWiggling(true);
@@ -108,7 +110,13 @@ export default function Rootlayout() {
 
         <Typography
           variant="body2"
-          onClick={() => navigate("/admin/signin")}
+          onClick={() => {
+            if (admin) {
+              navigate("/admin");
+            } else {
+              navigate("/admin/signin");
+            }
+          }}
           sx={{
             color: "white",
             position: "absolute",

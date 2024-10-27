@@ -6,6 +6,8 @@ interface AdminState {
   admin: Admin | null;
   error: string | null;
 }
+
+// Check local storage for existing admin data
 const storedAdmin = localStorage.getItem("admin");
 
 export const initialState: AdminState = {
@@ -16,7 +18,7 @@ export const initialState: AdminState = {
 export const logOutUserAsync = createAsyncThunk("admin/logout", async () => {
   try {
     await signOutWithAuth();
-    localStorage.removeItem("admin");
+    localStorage.removeItem("admin"); // Remove admin from local storage
   } catch (error) {
     console.error(error);
     throw new Error("Ett fel uppstod vid utloggningen.");
@@ -30,8 +32,11 @@ export const logInUserAsync = createAsyncThunk<
 >("admin/logInUser", async (login) => {
   try {
     const admin = await signInWithAPI(login);
-    if (admin && login.keepAlive) {
-      localStorage.setItem("admin", JSON.stringify(admin));
+    if (admin) {
+      // Store admin in local storage if login is successful
+      if (login.keepAlive) {
+        localStorage.setItem("admin", JSON.stringify(admin));
+      }
     }
     return admin;
   } catch (error) {
@@ -48,22 +53,23 @@ const adminSlice = createSlice({
     builder
       .addCase(logInUserAsync.fulfilled, (state, action) => {
         if (action.payload) {
-          state.admin = action.payload;
+          state.admin = action.payload; // Set admin state
           state.error = null;
         }
       })
       .addCase(logInUserAsync.rejected, (state) => {
-        state.admin = null;
+        state.admin = null; // Clear admin state on failure
         state.error = "Användarnamn eller lösenord är felaktigt.";
       })
       .addCase(logOutUserAsync.fulfilled, (state) => {
-        state.admin = null;
+        state.admin = null; // Clear admin state on logout
         state.error = null;
       })
       .addCase(logOutUserAsync.rejected, (state) => {
-        state.admin = null;
+        state.admin = null; // Ensure admin state is cleared on error
       });
   },
 });
 
+// Export the admin reducer
 export const adminReducer = adminSlice.reducer;
