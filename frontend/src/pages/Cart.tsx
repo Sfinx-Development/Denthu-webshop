@@ -127,6 +127,8 @@ export default function Cart() {
         vat_amount: 0,
         created_date: new Date().toISOString(),
         status: "Waiting for payment",
+        isShipped:false,
+        isPickedUp:false
       };
       dispatch(addOrderAsync([newOrder, products]));
       navigate("/checkout");

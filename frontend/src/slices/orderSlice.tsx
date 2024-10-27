@@ -92,18 +92,19 @@ const calculateTotalAmount = (items: OrderItem[]): number => {
 };
 
 function getShippingCost(order: Order, products: Product[]) {
-  // Plussa ihop alla produkters vikt och hämta kostnaden
-  console.log("ORDER", order);
+  if (order.shippingMethod == "pickup") {
+    return;
+  } else {
+    const productWeightTogether = order.items.reduce((total, item) => {
+      const product = getProduct(item.product_id, products);
+      // Multiplicera produktens vikt med antalet av den produkten
+      return total + product.weight * item.quantity;
+    }, 0);
 
-  const productWeightTogether = order.items.reduce((total, item) => {
-    const product = getProduct(item.product_id, products);
-    // Multiplicera produktens vikt med antalet av den produkten
-    return total + product.weight * item.quantity;
-  }, 0);
-
-  const cost = availableShippingOptions(productWeightTogether);
-  console.log("COST: ", cost);
-  return cost;
+    const cost = availableShippingOptions(productWeightTogether);
+    console.log("COST: ", cost);
+    return cost;
+  }
 }
 
 const availableShippingOptions = (weight: number): number => {
@@ -124,7 +125,7 @@ const availableShippingOptions = (weight: number): number => {
     return 308;
   } else {
     // Hantera vikter över 20 kg eller om vikten är ogiltig
-    return 500; // -1 indikerar att vikten är för stor eller ogiltig
+    return -1; // -1 indikerar att vikten är för stor eller ogiltig
   }
 };
 
@@ -177,21 +178,8 @@ export const updateOrderAsync = createAsyncThunk<
   { rejectValue: string }
 >("orders/updateOrder", async (order, thunkAPI) => {
   try {
-    console.log("ORDER SOM KOMME RNI : ", order);
-    const updatedItems = order.items.map((item) => {
-      const newItem = { ...item };
-      newItem.vatPercent = item.vatAmount || 25; // 25% VAT
-      newItem.vatAmount = calculateVatAmount(newItem.price, newItem.vatPercent);
-      return newItem;
-    });
-
     const updatedOrder = {
       ...order,
-      items: updatedItems,
-      // total_amount: calculateTotalAmount(updatedItems),
-      // vat_amount: calculateTotalVat(updatedItems),
-      total_amount: calculateTotalAmount(updatedItems),
-      vat_amount: calculateTotalVat(updatedItems),
     };
 
     const response = await editOrderInDB(updatedOrder);
@@ -236,14 +224,6 @@ export const updateOrderFrakt = createAsyncThunk<
   { rejectValue: string }
 >("orders/updateOrderFrakt", async ([order, products, method], thunkAPI) => {
   try {
-    // const updatedItems = order.items.map((item) => {
-    //   const newItem = { ...item };
-    //   newItem.vatPercent = item.vatAmount || 25;
-    //   newItem.vatAmount = calculateVatAmount(newItem.price, newItem.vatPercent);
-    //   return newItem;
-    // });
-
-    // Hantera frakt
     const cost = getShippingCost(order, products);
     const totalShippingCost = cost * 100;
     console.log("SHIPPPING COST BLEV", totalShippingCost);
@@ -268,6 +248,40 @@ export const updateOrderFrakt = createAsyncThunk<
       error instanceof Error
         ? error.message
         : "Något gick fel vid uppdatering av order."
+    );
+  }
+});
+
+export const addItemToOrder = createAsyncThunk<
+  Order,
+  { order: Order; item: OrderItem },
+  { rejectValue: string }
+>("orders/addItemToOrder", async ({ order, item }, thunkAPI) => {
+  try {
+    const newItem = { ...item };
+    newItem.vatPercent = 25;
+    newItem.vatAmount = calculateVatAmount(newItem.price, newItem.vatPercent);
+
+    const updatedItems = [...order.items, newItem];
+
+    const updatedTotalAmount = calculateTotalAmount(updatedItems);
+    const updatedVatAmount = calculateTotalVat(updatedItems);
+
+    const updatedOrder: Order = {
+      ...order,
+      items: updatedItems,
+      total_amount: updatedTotalAmount,
+      vat_amount: updatedVatAmount,
+    };
+
+    localStorage.setItem("order", JSON.stringify(updatedOrder));
+    updateOrderAsync(updatedOrder);
+    return updatedOrder;
+  } catch (error) {
+    return thunkAPI.rejectWithValue(
+      error instanceof Error
+        ? error.message
+        : "Något gick fel vid tillägg av produkt."
     );
   }
 });
@@ -376,6 +390,16 @@ const orderSlice = createSlice({
         }
       })
       .addCase(addOrderAsync.rejected, (state) => {
+        state.error =
+          "Något gick fel när ordern uppdaterades. Försök igen senare.";
+      })
+      .addCase(addItemToOrder.fulfilled, (state, action) => {
+        if (action.payload) {
+          state.order = action.payload;
+          state.error = null;
+        }
+      })
+      .addCase(addItemToOrder.rejected, (state) => {
         state.error =
           "Något gick fel när ordern uppdaterades. Försök igen senare.";
       })
