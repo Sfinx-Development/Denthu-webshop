@@ -42,7 +42,7 @@ export const getPaymentOrderFromDB = async (id: string) => {
 
     const querySnapshot = await getDocs(q);
     const docSnapshot = querySnapshot.docs[0];
-    return docSnapshot.data().paymentOrder as PaymentOrderIncoming;
+    return docSnapshot.data() as PaymentOrderIncoming;
   } catch (error) {
     console.error("Error getting paymentOrderIncoming: ", error);
     throw new Error("Failed to get paymentOrderIncoming");

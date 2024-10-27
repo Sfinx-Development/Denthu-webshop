@@ -1,6 +1,11 @@
 import {
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   List,
   ListItem,
   ListItemText,
@@ -12,12 +17,18 @@ import { useParams } from "react-router-dom";
 import {
   CancelRequestOutgoing,
   OutgoingTransaction,
+  ReverseRequestOutgoing,
 } from "../../swedbankTypes";
-import { Order, updateOrderAsync } from "../slices/orderSlice";
+import {
+  fetchAllOrdersAsync,
+  Order,
+  updateOrderAsync,
+} from "../slices/orderSlice";
 import {
   getPaymentOrderIncoming,
   getPaymentPaidValidation,
   makeCancelRequest,
+  makeReverseRequest,
   postCaptureToInternalApi,
 } from "../slices/paymentSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
@@ -32,25 +43,45 @@ export default function OrderDetail() {
   );
   const paymentInfo = useAppSelector((state) => state.paymentSlice.paymentInfo);
   const [order, setOrder] = useState<Order>();
+  const [openCancelDialog, setOpenCancelDialog] = useState(false);
+  const [openRevokeDialog, setOpenRevokeDialog] = useState(false);
 
   useEffect(() => {
-    if (orders) {
-      const foundOrder = orders.find((o) => o.id === orderId);
+    if (!orders) {
+      dispatch(fetchAllOrdersAsync());
+    }
+  }, []);
+
+  useEffect(() => {
+    if (orders && orderId) {
+      const foundOrder = orders.find((o) => o.id == orderId);
       setOrder(foundOrder);
     }
   }, [orderId]);
 
   useEffect(() => {
+    console.log("PAYMENTINFO ÄR NU: ", paymentInfo);
+  }, [paymentInfo]);
+
+  useEffect(() => {
     if (order && order.incomingPaymentOrderId) {
-      dispatch(getPaymentOrderIncoming(order.incomingPaymentOrderId));
+      dispatch(getPaymentOrderIncoming(order.incomingPaymentOrderId)).then(
+        () => {
+          if (incomingPaymentOrder) {
+            console.log("NU FINNS INCOMING PAYMENT ORDER, SKA HÄMTA PAID:");
+            dispatch(getPaymentPaidValidation(incomingPaymentOrder));
+          }
+        }
+      );
     }
   }, [order]);
 
-  useEffect(() => {
-    if (incomingPaymentOrder) {
-      dispatch(getPaymentPaidValidation(incomingPaymentOrder));
-    }
-  }, [incomingPaymentOrder]);
+  // useEffect(() => {
+  //   if (incomingPaymentOrder) {
+  //     console.log("NU FINNS INCOMING PAYMENT ORDER, SKA HÄMTA PAID:");
+  //     dispatch(getPaymentPaidValidation(incomingPaymentOrder));
+  //   }
+  // }, [incomingPaymentOrder]);
 
   const capturePayment = async () => {
     if (
@@ -59,8 +90,6 @@ export default function OrderDetail() {
       order &&
       order.paymentInfo
     ) {
-      console.log("KOMMER NI  I CAPTURE");
-      //OCH OMO INTE FRAKT ÄR ATT SKICKA
       const operation = paymentInfo.operations.find((o) => o.rel === "capture");
       if (operation) {
         const outgoingTransaction: OutgoingTransaction = {
@@ -77,10 +106,7 @@ export default function OrderDetail() {
     }
   };
 
-  //LÄS HÄR NEDAN ANGELINA
-
   const handleCancelPayment = () => {
-    //KOLLA FÖRST SÅ INTE DEN ÄR CAPTURED
     if (paymentInfo) {
       const operation = paymentInfo.operations.find((o) => o.rel == "cancel");
       if (operation && operation.href && order?.paymentInfo) {
@@ -94,13 +120,34 @@ export default function OrderDetail() {
             cancelUrl: operation.href,
           })
         );
-      } else {
-        console.error("No valid operation found to cancel the payment.");
+        setOpenCancelDialog(false); // Close dialog
       }
     }
   };
 
-  const handleRevokePayment = () => {};
+  const handleRevokePayment = () => {
+    if (paymentInfo) {
+      const operation = paymentInfo.operations.find(
+        (o) => o.rel === "reversal"
+      );
+      console.log("OPERATION: ", operation);
+      if (operation && operation.href && order?.paymentInfo) {
+        const reverseRequest: ReverseRequestOutgoing = {
+          description: "Reversal of captured transaction",
+          amount: paymentInfo.paymentOrder.amount,
+          vatAmount: paymentInfo.paymentOrder.vatAmount,
+          payeeReference: order.paymentInfo.payeeReference,
+        };
+        dispatch(
+          makeReverseRequest({
+            reverseRequest: reverseRequest,
+            reverseUrl: operation.href,
+          })
+        );
+        setOpenRevokeDialog(false);
+      }
+    }
+  };
 
   const handleShippingOrder = async () => {
     await capturePayment().then(() => {
@@ -112,10 +159,6 @@ export default function OrderDetail() {
         dispatch(updateOrderAsync(updatedOrder));
       }
     });
-    //vi hämtar incomingpaymentorder som ordern har KLART
-    //när incomingpaymentorder finns - så hämtar vi dess paymentinfo  KLART
-    //när paymentinfo finns hämtar vi capture adressen
-    //gör ett capture anrop
   };
 
   const handlePickupOrder = async () => {
@@ -169,7 +212,7 @@ export default function OrderDetail() {
                         Pris: {item.price / 100} SEK
                       </Typography>
                       <Typography variant="body2">
-                        Total summa: {(item.quantity * item.price) / 100} kr
+                        Total summa: {order.total_amount / 100} kr
                       </Typography>
                     </Box>
                   }
@@ -183,14 +226,14 @@ export default function OrderDetail() {
         <Button
           variant="contained"
           color="secondary"
-          onClick={handleCancelPayment}
+          onClick={() => setOpenCancelDialog(true)} // Open cancel confirmation dialog
         >
           Avbryt betalning
         </Button>
         <Button
           variant="contained"
           color="secondary"
-          onClick={handleRevokePayment}
+          onClick={() => setOpenRevokeDialog(true)} // Open revoke confirmation dialog
         >
           Återkalla betalning
         </Button>
@@ -211,6 +254,48 @@ export default function OrderDetail() {
           Order skickad
         </Button>
       </Box>
+
+      {/* Cancel Confirmation Dialog */}
+      <Dialog
+        open={openCancelDialog}
+        onClose={() => setOpenCancelDialog(false)}
+      >
+        <DialogTitle>Bekräfta Avbokning</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Är du säker på att du vill avbryta betalningen?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenCancelDialog(false)} color="primary">
+            Avbryt
+          </Button>
+          <Button onClick={handleCancelPayment} color="secondary">
+            Avbryt betalning
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Revoke Confirmation Dialog */}
+      <Dialog
+        open={openRevokeDialog}
+        onClose={() => setOpenRevokeDialog(false)}
+      >
+        <DialogTitle>Bekräfta Återkallelse</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Är du säker på att du vill återkalla betalningen?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenRevokeDialog(false)} color="primary">
+            Avbryt
+          </Button>
+          <Button onClick={() => handleRevokePayment()} color="secondary">
+            Återkalla betalning
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
