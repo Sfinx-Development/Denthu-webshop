@@ -50,15 +50,15 @@ export default function Checkout() {
     string | null
   >(null);
   const [productsRemoved, setProductsRemoved] = useState<Product[]>([]);
-  
-const [phoneError, setPhoneError] = useState(false);
-const [postalCodeError, setPostalCodeError] = useState(false);
-const [streetError, setStreetError] = useState(false);
 
-const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const phonePattern = /^(\+46|0)(7[02369])(\d{7})$/; // Svenska mobilnummer
-const postalCodePattern = /^\d{5}$/; // Svenskt postnummer
-const streetPattern = /^[A-Za-zåäöÅÄÖ\s]+\s\d+[A-Za-z]?$/; // T.ex. "Storgatan 5"
+  const [phoneError, setPhoneError] = useState(false);
+  const [postalCodeError, setPostalCodeError] = useState(false);
+  const [streetError, setStreetError] = useState(false);
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phonePattern = /^(\+46|0)(7[02369])(\d{7})$/; // Svenska mobilnummer
+  const postalCodePattern = /^\d{5}$/; // Svenskt postnummer
+  const streetPattern = /^[A-Za-zåäöÅÄÖ\s]+\s\d+[A-Za-z]?$/; // T.ex. "Storgatan 5"
 
   const [fieldErrors, setFieldErrors] = useState({
     firstName: false,
@@ -75,12 +75,12 @@ const streetPattern = /^[A-Za-zåäöÅÄÖ\s]+\s\d+[A-Za-z]?$/; // T.ex. "Storg
     const phoneIsValid = phonePattern.test(phone);
     const postalCodeIsValid = postalCodePattern.test(postalCode);
     const streetIsValid = streetPattern.test(street);
-  
+
     setEmailError(!emailIsValid);
     setPhoneError(!phoneIsValid);
     setPostalCodeError(isShipping && !postalCodeIsValid);
     setStreetError(isShipping && !streetIsValid);
-  
+
     return (
       emailIsValid &&
       phoneIsValid &&
@@ -238,61 +238,61 @@ const streetPattern = /^[A-Za-zåäöÅÄÖ\s]+\s\d+[A-Za-z]?$/; // T.ex. "Storg
         ...order,
         incomingPaymentOrderId: incomingPaymentOrder.id,
       };
-      if (isShipping) {
-        dispatch(
-          updateOrderFrakt([
-            updatedOrder,
-            products,
-            selectedShippingMethod || "pickup",
-          ])
-        );
-      } else {
-        dispatch(updateOrderAsync(updatedOrder));
-      }
+      // if (isShipping) {
+      //   dispatch(
+      //     updateOrderFrakt([
+      //       updatedOrder,
+      //       products,
+      //       selectedShippingMethod || "pickup",
+      //     ])
+      //   );
+      // } else {
+      dispatch(updateOrderAsync(updatedOrder));
+      // }
     }
   }, [incomingPaymentOrder]);
 
   const handleMakeOrder = () => {
     //göra denna asyjc?
     if (validateForm()) {
-    handleAddToOrder();
-    if (order && !shippingError && !emailError) {
-      const payeeId = import.meta.env.VITE_SWEDBANK_PAYEEID;
-      const payeeName = import.meta.env.VITE_SWEDBANK_PAYEENAME;
-      const paymentOrder: PaymentOrderOutgoing = {
-        operation: "Purchase",
-        currency: "SEK",
-        amount: order.total_amount,
-        vatAmount: order.vat_amount,
-        description: "Test Purchase",
-        userAgent: "Mozilla/5.0...",
-        language: "sv-SE",
-        urls: {
-          hostUrls: ["https://localhost:5173/checkout"], //Seamless View only
-          paymentUrl: "https://localhost:5173/checkout", //Seamless View only
-          completeUrl: "https://localhost:5173/confirmation",
-          cancelUrl: "https://localhost:5173/checkout", //Redirect only
-          callbackUrl:
-            "https://swedbankpay-gad0dfg6fha9bpfh.swedencentral-01.azurewebsites.net/swedbankpay/callbackDenthu",
-          logoUrl: "", //Redirect only
-        },
-        payeeInfo: {
-          payeeId: payeeId,
-          payeeReference: generatePayeeReference(true),
-          payeeName: payeeName,
-          orderReference: order.reference,
-        },
-      };
-      if (isShipping) {
-        // Om frakt krävs, capture sker senare via admin
-        // dispatch(someAdminActionToCaptureLater());
-        dispatch(addPaymentOrderOutgoing(paymentOrder));
-      } else {
-        // Capture sker som vanligt om det inte är frakt
-        dispatch(addPaymentOrderOutgoing(paymentOrder));
+      handleAddToOrder();
+      if (order && !shippingError && !emailError) {
+        const payeeId = import.meta.env.VITE_SWEDBANK_PAYEEID;
+        const payeeName = import.meta.env.VITE_SWEDBANK_PAYEENAME;
+        const paymentOrder: PaymentOrderOutgoing = {
+          operation: "Purchase",
+          currency: "SEK",
+          amount: order.total_amount,
+          vatAmount: order.vat_amount,
+          description: "Test Purchase",
+          userAgent: "Mozilla/5.0...",
+          language: "sv-SE",
+          urls: {
+            hostUrls: ["https://localhost:5173/checkout"], //Seamless View only
+            paymentUrl: "https://localhost:5173/checkout", //Seamless View only
+            completeUrl: "https://localhost:5173/confirmation",
+            cancelUrl: "https://localhost:5173/checkout", //Redirect only
+            callbackUrl:
+              "https://swedbankpay-gad0dfg6fha9bpfh.swedencentral-01.azurewebsites.net/swedbankpay/callbackDenthu",
+            logoUrl: "", //Redirect only
+          },
+          payeeInfo: {
+            payeeId: payeeId,
+            payeeReference: generatePayeeReference(true),
+            payeeName: payeeName,
+            orderReference: order.reference,
+          },
+        };
+        if (isShipping) {
+          // Om frakt krävs, capture sker senare via admin
+          // dispatch(someAdminActionToCaptureLater());
+          dispatch(addPaymentOrderOutgoing(paymentOrder));
+        } else {
+          // Capture sker som vanligt om det inte är frakt
+          dispatch(addPaymentOrderOutgoing(paymentOrder));
+        }
       }
     }
-  }
   };
 
   const handleUpdateOrderToSwedbank = () => {
@@ -352,13 +352,13 @@ const streetPattern = /^[A-Za-zåäöÅÄÖ\s]+\s\d+[A-Za-z]?$/; // T.ex. "Storg
     return products.find((p) => p.id == productId);
   }
 
-// Hantera onBlur för varje fält separat
-const handleBlur = (field) => {
-  if (field === "email") setEmailError(!emailPattern.test(email));
-  else if (field === "phone") setPhoneError(!phonePattern.test(phone));
-  else if (field === "postalCode") setPostalCodeError(!postalCodePattern.test(postalCode));
-  else if (field === "street") setStreetError(!streetPattern.test(street));
-};
+  const handleBlur = (field: string) => {
+    if (field === "email") setEmailError(!emailPattern.test(email));
+    else if (field === "phone") setPhoneError(!phonePattern.test(phone));
+    else if (field === "postalCode")
+      setPostalCodeError(!postalCodePattern.test(postalCode));
+    else if (field === "street") setStreetError(!streetPattern.test(street));
+  };
   return (
     <Box
       sx={{
@@ -602,7 +602,9 @@ const handleBlur = (field) => {
               // helperText={fieldErrors.street ? "Gata är obligatoriskt" : ""}
               // onChange={(event) => setStreet(event.target.value)}
               error={streetError}
-              helperText={streetError ? "Ange en giltig adress (t.ex. Storgatan 5)" : ""}
+              helperText={
+                streetError ? "Ange en giltig adress (t.ex. Storgatan 5)" : ""
+              }
               onChange={(event) => setStreet(event.target.value)}
               onBlur={() => handleBlur("street")}
             />
@@ -615,7 +617,9 @@ const handleBlur = (field) => {
               // helperText={fieldErrors.postalCode ? "Postnummer är obligatoriskt" : ""}
               // onChange={(event) => setPostalCode(event.target.value)}
               error={postalCodeError}
-              helperText={postalCodeError ? "Ange ett giltigt postnummer (5 siffror)" : ""}
+              helperText={
+                postalCodeError ? "Ange ett giltigt postnummer (5 siffror)" : ""
+              }
               onChange={(event) => setPostalCode(event.target.value)}
               onBlur={() => handleBlur("postalCode")}
             />

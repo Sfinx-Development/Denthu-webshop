@@ -49,7 +49,7 @@ export default function Confirmation() {
     if (order) {
       dispatch(clearCart());
     }
-  }, [order]);
+  }, []);
 
   useEffect(() => {
     if (paymentInfo && order) {
@@ -122,6 +122,7 @@ export default function Confirmation() {
       dispatch(clearPaymentOrder());
       dispatch(clearCapture());
       dispatch(clearCallbackData());
+      localStorage.removeItem("isShipping");
     }
   }, [order]);
 
@@ -239,10 +240,12 @@ export default function Confirmation() {
               </Box>
             );
           })}
-          <Box>
-            <Typography sx={{ fontWeight: 600 }}>Totalt belopp</Typography>
-            <Typography>{order?.total_amount / 100} kr</Typography>
-          </Box>
+          {order && (
+            <Box>
+              <Typography sx={{ fontWeight: 600 }}>Totalt belopp</Typography>
+              <Typography>{order.total_amount / 100} kr</Typography>
+            </Box>
+          )}
         </Box>
       </Box>
     </Box>
