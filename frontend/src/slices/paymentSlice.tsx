@@ -11,6 +11,7 @@ import {
   PaymentOrderIn,
   PaymentOrderIncoming,
   PaymentOrderResponse,
+  ReverseRequestOutgoing,
   ValidPaymentOrder,
 } from "../../swedbankTypes";
 import { PaymentOrderOutgoing } from "../../types";
@@ -21,6 +22,7 @@ import {
   addPaymentOrderIncomingToDB,
   getPaymentOrderFromDB,
 } from "../api/paymentOrder";
+import { PostReverseToInternalApiDB } from "../api/reverse";
 import {
   GetPaymentById,
   GetPaymentPaidValidation,
@@ -143,6 +145,22 @@ function savePaymentCancelledToLS(paymentInfo: PaymentOrderIn | null) {
   }
 }
 
+// REVERSED LOCALSTORAGE
+function savePaymentReversedToLS(paymentInfo: PaymentOrderIn | null) {
+  if (paymentInfo) {
+    try {
+      localStorage.setItem("paymentOrderIn", JSON.stringify(paymentInfo));
+    } catch (error) {
+      console.error(
+        "Error saving cancelled paymentOrderIn to localStorage:",
+        error
+      );
+    }
+  } else {
+    localStorage.removeItem("paymentOrderIn");
+  }
+}
+
 function getPaymentCancelledFromLocalStorage(): PaymentOrderIn | null {
   const paymentInfo = localStorage.getItem("paymentOrderIn");
 
@@ -218,6 +236,8 @@ export const getPaymentOrderIncoming = createAsyncThunk<
   try {
     const response = await getPaymentOrderFromDB(id);
     if (response) {
+      localStorage.setItem("paymentOrderIncoming", JSON.stringify(response));
+      console.log("PAYMENT ORDER: ", response);
       return response;
     } else {
       return thunkAPI.rejectWithValue("failed to get payment order");
@@ -235,31 +255,14 @@ export const getPaymentPaidValidation = createAsyncThunk<
   { rejectValue: string }
 >("payments/getPaymentValidation", async (order, thunkAPI) => {
   try {
+    console.log("UÄR INNE");
+    console.log("PAID ID: ", order.paymentOrder.paid.id);
     const response = await GetPaymentPaidValidation(order.paymentOrder.paid.id);
+    console.log("RESPONSE PAYMENTINFO: ", response);
     if (response) {
       savePaymentInfoToLocalStorage(response);
       return response;
     }
-    // const failed = await GetPaymentFailedValidation(
-    //   order.paymentOrder.failed.id
-    // );
-    // if (failed) {
-    //   return failed;
-    // }
-    // const aborted = await GetPaymentAbortedValidation(
-    //   order.paymentOrder.aborted.id
-    // );
-    // if (aborted) {
-    //   return aborted;
-    // }
-
-    // const cancelled = await GetPaymentCancelledValidation(
-    //   order.paymentOrder.cancelled.id
-    // );
-    // if (cancelled) {
-    //   return cancelled;
-    // }
-
     return thunkAPI.rejectWithValue("failed to get payment validation");
   } catch (error) {
     return thunkAPI.rejectWithValue(
@@ -349,7 +352,7 @@ export const makeCancelRequest = createAsyncThunk<
   PaymentOrderIn,
   { cancelRequest: CancelRequestOutgoing; cancelUrl: string },
   { rejectValue: string }
->("payments/make", async ({ cancelRequest, cancelUrl }, thunkAPI) => {
+>("payments/makeCancel", async ({ cancelRequest, cancelUrl }, thunkAPI) => {
   try {
     const response = await PostCancelToInternalApiDB({
       transaction: cancelRequest,
@@ -365,6 +368,30 @@ export const makeCancelRequest = createAsyncThunk<
   } catch (error) {
     return thunkAPI.rejectWithValue(
       "Något gick fel vid hämtning av avbruten betalning."
+    );
+  }
+});
+
+// REVERSE
+export const makeReverseRequest = createAsyncThunk<
+  PaymentOrderIn,
+  { reverseRequest: ReverseRequestOutgoing; reverseUrl: string },
+  { rejectValue: string }
+>("payments/makeReverse", async ({ reverseRequest, reverseUrl }, thunkAPI) => {
+  try {
+    const response = await PostReverseToInternalApiDB({
+      transaction: reverseRequest,
+      reverseUrl,
+    });
+    if (response) {
+      savePaymentReversedToLS(response);
+      return response as PaymentOrderIn;
+    } else {
+      return thunkAPI.rejectWithValue("failed to get reversed payment");
+    }
+  } catch (error) {
+    return thunkAPI.rejectWithValue(
+      "Något gick fel vid hämtning av återkallad betalning."
     );
   }
 });

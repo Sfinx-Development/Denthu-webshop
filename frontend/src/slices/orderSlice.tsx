@@ -56,13 +56,13 @@ const getInitialOrderState = (): OrderState => {
         order: JSON.parse(storedOrder),
         error: null,
         emailSent: storedEmailSent ? true : false,
-        orders: storedOrders ? JSON.parse(storedOrders) : [],
+        orders: storedOrders ? (JSON.parse(storedOrders) as Order[]) : [],
       }
     : {
         order: null,
         error: null,
         emailSent: false,
-        orders: storedOrders ? storedOrders : [],
+        orders: storedOrders ? (JSON.parse(storedOrders) as Order[]) : [],
       };
 };
 
@@ -93,7 +93,7 @@ const calculateTotalAmount = (items: OrderItem[]): number => {
 
 function getShippingCost(order: Order, products: Product[]) {
   if (order.shippingMethod == "pickup") {
-    return;
+    return 0;
   } else {
     const productWeightTogether = order.items.reduce((total, item) => {
       const product = getProduct(item.product_id, products);
