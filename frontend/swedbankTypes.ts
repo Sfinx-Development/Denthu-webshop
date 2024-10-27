@@ -456,3 +456,11 @@ export interface CancelRequestOutgoing {
   description: string;
   payeeReference: string;
 }
+
+// REVERSE REQUEST
+export interface ReverseRequestOutgoing {
+  description: string;
+  amount: number;
+  vatAmount: number;
+  payeeReference: string;
+}
