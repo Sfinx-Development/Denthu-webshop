@@ -15,13 +15,13 @@ import {
 } from "../../swedbankTypes";
 import { PaymentOrderOutgoing } from "../../types";
 import { getCallbackFromDb } from "../api/callback";
+import { PostCancelToInternalApiDB } from "../api/cancel";
 import { getCaptureFromDb, PostCaptureToInternalApiDB } from "../api/capture";
 import {
   addPaymentOrderIncomingToDB,
   getPaymentOrderFromDB,
 } from "../api/paymentOrder";
 import {
-  CancelRequest,
   GetPaymentById,
   GetPaymentPaidValidation,
   PostPaymentOrder,
@@ -351,8 +351,8 @@ export const makeCancelRequest = createAsyncThunk<
   { rejectValue: string }
 >("payments/make", async ({ cancelRequest, cancelUrl }, thunkAPI) => {
   try {
-    const response = await CancelRequest({
-      cancelRequestOutgoing: cancelRequest,
+    const response = await PostCancelToInternalApiDB({
+      transaction: cancelRequest,
       cancelUrl,
     });
     if (response) {
