@@ -55,7 +55,10 @@ export default function Confirmation() {
     if (paymentInfo && order) {
       const orderUpdatedPayment: Order = {
         ...order,
-        status: "Paid/Not captured",
+        status:
+          order.paymentInfo?.instrument == "Swish"
+            ? "Paid"
+            : "Paid/Not captured",
         paymentInfo: paymentInfo.paymentOrder.paid,
       };
       dispatch(updateOrderAsync(orderUpdatedPayment));
@@ -99,7 +102,7 @@ export default function Confirmation() {
     if (paymentInfo && order && callbacks) {
       const orderUpdatedPayment: Order = {
         ...order,
-        status: "Paid/Waiting for Capture",
+        status: "Paid/Not Captured",
         paymentInfo: paymentInfo.paymentOrder.paid,
       };
       dispatch(updateOrderAsync(orderUpdatedPayment));
@@ -108,10 +111,10 @@ export default function Confirmation() {
 
   useEffect(() => {
     if (
-      order &&
-      order.paymentInfo?.instrument == "Swish" &&
-      paymentInfo?.paymentOrder.status == "Paid" &&
-      emailSent == false
+      (order && paymentInfo?.paymentOrder.status == "Paid") ||
+      (paymentInfo?.paymentOrder.status == "Paid/Not Captured" &&
+        emailSent == false &&
+        order)
     ) {
       sendOrderConfirmationWithLink(order, products);
       sendNewOrderNotificationToDenthu(order, products);
