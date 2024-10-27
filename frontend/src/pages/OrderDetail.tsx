@@ -82,7 +82,7 @@ export default function OrderDetail() {
   const handleCancelPayment = () => {
     //KOLLA FÖRST SÅ INTE DEN ÄR CAPTURED
     if (paymentInfo) {
-      const operation = paymentInfo.operations.find((o) => o.rel === "cancel");
+      const operation = paymentInfo.operations.find((o) => o.rel == "cancel");
       if (operation && operation.href && order?.paymentInfo) {
         const cancelRequest: CancelRequestOutgoing = {
           description: "Test Cancellation",

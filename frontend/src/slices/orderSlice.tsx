@@ -26,6 +26,8 @@ export interface Order {
   shippingMethod?: string;
   shippingCost?: number;
   incomingPaymentOrderId?: string;
+  isShipped: boolean;
+  isPickedUp: boolean;
 }
 
 export interface OrderItem {
@@ -122,7 +124,7 @@ const availableShippingOptions = (weight: number): number => {
     return 308;
   } else {
     // Hantera vikter över 20 kg eller om vikten är ogiltig
-    return -1; // -1 indikerar att vikten är för stor eller ogiltig
+    return 500; // -1 indikerar att vikten är för stor eller ogiltig
   }
 };
 
@@ -339,8 +341,8 @@ const orderSlice = createSlice({
       }
     },
     clearOrder: (state) => {
-      state.order = null;
       localStorage.removeItem("order");
+      state.order = null;
     },
   },
 
