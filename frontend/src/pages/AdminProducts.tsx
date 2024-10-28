@@ -4,6 +4,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 // import { Product } from "../../data/types";
 import TableMUI from "../components/TableMUIComponent";
 import { logOutUserAsync } from "../slices/adminSlice";
+import { fetchAllOrdersAsync } from "../slices/orderSlice";
 import { getProductsAsync, Product } from "../slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
 // import { useProductContext } from "../contexts/ProductContext";
@@ -117,7 +118,10 @@ export default function AdminProducts() {
               backgroundColor: "#00695c",
             },
           }}
-          onClick={() => navigate("/admin/ordersForShipping")}
+          onClick={() => {
+            dispatch(fetchAllOrdersAsync());
+            navigate("/admin/ordersForShipping");
+          }}
           data-cy="admin-orders-shipping"
         >
           Ordrar/Frakt

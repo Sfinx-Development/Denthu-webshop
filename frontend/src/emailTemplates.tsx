@@ -58,10 +58,10 @@ export const sendOrderConfirmationWithLink = (
     <p><strong>Totalt belopp: ${(order.total_amount / 100).toFixed(
       2
     )} SEK</strong></p>
-    <p>Vid frågor, tveka inte att kontakta oss på <a href="mailto:denthu.webshop@outlook.com">denthu.webshop@outlook.com</a>!</p>
+    <p>Vid frågor, tveka inte att kontakta oss på <a href="mailto:denthu.webbshop@outlook.com">denthu.webbshop@outlook.com</a>!</p>
     
     <footer>
-      <p>Hälsningar,<br />DenThu Webshop</p>
+      <p>Hälsningar,<br />DenThu Webbshop</p>
       <p>Följ oss på sociala medier: 
         <a href="https://www.instagram.com/denthu">Instagram</a>,
         <a href="https://www.facebook.com/denthu">Facebook</a>
@@ -73,8 +73,159 @@ export const sendOrderConfirmationWithLink = (
     from_name: "DenThu",
     to_email: order.guestEmail,
     order_number: order.reference,
-    store_name: "DenThu Webshop",
-    reply_to: "denthu.webshop@outlook.com",
+    store_name: "DenThu Webbshop",
+    reply_to: "denthu.webbshop@outlook.com",
+    message: receipt,
+  };
+
+  emailjs
+    .send("service_9phhhzn", "template_d2buzz5", templateParams)
+    .then((response) => {
+      console.log("Email sent successfully!", response);
+    })
+    .catch((error) => {
+      console.error("Failed to send email. Error: ", error);
+    });
+};
+
+export const sendOrderConfirmationShipped = (
+  order: Order,
+  products: Product[]
+) => {
+  const getProduct = (productId: string): Product | undefined => {
+    return products.find((p) => p.id == productId);
+  };
+  const shippingAddress = order.shippingAddress || "Hämtas upp på plats";
+  const pickUpAdress = "Vävlagargatan 6p, 507 30 Brämhult";
+
+  const itemsList = order.items
+    .map((i) => {
+      const item = getProduct(i.product_id);
+      if (!item) return "";
+      return `
+        <li>
+          ${item.name} (${item.id}) - ${i.quantity} st / ${(
+        (item.price * i.quantity) /
+        100
+      ).toFixed(2)} SEK
+        </li>
+      `;
+    })
+    .join("");
+
+  const addressSection = `
+    <p><strong>${
+      order.shippingMethod === "shipping"
+        ? "Leveransadress:"
+        : "Hämta upp ordern på:"
+    }</strong> ${
+    order.shippingMethod === "shipping" ? shippingAddress : pickUpAdress
+  }</p>
+  `;
+
+  const receipt = `
+    <h4>Din order har skickats!</h4>
+    <p><strong>Beställning nr:</strong> ${order.reference}</p>
+    ${addressSection}
+
+    
+    <h3>Dina beställningsdetaljer:</h3>
+    <ul>
+      ${itemsList}
+    </ul>
+
+    <h4>Betalsätt:</h4>
+    <p>${order.paymentInfo?.instrument}</p>
+    <p><strong>Totalt belopp: ${(order.total_amount / 100).toFixed(
+      2
+    )} SEK</strong></p>
+    <p>Vid frågor, tveka inte att kontakta oss på <a href="mailto:denthu.webbshop@outlook.com">denthu.webbshop@outlook.com</a>!</p>
+    
+    <footer>
+      <p>Hälsningar,<br />DenThu Webbshop</p>
+      <p>Följ oss på sociala medier: 
+        <a href="https://www.instagram.com/denthu">Instagram</a>,
+        <a href="https://www.facebook.com/denthu">Facebook</a>
+      </p>
+    </footer>
+  `;
+
+  const templateParams = {
+    from_name: "DenThu",
+    to_email: order.guestEmail,
+    order_number: order.reference,
+    store_name: "DenThu Webbshop",
+    reply_to: "denthu.webbshop@outlook.com",
+    message: receipt,
+  };
+
+  emailjs
+    .send("service_9phhhzn", "template_d2buzz5", templateParams)
+    .then((response) => {
+      console.log("Email sent successfully!", response);
+    })
+    .catch((error) => {
+      console.error("Failed to send email. Error: ", error);
+    });
+};
+
+export const sendOrderConfirmationPickedUp = (
+  order: Order,
+  products: Product[]
+) => {
+  const getProduct = (productId: string): Product | undefined => {
+    return products.find((p) => p.id == productId);
+  };
+  const shippingAddress = order.shippingAddress || "Hämtas upp på plats";
+  const pickUpAdress = "Vävlagargatan 6p, 507 30 Brämhult";
+
+  const itemsList = order.items
+    .map((i) => {
+      const item = getProduct(i.product_id);
+      if (!item) return "";
+      return `
+        <li>
+          ${item.name} (${item.id}) - ${i.quantity} st / ${(
+        (item.price * i.quantity) /
+        100
+      ).toFixed(2)} SEK
+        </li>
+      `;
+    })
+    .join("");
+
+  const receipt = `
+    <h4>Din order har hämtats upp!</h4>
+    <p><strong>Beställning nr:</strong> ${order.reference}</p>
+
+    
+    <h3>Dina beställningsdetaljer:</h3>
+    <ul>
+      ${itemsList}
+    </ul>
+
+    <h4>Betalsätt:</h4>
+    <p>${order.paymentInfo?.instrument}</p>
+    <p><strong>Totalt belopp: ${(order.total_amount / 100).toFixed(
+      2
+    )} SEK</strong></p>
+    <p>Vid frågor, tveka inte att kontakta oss på <a href="mailto:denthu.webbshop@outlook.com">denthu.webbshop@outlook.com</a>!</p>
+    
+    <footer>
+      <p>Hälsningar,<br />DenThu Webbshop</p>
+      <p>Följ oss på sociala medier: 
+        <a href="https://www.instagram.com/denthu">Instagram</a>,
+        <a href="https://www.facebook.com/denthu">Facebook</a>
+      </p>
+    </footer>
+  `;
+
+  const templateParams = {
+    from_name: "DenThu",
+    to_email: order.guestEmail,
+    order_number: order.reference,
+    store_name: "DenThu Webbshop",
+    reply_to: "denthu.webbshop@outlook.com",
     message: receipt,
   };
 
@@ -147,10 +298,10 @@ export const sendEmailOrderSent = (order: Order, products: Product[]) => {
     <h4>Elektroniskt kvitto:</h4>
     <p>Vi bifogar det elektroniska kvittot. Med det kan du göra byten eller returer. Om du går till butiken kan du visa upp det på din mobilskärm.</p>
     
-    <p>Vid frågor, tveka inte att kontakta oss på <a href="mailto:denthu.webshop@outlook.com">denthu.webshop@outlook.com</a>!</p>
+    <p>Vid frågor, tveka inte att kontakta oss på <a href="mailto:denthu.webbshop@outlook.com">denthu.webbshop@outlook.com</a>!</p>
     
     <footer>
-      <p>Hälsningar,<br />DenThu Webshop</p>
+      <p>Hälsningar,<br />DenThu Webbshop</p>
       <p>Följ oss på sociala medier: 
         <a href="https://www.instagram.com/denthu">Instagram</a>,
         <a href="https://www.facebook.com/denthu">Facebook</a>
@@ -160,10 +311,10 @@ export const sendEmailOrderSent = (order: Order, products: Product[]) => {
 
   const templateParams = {
     from_name: "DenThu",
-    to_email: "denthu.webshop@outlook.com",
+    to_email: "denthu.webbshop@outlook.com",
     order_number: order.reference,
-    store_name: "DenThu Webshop",
-    reply_to: "denthu.webshop@outlook.com",
+    store_name: "DenThu Webbshop",
+    reply_to: "denthu.webbshop@outlook.com",
     message: receipt,
   };
 
@@ -194,7 +345,8 @@ export const sendNewOrderNotificationToDenthu = (
       return `
         <li>
           ${item.name} (${item.id}) - ${i.quantity} st / ${(
-        (item.price * i.quantity) / 100
+        (item.price * i.quantity) /
+        100
       ).toFixed(2)} SEK
         </li>
       `;
@@ -223,11 +375,11 @@ export const sendNewOrderNotificationToDenthu = (
   `;
 
   const templateParams = {
-    from_name: "DenThu Webshop",
-    to_email: "denthu.webshop@outlook.com", // Dennis' email
+    from_name: "DenThu Webbshop",
+    to_email: "denthu.webbshop@outlook.com", // Dennis' email
     order_number: order.reference,
-    store_name: "DenThu Webshop",
-    reply_to: "denthu.webshop@outlook.com",
+    store_name: "DenThu Webbshop",
+    reply_to: "denthu.webbshop@outlook.com",
     message: orderInfo,
   };
 
@@ -240,4 +392,3 @@ export const sendNewOrderNotificationToDenthu = (
       console.error("Failed to send notification. Error: ", error);
     });
 };
-
