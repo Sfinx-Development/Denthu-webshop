@@ -12,6 +12,7 @@ import {
   ListSubheader,
   Typography,
 } from "@mui/material";
+import emailjs from "emailjs-com";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
@@ -19,6 +20,7 @@ import {
   OutgoingTransaction,
   ReverseRequestOutgoing,
 } from "../../swedbankTypes";
+import { sendEmailOrderPickedUp, sendEmailOrderSent } from "../emailTemplates";
 import {
   fetchAllOrdersAsync,
   Order,
@@ -46,10 +48,10 @@ export default function OrderDetail() {
   const [openCancelDialog, setOpenCancelDialog] = useState(false);
   const [openRevokeDialog, setOpenRevokeDialog] = useState(false);
 
+  emailjs.init("C8CxNnxZg6mg-d2tq");
+
   useEffect(() => {
-    if (!orders) {
-      dispatch(fetchAllOrdersAsync());
-    }
+    dispatch(fetchAllOrdersAsync());
   }, []);
 
   useEffect(() => {
@@ -64,17 +66,19 @@ export default function OrderDetail() {
   }, [paymentInfo]);
 
   useEffect(() => {
-    if (order && order.incomingPaymentOrderId) {
-      dispatch(getPaymentOrderIncoming(order.incomingPaymentOrderId)).then(
-        () => {
-          if (incomingPaymentOrder) {
-            console.log("NU FINNS INCOMING PAYMENT ORDER, SKA HÄMTA PAID:");
-            dispatch(getPaymentPaidValidation(incomingPaymentOrder));
-          }
-        }
-      );
-    }
-  }, [order]);
+    const fetchPaymentOrder = async () => {
+      if (order && order.incomingPaymentOrderId && !incomingPaymentOrder) {
+        await dispatch(getPaymentOrderIncoming(order.incomingPaymentOrderId));
+      }
+
+      if (incomingPaymentOrder) {
+        console.log("NU FINNS INCOMING PAYMENT ORDER, SKA HÄMTA PAID:");
+        dispatch(getPaymentPaidValidation(incomingPaymentOrder));
+      }
+    };
+
+    fetchPaymentOrder();
+  }, [order, incomingPaymentOrder, dispatch]);
 
   // useEffect(() => {
   //   if (incomingPaymentOrder) {
@@ -92,6 +96,7 @@ export default function OrderDetail() {
     ) {
       const operation = paymentInfo.operations.find((o) => o.rel === "capture");
       if (operation) {
+        console.log("SKICKAR CPTURE");
         const outgoingTransaction: OutgoingTransaction = {
           transaction: {
             description: new Date().toLocaleDateString(),
@@ -104,6 +109,7 @@ export default function OrderDetail() {
         dispatch(postCaptureToInternalApi(outgoingTransaction));
       }
     }
+    console.log("SKICKAR INTE CPTURE, paymentinfo: ", paymentInfo);
   };
 
   const handleCancelPayment = () => {
@@ -150,15 +156,19 @@ export default function OrderDetail() {
   };
 
   const handleShippingOrder = async () => {
-    await capturePayment().then(() => {
+    try {
+      await capturePayment();
       if (order) {
         const updatedOrder: Order = {
           ...order,
           isShipped: true,
         };
         dispatch(updateOrderAsync(updatedOrder));
+        sendEmailOrderSent(updatedOrder, products);
       }
-    });
+    } catch (error) {
+      console.error("Error in capturePayment:", error);
+    }
   };
 
   const handlePickupOrder = async () => {
@@ -169,6 +179,7 @@ export default function OrderDetail() {
           isPickedUp: true,
         };
         dispatch(updateOrderAsync(updatedOrder));
+        sendEmailOrderPickedUp(updatedOrder, products);
       }
     });
   };

@@ -71,10 +71,7 @@ export async function PostCaptureToInternalApiDB({
       throw new Error(`Nätverksfel - ${response.status}: ${errorText}`);
     }
 
-    const data = (await response.json()) as CaptureResponse;
-    console.log("Response Data: ", data);
-    await addCaptureToDB(data);
-    return data;
+    return true;
   } catch (error) {
     console.error("Error in CapturePayment: ", error);
     return null;
@@ -102,11 +99,12 @@ export const getCaptureFromDb = async (paymentOrderId: string) => {
 
 export const addCaptureToDB = async (capture: CaptureResponse) => {
   try {
+    //även sätta capture id på ordern?? eller på orderns paymentinfo?
     const captureResponseCollectionRef = collection(db, "captureResponses");
 
     const docRef = await addDoc(captureResponseCollectionRef, {});
 
-    capture.paymentOrder.id = docRef.id;
+    capture.capture.id = docRef.id;
 
     await updateDoc(docRef, capture as Partial<CaptureResponse>);
 

@@ -1,46 +1,3 @@
-// interface Operation {
-//     method: string;
-//     href: string;
-//     rel: string;
-//     contentType: string;
-//   }
-
-//   export interface PaymentOrderId {
-//     id: string;
-//   }
-
-//   export interface PaymentOrder {
-//     id: string;
-//     amount: number;
-//     currency: string;
-//     description: string;
-//     created: string;
-//     updated: string;
-//     operation: string;
-//     status: string;
-//     payeeInfo: PaymentOrderId;
-//     payer: PaymentOrderId;
-//     urls: PaymentOrderId;
-//     aborted: PaymentOrderId;
-//     cancelled: PaymentOrderId;
-//     failed: PaymentOrderId;
-//     failedAttempts: PaymentOrderId;
-//     financialTransactions: PaymentOrderId;
-//     history: PaymentOrderId;
-//     metadata: PaymentOrderId;
-//     paid: PaymentOrderId;
-//     postPurchaseFailedAttempts: PaymentOrderId;
-//     reversed: PaymentOrderId;
-//     vatAmount: number;
-//     availableInstruments: string[];
-//     guestMode: boolean;
-//     implementation: string;
-//     initiatingSystemUserAgent: string;
-//     instrumentMode: boolean;
-//     integration: string;
-//     language: string;
-//   }
-
 export interface PaymentOrderIncoming {
   id: string;
   operations: Operation[];
@@ -378,51 +335,80 @@ export interface ValidPaymentOrder {
   paymentOrder: ValidPayment;
   operations: Operation[];
 }
-// CaptureResponse type in TypeScript
+
+// Huvudstrukturen för CaptureResponse
 export interface CaptureResponse {
-  paymentOrder: {
-    id: string;
-    created: string;
-    updated: string;
-    operation: string;
-    status: string;
-    currency: string;
-    amount: number;
-    vatAmount: number;
-    remainingCaptureAmount?: number; // Optional field, only present after a partial capture
-    remainingCancellationAmount?: number; // Optional field, only present after a partial capture
-    remainingReversalAmount: number;
-    description: string;
-    initiatingSystemUserAgent: string;
-    language: string;
-    availableInstruments: string[];
-    implementation: string;
-    integration: string;
-    instrumentMode: boolean;
-    guestMode: boolean;
-    orderItems: { id: string };
-    urls: { id: string };
-    payeeInfo: { id: string };
-    payer: { id: string };
-    history: { id: string };
-    failed: { id: string };
-    aborted: { id: string };
-    paid: { id: string };
-    cancelled: { id: string };
-    financialTransactions: { id: string };
-    failedAttempts: { id: string };
-    postPurchaseFailedAttempts: { id: string };
-    metadata: { id: string };
-  };
-  operations: CaptureOperation[];
+  payment: string;
+  capture: Capture;
 }
 
-type CaptureOperation = {
-  href: string;
-  rel: string;
-  method: string;
-  contentType: string;
-};
+// Strukturen för Capture-delen av CaptureResponse
+export interface Capture {
+  id: string;
+  transaction: CaptureResponseTransaction;
+}
+
+// Strukturen för Transaction-delen av Capture
+export interface CaptureResponseTransaction {
+  id: string;
+  created: string; // ISO 8601-format, kan konverteras till Date vid behov
+  updated: string; // ISO 8601-format, kan konverteras till Date vid behov
+  type: string;
+  state: string;
+  number: number;
+  amount: number;
+  vatAmount: number;
+  description: string;
+  payeeReference: string;
+  isOperational: boolean;
+  operations: Array<any>; // Specificera typen om strukturen för 'operations' är känd
+}
+
+// // CaptureResponse type in TypeScript
+// export interface CaptureResponse {
+//   paymentOrder: {
+//     id: string;
+//     created: string;
+//     updated: string;
+//     operation: string;
+//     status: string;
+//     currency: string;
+//     amount: number;
+//     vatAmount: number;
+//     remainingCaptureAmount?: number; // Optional field, only present after a partial capture
+//     remainingCancellationAmount?: number; // Optional field, only present after a partial capture
+//     remainingReversalAmount: number;
+//     description: string;
+//     initiatingSystemUserAgent: string;
+//     language: string;
+//     availableInstruments: string[];
+//     implementation: string;
+//     integration: string;
+//     instrumentMode: boolean;
+//     guestMode: boolean;
+//     orderItems: { id: string };
+//     urls: { id: string };
+//     payeeInfo: { id: string };
+//     payer: { id: string };
+//     history: { id: string };
+//     failed: { id: string };
+//     aborted: { id: string };
+//     paid: { id: string };
+//     cancelled: { id: string };
+//     financialTransactions: { id: string };
+//     failedAttempts: { id: string };
+//     postPurchaseFailedAttempts: { id: string };
+//     metadata: { id: string };
+//   };
+//   operations: CaptureOperation[];
+// }
+
+// type CaptureOperation = {
+//   href: string;
+//   rel: string;
+//   method: string;
+//   contentType: string;
+// };
 
 export interface TransactionDetails {
   id: string;
@@ -464,4 +450,3 @@ export interface ReverseRequestOutgoing {
   vatAmount: number;
   payeeReference: string;
 }
-

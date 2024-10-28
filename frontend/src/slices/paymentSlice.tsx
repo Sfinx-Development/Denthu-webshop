@@ -289,17 +289,18 @@ export const getPaymentByIdAsync = createAsyncThunk<
 });
 
 export const postCaptureToInternalApi = createAsyncThunk<
-  CaptureResponse,
+  boolean,
   OutgoingTransaction,
   { rejectValue: string }
 >("payments/postOutgoingCapture", async (transaction, thunkAPI) => {
   try {
-    const capture = await PostCaptureToInternalApiDB({
+    const isCaptureOk = await PostCaptureToInternalApiDB({
       transaction: transaction,
     });
-    if (capture) {
-      saveCaptureToLocalStorage(capture);
-      return capture;
+    if (isCaptureOk) {
+      //hämta capture? <<<<<<<<<<<<<<<
+      // saveCaptureToLocalStorage(capture);
+      return isCaptureOk;
     } else {
       return thunkAPI.rejectWithValue("failed to capture payment");
     }
@@ -454,7 +455,7 @@ const paymentSlice = createSlice({
           "Något gick fel när callback datan hämtades. Försök igen senare.";
       })
       .addCase(postCaptureToInternalApi.fulfilled, (state, action) => {
-        state.capture = action.payload;
+        // state.capture = action.payload;
         state.error = null;
       })
       .addCase(getPaymentOrderIncoming.rejected, (state) => {
