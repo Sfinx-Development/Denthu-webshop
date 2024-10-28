@@ -20,7 +20,10 @@ import {
   OutgoingTransaction,
   ReverseRequestOutgoing,
 } from "../../swedbankTypes";
-import { sendEmailOrderPickedUp, sendEmailOrderSent } from "../emailTemplates";
+import {
+  sendOrderConfirmationPickedUp,
+  sendOrderConfirmationShipped,
+} from "../emailTemplates";
 import {
   fetchAllOrdersAsync,
   Order,
@@ -164,7 +167,8 @@ export default function OrderDetail() {
           isShipped: true,
         };
         dispatch(updateOrderAsync(updatedOrder));
-        sendEmailOrderSent(updatedOrder, products);
+
+        sendOrderConfirmationShipped(updatedOrder, products);
       }
     } catch (error) {
       console.error("Error in capturePayment:", error);
@@ -179,7 +183,7 @@ export default function OrderDetail() {
           isPickedUp: true,
         };
         dispatch(updateOrderAsync(updatedOrder));
-        sendEmailOrderPickedUp(updatedOrder, products);
+        sendOrderConfirmationPickedUp(updatedOrder, products);
       }
     });
   };
