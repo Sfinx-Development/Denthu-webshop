@@ -43,9 +43,17 @@ export default function AdminAddAndEdit() {
   );
   const [price, setPrice] = useState(productToEdit ? productToEdit.price : "");
 
-  const [amount, setAmount] = useState(
+  // const [amount, setAmount] = useState(
+  //   productToEdit ? productToEdit.amount : ""
+  // );
+
+  const [vatAmount, setVatAmount] = useState(
+    productToEdit ? productToEdit.vat_amount : ""
+  );
+  const [quantity, setQuantity] = useState(
     productToEdit ? productToEdit.amount : ""
   );
+
   const [imageUrl, setImageUrl] = useState<string | null>(
     productToEdit ? productToEdit.imageUrl : null
   );
@@ -61,16 +69,14 @@ export default function AdminAddAndEdit() {
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryImageUrl, setNewCategoryImageUrl] = useState("");
   const [preview, setPreview] = useState(false);
-  const [weight, setWeight] = useState(productToEdit ? productToEdit.weight : "");
-
- 
+  const [weight, setWeight] = useState(
+    productToEdit ? productToEdit.weight : ""
+  );
 
   useEffect(() => {
     dispatch(getCategorysAsync());
   }, [dispatch]);
-  const handleOnSubmit = async (
-    e: MouseEvent<HTMLButtonElement, MouseEvent>
-  ) => {
+  const handleOnSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
     if (newCategoryName && newCategoryImageUrl) {
@@ -83,19 +89,19 @@ export default function AdminAddAndEdit() {
     }
 
     const categoryId = selectedCategory ? selectedCategory.id : newCategoryName;
-    if (imageUrl && price && amount) {
+    if (imageUrl && price && quantity) {
       const product: Product = {
         id: productToEdit ? productToEdit.id : "default",
         name,
         description,
         price: Number(price),
         imageUrl,
-        amount: Number(amount),
+        amount: Number(quantity),
         categoryId,
         discount: Number(discount),
         // launch_date: new Date().toISOString(),
-        vat_amount: Number(amount),
-        weight: Number(weight)
+        vat_amount: Number(vatAmount),
+        weight: Number(weight),
       };
 
       if (productToEdit) {
@@ -171,7 +177,7 @@ export default function AdminAddAndEdit() {
               value={price}
               onChange={(e) => setPrice(e.target.value)} // Korrekt uppdatering för price
             />
-               <TextField
+            <TextField
               label="Vikt i gram"
               variant="outlined"
               fullWidth
@@ -180,14 +186,13 @@ export default function AdminAddAndEdit() {
               onChange={(e) => setWeight(e.target.value)} // Korrekt uppdatering för price
             />
 
-
             <TextField
               label="Momsprocent"
               variant="outlined"
               fullWidth
               type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)} // Korrekt uppdatering för vatAmount
+              value={vatAmount}
+              onChange={(e) => setVatAmount(e.target.value)} // Korrekt uppdatering för vatAmount
             />
 
             <ImageUploader imageUrl={imageUrl} setImageUrl={setImageUrl} />
@@ -197,7 +202,7 @@ export default function AdminAddAndEdit() {
               variant="outlined"
               fullWidth
               type="number"
-              value={amount}
+              value={quantity}
               sx={{
                 "& input[type=number]": {
                   "-moz-appearance": "textfield",
@@ -208,7 +213,7 @@ export default function AdminAddAndEdit() {
                     margin: 0,
                   },
               }}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => setQuantity(e.target.value)}
             />
 
             <TextField
