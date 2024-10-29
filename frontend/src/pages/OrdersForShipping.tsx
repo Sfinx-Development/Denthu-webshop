@@ -33,13 +33,21 @@ export default function OrdersForShipping() {
   useEffect(() => {
     if (Array.isArray(orders)) {
       const shipping = orders.filter(
-        (order) => order.shippingMethod == "shipping" && !order.isShipped
+        (order) =>
+          order.shippingMethod == "shipping" &&
+          !order.isShipped &&
+          order.status != "Waiting for payment"
       );
       const pickup = orders.filter(
-        (order) => order.shippingMethod == "pickup" && !order.isPickedUp
+        (order) =>
+          order.shippingMethod == "pickup" &&
+          !order.isPickedUp &&
+          order.status != "Waiting for payment"
       );
       const handled = orders.filter(
-        (order) => order.isShipped || order.isPickedUp
+        (order) =>
+          order.isShipped ||
+          (order.isPickedUp && order.status != "Waiting for payment")
       );
 
       setShippingOrders(shipping);
