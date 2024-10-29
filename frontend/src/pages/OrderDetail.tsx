@@ -22,8 +22,10 @@ import {
   ReverseRequestOutgoing,
 } from "../../swedbankTypes";
 import {
+  sendOrderCancelledWithLink,
   sendOrderConfirmationPickedUp,
   sendOrderConfirmationShipped,
+  sendOrderReversedWithLink,
 } from "../emailTemplates";
 import {
   fetchAllOrdersAsync,
@@ -128,11 +130,12 @@ export default function OrderDetail() {
             cancelUrl: operation.href,
           })
         );
+        sendOrderCancelledWithLink(order, products);
         setOpenCancelDialog(false);
         setSnackbarOpen(true);
         setSnackBarMessage("Ordern uppdateras som avbruten!");
         setTimeout(() => {
-          navigate("/admin/ordersForShopping");
+          navigate("/admin/ordersForShipping");
         }, 1500);
       }
     }
@@ -157,11 +160,12 @@ export default function OrderDetail() {
             reverseUrl: operation.href,
           })
         );
+        sendOrderReversedWithLink(order, products);
         setOpenRevokeDialog(false);
         setSnackbarOpen(true);
         setSnackBarMessage("Betalningen uppdateras som återkallad!");
         setTimeout(() => {
-          navigate("/admin/ordersForShopping");
+          navigate("/admin/ordersForShipping");
         }, 1500);
       }
     }
@@ -181,7 +185,7 @@ export default function OrderDetail() {
         setSnackbarOpen(true);
         setSnackBarMessage("Ordern uppdateras som skickad!");
         setTimeout(() => {
-          navigate("/admin/ordersForShopping");
+          navigate("/admin/ordersForShipping");
         }, 1500);
       }
     } catch (error) {
@@ -202,7 +206,7 @@ export default function OrderDetail() {
       setSnackbarOpen(true);
       setSnackBarMessage("Ordern uppdateras som hämtad!");
       setTimeout(() => {
-        navigate("/admin/ordersForShopping");
+        navigate("/admin/ordersForShipping");
       }, 1500);
     }
   };

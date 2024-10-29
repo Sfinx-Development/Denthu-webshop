@@ -87,6 +87,138 @@ export const sendOrderConfirmationWithLink = (
     });
 };
 
+export const sendOrderCancelledWithLink = (
+  order: Order,
+  products: Product[]
+) => {
+  const getProduct = (productId: string): Product | undefined => {
+    return products.find((p) => p.id == productId);
+  };
+
+  const itemsList = order.items
+    .map((i) => {
+      const item = getProduct(i.product_id);
+      if (!item) return "";
+      return `
+        <li>
+          ${item.name} (${item.id}) - ${i.quantity} st / ${(
+        item.price * i.quantity
+      ).toFixed(2)} SEK
+        </li>
+      `;
+    })
+    .join("");
+
+  const receipt = `
+    <h2>Din betalning är avbruten!</h2>
+    <p><strong>Beställning nr:</strong> ${order.reference}</p>
+    
+    <h3>Dina beställningsdetaljer:</h3>
+    <ul>
+      ${itemsList}
+    </ul>
+
+    <h4>Betalsätt:</h4>
+    <p>${order.paymentInfo?.instrument}</p>
+    <p><strong>Totalt belopp: ${(order.total_amount / 100).toFixed(
+      2
+    )} SEK</strong></p>
+    <p>Vid frågor, tveka inte att kontakta oss på <a href="mailto:denthu.webbshop@outlook.com">denthu.webbshop@outlook.com</a>!</p>
+    
+    <footer>
+      <p>Hälsningar,<br />DenThu Webbshop</p>
+      <p>Följ oss på sociala medier: 
+        <a href="https://www.instagram.com/denthu">Instagram</a>,
+        <a href="https://www.facebook.com/denthu">Facebook</a>
+      </p>
+    </footer>
+  `;
+
+  const templateParams = {
+    from_name: "DenThu",
+    to_email: order.guestEmail,
+    order_number: order.reference,
+    store_name: "DenThu Webbshop",
+    reply_to: "denthu.webbshop@outlook.com",
+    message: receipt,
+  };
+
+  emailjs
+    .send("service_9phhhzn", "template_d2buzz5", templateParams)
+    .then((response) => {
+      console.log("Email sent successfully!", response);
+    })
+    .catch((error) => {
+      console.error("Failed to send email. Error: ", error);
+    });
+};
+
+export const sendOrderReversedWithLink = (
+  order: Order,
+  products: Product[]
+) => {
+  const getProduct = (productId: string): Product | undefined => {
+    return products.find((p) => p.id == productId);
+  };
+
+  const itemsList = order.items
+    .map((i) => {
+      const item = getProduct(i.product_id);
+      if (!item) return "";
+      return `
+        <li>
+          ${item.name} (${item.id}) - ${i.quantity} st / ${(
+        item.price * i.quantity
+      ).toFixed(2)} SEK
+        </li>
+      `;
+    })
+    .join("");
+
+  const receipt = `
+    <h2>Din betalning är återkallad!</h2>
+    <p><strong>Beställning nr:</strong> ${order.reference}</p>
+    
+    <h3>Dina beställningsdetaljer:</h3>
+    <ul>
+      ${itemsList}
+    </ul>
+
+    <h4>Betalsätt:</h4>
+    <p>${order.paymentInfo?.instrument}</p>
+    <p><strong>Totalt belopp: ${(order.total_amount / 100).toFixed(
+      2
+    )} SEK</strong></p>
+    <p>Vid frågor, tveka inte att kontakta oss på <a href="mailto:denthu.webbshop@outlook.com">denthu.webbshop@outlook.com</a>!</p>
+    
+    <footer>
+      <p>Hälsningar,<br />DenThu Webbshop</p>
+      <p>Följ oss på sociala medier: 
+        <a href="https://www.instagram.com/denthu">Instagram</a>,
+        <a href="https://www.facebook.com/denthu">Facebook</a>
+      </p>
+    </footer>
+  `;
+
+  const templateParams = {
+    from_name: "DenThu",
+    to_email: order.guestEmail,
+    order_number: order.reference,
+    store_name: "DenThu Webbshop",
+    reply_to: "denthu.webbshop@outlook.com",
+    message: receipt,
+  };
+
+  emailjs
+    .send("service_9phhhzn", "template_d2buzz5", templateParams)
+    .then((response) => {
+      console.log("Email sent successfully!", response);
+    })
+    .catch((error) => {
+      console.error("Failed to send email. Error: ", error);
+    });
+};
+
 export const sendOrderConfirmationShipped = (
   order: Order,
   products: Product[]
