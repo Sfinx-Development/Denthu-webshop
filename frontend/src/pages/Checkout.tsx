@@ -262,7 +262,7 @@ export default function Checkout() {
         const paymentOrder: PaymentOrderOutgoing = {
           operation: "Purchase",
           currency: "SEK",
-          amount: order.total_amount,
+          amount: 900313,
           vatAmount: order.vat_amount,
           description: "Test Purchase",
           userAgent: "Mozilla/5.0...",
