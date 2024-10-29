@@ -173,7 +173,9 @@ export default function OrderDetail() {
 
   const handleShippingOrder = async () => {
     try {
-      await capturePayment();
+      if (order?.paymentInfo?.instrument != "Swish") {
+        await capturePayment();
+      }
       if (order) {
         const updatedOrder: Order = {
           ...order,
@@ -194,8 +196,9 @@ export default function OrderDetail() {
   };
 
   const handlePickupOrder = async () => {
-    await capturePayment();
-
+    if (order?.paymentInfo?.instrument != "Swish") {
+      await capturePayment();
+    }
     if (order) {
       const updatedOrder: Order = {
         ...order,

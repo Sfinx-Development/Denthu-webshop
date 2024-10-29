@@ -67,6 +67,7 @@ export default function Confirmation() {
         if (productToUpdate) {
           const product: Product = {
             ...productToUpdate,
+            amount: productToUpdate.amount - o.quantity,
           };
           dispatch(updateProductAsync(product));
         }
