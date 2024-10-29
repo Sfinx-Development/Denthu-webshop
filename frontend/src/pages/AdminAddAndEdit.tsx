@@ -205,14 +205,14 @@ export default function AdminAddAndEdit() {
               value={quantity}
               sx={{
                 "& input[type=number]": {
-                  "-moz-appearance": "textfield",
+                  MozAppearance: "textfield", // ändra från "-moz-appearance" till "MozAppearance"
                 },
-                "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
-                  {
-                    "-webkit-appearance": "none",
-                    margin: 0,
-                  },
+                "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button": {
+                  WebkitAppearance: "none", // ändra från "-webkit-appearance" till "WebkitAppearance"
+                  margin: 0,
+                },
               }}
+              
               onChange={(e) => setQuantity(e.target.value)}
             />
 
@@ -224,14 +224,14 @@ export default function AdminAddAndEdit() {
               value={discount}
               sx={{
                 "& input[type=number]": {
-                  "-moz-appearance": "textfield",
+                  MozAppearance: "textfield", // ändra från "-moz-appearance" till "MozAppearance"
                 },
-                "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
-                  {
-                    "-webkit-appearance": "none",
-                    margin: 0,
-                  },
+                "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button": {
+                  WebkitAppearance: "none", // ändra från "-webkit-appearance" till "WebkitAppearance"
+                  margin: 0,
+                },
               }}
+              
               onChange={(e) => setDiscount(e.target.value)}
             />
 
