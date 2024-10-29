@@ -37,7 +37,7 @@ export const sendOrderConfirmationWithLink = (
   `;
 
   const receipt = `
-    <h4>Tack för ditt köp!</h4>
+    <h2>Tack för din beställning!</h2>
     <p><strong>Beställning nr:</strong> ${order.reference}</p>
     <p><strong>Leverans:</strong> ${
       order.shippingMethod === "shipping"
@@ -272,7 +272,7 @@ export const sendEmailOrderSent = (order: Order, products: Product[]) => {
     .join("");
 
   const receipt = `
-    <h4>Din beställning har skickats!</h4>
+    <h2>Din beställning har skickats!</h2>
     <p><strong>Beställning nr:</strong> ${order.reference}</p>
     <p><strong>Du kommer att få din försändelse:</strong></p>
     <p><strong>Förväntad leverans:</strong> ${deliveryDate}</p>
