@@ -19,8 +19,7 @@ export const sendOrderConfirmationWithLink = (
       return `
         <li>
           ${item.name} (${item.id}) - ${i.quantity} st / ${(
-        (item.price * i.quantity) /
-        100
+        item.price * i.quantity
       ).toFixed(2)} SEK
         </li>
       `;

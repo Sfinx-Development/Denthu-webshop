@@ -10,11 +10,12 @@ import {
   ListItem,
   ListItemText,
   ListSubheader,
+  Snackbar,
   Typography,
 } from "@mui/material";
 import emailjs from "emailjs-com";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   CancelRequestOutgoing,
   OutgoingTransaction,
@@ -51,8 +52,11 @@ export default function OrderDetail() {
   const [openCancelDialog, setOpenCancelDialog] = useState(false);
   const [openRevokeDialog, setOpenRevokeDialog] = useState(false);
 
-  emailjs.init("C8CxNnxZg6mg-d2tq");
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackBarMessage, setSnackBarMessage] = useState("");
 
+  emailjs.init("C8CxNnxZg6mg-d2tq");
+  const navigate = useNavigate();
   useEffect(() => {
     dispatch(fetchAllOrdersAsync());
   }, []);
@@ -63,10 +67,6 @@ export default function OrderDetail() {
       setOrder(foundOrder);
     }
   }, [orderId]);
-
-  useEffect(() => {
-    console.log("PAYMENTINFO ÄR NU: ", paymentInfo);
-  }, [paymentInfo]);
 
   useEffect(() => {
     const fetchPaymentOrder = async () => {
@@ -112,7 +112,6 @@ export default function OrderDetail() {
         dispatch(postCaptureToInternalApi(outgoingTransaction));
       }
     }
-    console.log("SKICKAR INTE CPTURE, paymentinfo: ", paymentInfo);
   };
 
   const handleCancelPayment = () => {
@@ -129,7 +128,12 @@ export default function OrderDetail() {
             cancelUrl: operation.href,
           })
         );
-        setOpenCancelDialog(false); // Close dialog
+        setOpenCancelDialog(false);
+        setSnackbarOpen(true);
+        setSnackBarMessage("Ordern uppdateras som avbruten!");
+        setTimeout(() => {
+          navigate("/admin/ordersForShopping");
+        }, 1500);
       }
     }
   };
@@ -154,6 +158,11 @@ export default function OrderDetail() {
           })
         );
         setOpenRevokeDialog(false);
+        setSnackbarOpen(true);
+        setSnackBarMessage("Betalningen uppdateras som återkallad!");
+        setTimeout(() => {
+          navigate("/admin/ordersForShopping");
+        }, 1500);
       }
     }
   };
@@ -169,6 +178,11 @@ export default function OrderDetail() {
         dispatch(updateOrderAsync(updatedOrder));
 
         sendOrderConfirmationShipped(updatedOrder, products);
+        setSnackbarOpen(true);
+        setSnackBarMessage("Ordern uppdateras som skickad!");
+        setTimeout(() => {
+          navigate("/admin/ordersForShopping");
+        }, 1500);
       }
     } catch (error) {
       console.error("Error in capturePayment:", error);
@@ -176,16 +190,21 @@ export default function OrderDetail() {
   };
 
   const handlePickupOrder = async () => {
-    await capturePayment().then(() => {
-      if (order) {
-        const updatedOrder: Order = {
-          ...order,
-          isPickedUp: true,
-        };
-        dispatch(updateOrderAsync(updatedOrder));
-        sendOrderConfirmationPickedUp(updatedOrder, products);
-      }
-    });
+    await capturePayment();
+
+    if (order) {
+      const updatedOrder: Order = {
+        ...order,
+        isPickedUp: true,
+      };
+      dispatch(updateOrderAsync(updatedOrder));
+      sendOrderConfirmationPickedUp(updatedOrder, products);
+      setSnackbarOpen(true);
+      setSnackBarMessage("Ordern uppdateras som hämtad!");
+      setTimeout(() => {
+        navigate("/admin/ordersForShopping");
+      }, 1500);
+    }
   };
 
   if (!order) {
@@ -311,6 +330,12 @@ export default function OrderDetail() {
           </Button>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        open={snackbarOpen}
+        message={snackBarMessage}
+        autoHideDuration={1500}
+        onClose={() => setSnackbarOpen(false)}
+      />
     </Box>
   );
 }
