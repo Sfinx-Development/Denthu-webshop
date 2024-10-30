@@ -97,8 +97,11 @@ function getShippingCost(order: Order, products: Product[]) {
   } else {
     const productWeightTogether = order.items.reduce((total, item) => {
       const product = getProduct(item.product_id, products);
-      // Multiplicera produktens vikt med antalet av den produkten
+    if(product){
       return total + product.weight * item.quantity;
+    }else{
+      return 0;
+    }
     }, 0);
 
     const cost = availableShippingOptions(productWeightTogether);
