@@ -28,12 +28,9 @@ export default function ProductDetails() {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           setProduct({ id: docSnap.id, ...docSnap.data() } as Product);
-        } else {
-          console.error("No such product!");
         }
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching product: ", error);
         setLoading(false);
       }
     };
@@ -41,13 +38,12 @@ export default function ProductDetails() {
     fetchProduct();
   }, [productId]);
 
-  // Track if the product is added to the cart by checking the cart state
   useEffect(() => {
     if (cart && product) {
       const cartItem = cart.items.find(
         (item) => item.product_id === product.id
       );
-      setIsProductAdded(!!cartItem); // Set to true if product exists in cart
+      setIsProductAdded(!!cartItem);
     }
   }, [cart, product]);
 

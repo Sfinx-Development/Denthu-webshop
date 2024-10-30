@@ -41,7 +41,6 @@ export default function Confirmation() {
   useEffect(() => {
     if (incomingPaymentOrder) {
       dispatch(getPaymentPaidValidation(incomingPaymentOrder));
-      // dispatch(getCaptureAsync(incomingPaymentOrder.id));
     }
   }, []);
 
@@ -74,30 +73,6 @@ export default function Confirmation() {
       });
     }
   }, [paymentInfo]);
-
-  // useEffect(() => {
-  //   if (
-  //     paymentInfo &&
-  //     paymentInfo.paymentOrder.paid.instrument == "CreditCard" &&
-  //     order &&
-  //     order.paymentInfo
-  //   ) {
-  //     //OCH OMO INTE FRAKT ÄR ATT SKICKA
-  //     const operation = paymentInfo.operations.find((o) => o.rel === "capture");
-  //     if (operation) {
-  //       const outgoingTransaction: OutgoingTransaction = {
-  //         transaction: {
-  //           description: new Date().toLocaleDateString(),
-  //           amount: paymentInfo.paymentOrder.amount,
-  //           vatAmount: paymentInfo.paymentOrder.vatAmount,
-  //           payeeReference: order.paymentInfo.payeeReference,
-  //           captureUrl: operation.href,
-  //         },
-  //       };
-  //       dispatch(postCaptureToInternalApi(outgoingTransaction));
-  //     }
-  //   }
-  // }, [callbacks]);
 
   useEffect(() => {
     if (paymentInfo && order && callbacks) {

@@ -85,12 +85,6 @@ export default function OrderDetail() {
     fetchPaymentOrder();
   }, [order, incomingPaymentOrder, dispatch]);
 
-  // useEffect(() => {
-  //   if (incomingPaymentOrder) {
-  //     console.log("NU FINNS INCOMING PAYMENT ORDER, SKA HÄMTA PAID:");
-  //     dispatch(getPaymentPaidValidation(incomingPaymentOrder));
-  //   }
-  // }, [incomingPaymentOrder]);
 
   const capturePayment = async () => {
     if (
@@ -101,7 +95,6 @@ export default function OrderDetail() {
     ) {
       const operation = paymentInfo.operations.find((o) => o.rel === "capture");
       if (operation) {
-        console.log("SKICKAR CPTURE");
         const outgoingTransaction: OutgoingTransaction = {
           transaction: {
             description: new Date().toLocaleDateString(),
@@ -146,7 +139,6 @@ export default function OrderDetail() {
       const operation = paymentInfo.operations.find(
         (o) => o.rel === "reversal"
       );
-      console.log("OPERATION: ", operation);
       if (operation && operation.href && order?.paymentInfo) {
         const reverseRequest: ReverseRequestOutgoing = {
           description: "Reversal of captured transaction",

@@ -1,3 +1,27 @@
+export interface PaymentOrderOutgoing {
+  operation: string;
+  currency: string;
+  amount: number;
+  vatAmount: number;
+  description: string;
+  userAgent: string;
+  language: string;
+  urls: {
+    hostUrls: string[];
+    paymentUrl: string;
+    completeUrl: string;
+    cancelUrl: string;
+    callbackUrl: string;
+    logoUrl: string;
+  };
+  payeeInfo: {
+    payeeId: string;
+    payeeReference: string;
+    payeeName: string;
+    orderReference: string;
+  };
+}
+
 export interface PaymentOrderIncoming {
   id: string;
   operations: Operation[];
@@ -40,29 +64,7 @@ export interface PaymentOrderIn {
   language: string;
 }
 
-export interface PaymentOrder {
-  operation: string;
-  currency: string;
-  amount: number;
-  vatAmount: number;
-  description: string;
-  userAgent: string;
-  language: string;
-  urls: {
-    hostUrls: string[];
-    paymentUrl: string;
-    completeUrl: string;
-    cancelUrl: string;
-    callbackUrl: string;
-    logoUrl: string;
-  };
-  payeeInfo: {
-    payeeId: string;
-    payeeReference: string;
-    payeeName: string;
-    orderReference: string;
-  };
-}
+
 //TYPER FÖR STATUSAR PÅ BETALNING, ABORTED, CANCELLED, FAILED:
 
 //ABORTED
@@ -122,23 +124,23 @@ export enum OrderItemType {
   OTHER = "OTHER",
 }
 
-export interface TransationOrderItem {
-  reference: string;
-  name: string;
-  type: OrderItemType;
-  class: string;
-  itemUrl?: string;
-  imageUrl?: string;
-  description?: string;
-  discountDescription?: string;
-  quantity: number;
-  quantityUnit: string;
-  unitPrice: number;
-  discountPrice?: number;
-  vatPercent: number;
-  amount: number;
-  vatAmount: number;
-}
+// export interface TransationOrderItem {
+//   reference: string;
+//   name: string;
+//   type: OrderItemType;
+//   class: string;
+//   itemUrl?: string;
+//   imageUrl?: string;
+//   description?: string;
+//   discountDescription?: string;
+//   quantity: number;
+//   quantityUnit: string;
+//   unitPrice: number;
+//   discountPrice?: number;
+//   vatPercent: number;
+//   amount: number;
+//   vatAmount: number;
+// }
 
 //CAPTURE:
 
@@ -263,11 +265,11 @@ export interface Paid {
 
 export interface ValidPayment {
   id: string;
-  created: string; // ISO 8601 timestamp
-  updated: string; // ISO 8601 timestamp
-  operation: string; // e.g., "Purchase"
-  status: string; // e.g., "Paid"
-  currency: string; // e.g., "SEK"
+  created: string; 
+  updated: string;
+  operation: string;
+  status: string;
+  currency: string; 
   amount: number;
   vatAmount: number;
   remainingCaptureAmount: number;
@@ -275,7 +277,7 @@ export interface ValidPayment {
   description: string;
   initiatingSystemUserAgent: string;
   language: string;
-  availableInstruments: string[]; // Array of strings, e.g., ["CreditCard", "Invoice-PayExFinancingSe"]
+  availableInstruments: string[]; 
   implementation: string;
   integration: string;
   instrumentMode: boolean;
@@ -324,35 +326,25 @@ export interface ValidPayment {
   };
 }
 
-export interface ValidPaymentOperation {
-  method: string; // HTTP method, e.g., "POST"
-  href: string; // URL for the operation
-  rel: string; // Relation type, e.g., "cancel", "capture"
-  contentType: string; // Content type of the request, e.g., "application/json"
-}
-
 export interface ValidPaymentOrder {
   paymentOrder: ValidPayment;
   operations: Operation[];
 }
 
-// Huvudstrukturen för CaptureResponse
 export interface CaptureResponse {
   payment: string;
   capture: Capture;
 }
 
-// Strukturen för Capture-delen av CaptureResponse
 export interface Capture {
   id: string;
   transaction: CaptureResponseTransaction;
 }
 
-// Strukturen för Transaction-delen av Capture
 export interface CaptureResponseTransaction {
   id: string;
-  created: string; // ISO 8601-format, kan konverteras till Date vid behov
-  updated: string; // ISO 8601-format, kan konverteras till Date vid behov
+  created: string; 
+  updated: string; 
   type: string;
   state: string;
   number: number;
@@ -361,7 +353,7 @@ export interface CaptureResponseTransaction {
   description: string;
   payeeReference: string;
   isOperational: boolean;
-  operations: Array<any>; // Specificera typen om strukturen för 'operations' är känd
+  operations: Array<any>;
 }
 
 // // CaptureResponse type in TypeScript
@@ -409,22 +401,6 @@ export interface CaptureResponseTransaction {
 //   method: string;
 //   contentType: string;
 // };
-
-export interface TransactionDetails {
-  id: string;
-  created: string; // Use string for date; you can parse it later if needed
-  updated: string; // Same here for updated date
-  type: string;
-  state: string;
-  number: number;
-  amount: number;
-  vatAmount: number;
-  description: string;
-  payeeReference: string;
-  isOperational: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  operations: any[]; // If operations have a more specific structure, define it here
-}
 
 export interface CallbackData {
   orderReference: string;
