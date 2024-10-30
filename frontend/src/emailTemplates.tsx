@@ -258,7 +258,7 @@ export const sendOrderConfirmationShipped = (
     <h4>Din order har skickats!</h4>
     <p><strong>Beställning nr:</strong> ${order.reference}</p>
     ${addressSection}
-
+        <p><strong>Spårningslänk:</strong> ${order.trackingLink}</p>
     
     <h3>Dina beställningsdetaljer:</h3>
     <ul>

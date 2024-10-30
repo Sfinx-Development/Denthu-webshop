@@ -28,6 +28,7 @@ export interface Order {
   incomingPaymentOrderId?: string;
   isShipped: boolean;
   isPickedUp: boolean;
+  trackingLink?:string;
 }
 
 export interface OrderItem {

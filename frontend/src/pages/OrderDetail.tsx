@@ -12,6 +12,7 @@ import {
   ListSubheader,
   Snackbar,
   Typography,
+  TextField
 } from "@mui/material";
 import emailjs from "emailjs-com";
 import { useEffect, useState } from "react";
@@ -56,6 +57,7 @@ export default function OrderDetail() {
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackBarMessage, setSnackBarMessage] = useState("");
+  const [trackingLink, setTrackingLink] = useState("");
 
   emailjs.init("C8CxNnxZg6mg-d2tq");
   const navigate = useNavigate();
@@ -77,7 +79,6 @@ export default function OrderDetail() {
       }
 
       if (incomingPaymentOrder) {
-        console.log("NU FINNS INCOMING PAYMENT ORDER, SKA HÄMTA PAID:");
         dispatch(getPaymentPaidValidation(incomingPaymentOrder));
       }
     };
@@ -165,23 +166,31 @@ export default function OrderDetail() {
 
   const handleShippingOrder = async () => {
     try {
-      if (order?.paymentInfo?.instrument != "Swish") {
-        await capturePayment();
-      }
-      if (order) {
-        const updatedOrder: Order = {
-          ...order,
-          isShipped: true,
-        };
-        dispatch(updateOrderAsync(updatedOrder));
-
-        sendOrderConfirmationShipped(updatedOrder, products);
+      if(!trackingLink ||trackingLink == ""){
         setSnackbarOpen(true);
-        setSnackBarMessage("Ordern uppdateras som skickad!");
-        setTimeout(() => {
-          navigate("/admin/ordersForShipping");
-        }, 1500);
+        setSnackBarMessage("Fyll i spårningslänk!")
+      }else{
+        if (order?.paymentInfo?.instrument != "Swish") {
+          await capturePayment();
+        }
+        if (order) {
+          
+            const updatedOrder: Order = {
+              ...order,
+              isShipped: true,
+            };
+            dispatch(updateOrderAsync(updatedOrder));
+    
+            sendOrderConfirmationShipped(updatedOrder, products);
+            setSnackbarOpen(true);
+            setSnackBarMessage("Ordern uppdateras som skickad!");
+            setTimeout(() => {
+              navigate("/admin/ordersForShipping");
+            }, 1500);
+          
+        }
       }
+     
     } catch (error) {
       console.error("Error in capturePayment:", error);
     }
@@ -211,13 +220,14 @@ export default function OrderDetail() {
   }
 
   return (
-    <Box display="flex" flexDirection="column" height="100%" p={2}>
+    <Box display="flex" flexDirection="column" flex={1} height="100%" p={2}>
       <Typography variant="h4" gutterBottom>
         Order Details: {order.id}
       </Typography>
 
-      <Box mb={2}>
-        <Typography variant="body1">
+      <Box mb={2} sx={{width:"100%", display:"flex", alignItems:"center", flex:1, backgroundColor:"white"}}>
+        <Box sx={{width:"100%"}}>     
+          <Typography variant="body1">
           <strong>Kund:</strong> {order.guestFirstName} {order.guestLastName}
         </Typography>
         <Typography variant="body1">
@@ -225,7 +235,18 @@ export default function OrderDetail() {
         </Typography>
         <Typography variant="body1">
           <strong>E-post:</strong> {order.guestEmail}
-        </Typography>
+        </Typography></Box>
+        <Box sx={{width:"100%"}}>  
+   <TextField
+              label="Spårningslänk"
+              variant="outlined"
+              fullWidth
+              rows={1}
+              value={trackingLink}
+              onChange={(e) => setTrackingLink(e.target.value)}
+            />
+
+   </Box>
       </Box>
 
       <ListSubheader>Produkter:</ListSubheader>
