@@ -5,13 +5,11 @@ import {
   InputLabel,
   MenuItem,
   Paper,
-  Checkbox,
   Select,
   TextField,
   Typography,
-  FormControlLabel,
 } from "@mui/material";
-import { MouseEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ImageUploader from "../components/ImageUploader";
 import ProductPreview from "../components/ProductPreview";
@@ -96,7 +94,6 @@ export default function AdminAddAndEdit() {
         amount: Number(quantity),
         categoryId,
         discount: Number(discount),
-        // launch_date: new Date().toISOString(),
         vat_amount: Number(vatAmount),
         weight: Number(weight),
       };

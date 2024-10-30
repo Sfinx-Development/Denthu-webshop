@@ -282,11 +282,8 @@ export default function Checkout() {
           },
         };
         if (isShipping) {
-          // Om frakt krävs, capture sker senare via admin
-          // dispatch(someAdminActionToCaptureLater());
           dispatch(addPaymentOrderOutgoing(paymentOrder));
         } else {
-          // Capture sker som vanligt om det inte är frakt
           dispatch(addPaymentOrderOutgoing(paymentOrder));
         }
       }
@@ -326,8 +323,6 @@ export default function Checkout() {
       );
 
       if (isShipping && updateOrderUrl) {
-        // Om frakt krävs, capture sker senare via admin
-        // dispatch(someAdminActionToCaptureLater());
         dispatch(
           updatePaymentOrderOutgoing({
             paymentOrder: paymentOrder,
@@ -335,7 +330,6 @@ export default function Checkout() {
           })
         );
       } else if (isPickup && updateOrderUrl) {
-        // Capture sker som vanligt om det inte är frakt
         dispatch(
           updatePaymentOrderOutgoing({
             paymentOrder: paymentOrder,
@@ -380,7 +374,6 @@ export default function Checkout() {
             </Typography>
           </>
         )}
-        {/* /hejsan hoppsan */}
 
         {products &&
           order &&
