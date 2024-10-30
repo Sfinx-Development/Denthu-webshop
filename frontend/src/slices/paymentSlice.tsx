@@ -14,7 +14,7 @@ import {
   ReverseRequestOutgoing,
   ValidPaymentOrder,
 } from "../../swedbankTypes";
-import { PaymentOrderOutgoing } from "../../types";
+import { PaymentOrderOutgoing } from "../../swedbankTypes";
 import { getCallbackFromDb } from "../api/callback";
 import { PostCancelToInternalApiDB } from "../api/cancel";
 import { getCaptureFromDb, PostCaptureToInternalApiDB } from "../api/capture";
@@ -255,8 +255,6 @@ export const getPaymentPaidValidation = createAsyncThunk<
   { rejectValue: string }
 >("payments/getPaymentValidation", async (order, thunkAPI) => {
   try {
-    console.log("UÄR INNE");
-    console.log("PAID ID: ", order.paymentOrder.paid.id);
     const response = await GetPaymentPaidValidation(order.paymentOrder.paid.id);
     console.log("RESPONSE PAYMENTINFO: ", response);
     if (response) {
@@ -272,9 +270,9 @@ export const getPaymentPaidValidation = createAsyncThunk<
 });
 
 export const getPaymentByIdAsync = createAsyncThunk<
-  PaymentOrderIncoming, // Return type
+  PaymentOrderIncoming,
   { url: string },
-  { rejectValue: string } // ThunkAPI type
+  { rejectValue: string }
 >("payments/getPaymentById", async ({ url }, thunkAPI) => {
   try {
     const response = await GetPaymentById(url);

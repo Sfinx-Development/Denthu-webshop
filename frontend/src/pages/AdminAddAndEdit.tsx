@@ -43,10 +43,6 @@ export default function AdminAddAndEdit() {
   );
   const [price, setPrice] = useState(productToEdit ? productToEdit.price : "");
 
-  // const [amount, setAmount] = useState(
-  //   productToEdit ? productToEdit.amount : ""
-  // );
-
   const [vatAmount, setVatAmount] = useState(
     productToEdit ? productToEdit.vat_amount : ""
   );
@@ -76,6 +72,7 @@ export default function AdminAddAndEdit() {
   useEffect(() => {
     dispatch(getCategorysAsync());
   }, [dispatch]);
+
   const handleOnSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 

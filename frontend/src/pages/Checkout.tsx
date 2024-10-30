@@ -7,7 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { PaymentOrderOutgoing } from "../../types";
+import { PaymentOrderOutgoing } from "../../swedbankTypes";
 import { generatePayeeReference } from "../../utils";
 import SeamlessCheckout from "../components/SeamlessCheckout";
 import {
@@ -41,7 +41,6 @@ export default function Checkout() {
   const [isShipping, setIsShipping] = useState(
     localStorage.getItem("isShipping") ? true : false
   );
-  const [shippingAddress, setShippingAddress] = useState("");
   const [street, setStreet] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const [city, setCity] = useState("");
@@ -56,9 +55,9 @@ export default function Checkout() {
   const [streetError, setStreetError] = useState(false);
 
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const phonePattern = /^(\+46|0)(7[02369])(\d{7})$/; // Svenska mobilnummer
-  const postalCodePattern = /^\d{5}$/; // Svenskt postnummer
-  const streetPattern = /^[A-Za-zåäöÅÄÖ\s]+\s\d+[A-Za-z]?$/; // T.ex. "Storgatan 5"
+  const phonePattern = /^(\+46|0)(7[02369])(\d{7})$/; 
+  const postalCodePattern = /^\d{5}$/; 
+  const streetPattern = /^[A-Za-zåäöÅÄÖ\s]+\s\d+[A-Za-z]?$/; 
 
   const [fieldErrors, setFieldErrors] = useState({
     firstName: false,
@@ -149,7 +148,6 @@ export default function Checkout() {
       };
       dispatch(updateOrderAsync(updatedOrder));
 
-      //ANROPA IGEN KANSKE?
       if (incomingPaymentOrder) {
         handleUpdateOrderToSwedbank();
       }
@@ -262,7 +260,7 @@ export default function Checkout() {
         const paymentOrder: PaymentOrderOutgoing = {
           operation: "Purchase",
           currency: "SEK",
-          amount: 900313,
+          amount: order.total_amount,
           vatAmount: order.vat_amount,
           description: "Test Purchase",
           userAgent: "Mozilla/5.0...",

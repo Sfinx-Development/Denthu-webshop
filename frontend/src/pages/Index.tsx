@@ -1,9 +1,8 @@
 import { Box, Card, CardMedia, Grid, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
-// import { getProductsAsync, Product } from "../slices/productSlice";
 import SearchBar from "../components/SearchBar";
-import { Category, getCategorysAsync, getCategorysByIdAsync } from "../slices/categorySlice";
+import { Category, getCategorysByIdAsync } from "../slices/categorySlice";
 import { clearEmailSent } from "../slices/orderSlice";
 import {
   clearCallbackData,
@@ -14,31 +13,12 @@ import {
 import { getProductsAsync, Product } from "../slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
 
-// export default function Index() {
-//   const products = useAppSelector((state) => state.productSlice.products);
-//   const dispatch = useAppDispatch();
-//   useEffect(() => {
-//     dispatch(getProductsAsync());
-//   }, [dispatch]);
-
 export default function Index() {
   const categorys = useAppSelector((state) => state.categorySlice.categorys);
   const products = useAppSelector((state) => state.productSlice.products);
-
   const [groupedCategorys, setGroupedCategorys] = useState<Category []>();  
-
   const dispatch = useAppDispatch();
-  useEffect(() => {
-    dispatch(getProductsAsync());
-  }, []);
-
-
-  const getCategorys = (products: Product []) => {
-    const categorys = [...new Set(products.map(product => product.categoryId))];
-    dispatch(getCategorysByIdAsync(categorys))
-    return categorys;
-  }
-
+  
   useEffect(() => {
     getCategorys(products)
   },[products])
@@ -56,6 +36,17 @@ export default function Index() {
     dispatch(clearCapture());
     dispatch(clearCallbackData());
   }, []);
+
+  useEffect(() => {
+    dispatch(getProductsAsync());
+  }, []);
+
+
+  const getCategorys = (products: Product []) => {
+    const categorys = [...new Set(products.map(product => product.categoryId))];
+    dispatch(getCategorysByIdAsync(categorys))
+    return categorys;
+  }
 
   return (
     <Box sx={{ width: "100%", backgroundColor: "#f4f4f4" }}>

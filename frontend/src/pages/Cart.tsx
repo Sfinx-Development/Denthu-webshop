@@ -4,7 +4,7 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { Box, Button, IconButton, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
-import { useNavigate /* useParams */ } from "react-router-dom";
+import { useNavigate} from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { CartItem, updateItem } from "../slices/cartSlice";
 import { addOrderAsync, Order, OrderItem } from "../slices/orderSlice";

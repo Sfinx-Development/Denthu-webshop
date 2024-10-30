@@ -24,6 +24,8 @@ export default function OrdersForShipping() {
   const [pickupOrders, setPickupOrders] = useState<Order[]>([]);
   const [handledOrders, setHandledOrders] = useState<Order[]>([]);
   const [showHandledOrders, setShowHandledOrders] = useState(false);
+  
+  const navigate = useNavigate();
 
   useEffect(() => {
     dispatch(getProductsAsync());
@@ -57,10 +59,8 @@ export default function OrdersForShipping() {
   }, [orders]);
 
   const handleFetchHandledOrders = () => {
-    setShowHandledOrders((prev) => !prev); // Toggle handled orders visibility
+    setShowHandledOrders((prev) => !prev); 
   };
-
-  const navigate = useNavigate();
 
   return (
     <Box display="flex" flexDirection="column" height="100vh" p={2}>

@@ -1,15 +1,11 @@
 import { Box, Button, Dialog, DialogContent, DialogTitle } from "@mui/material";
 import { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-// import { Product } from "../../data/types";
 import TableMUI from "../components/TableMUIComponent";
 import { logOutUserAsync } from "../slices/adminSlice";
 import { fetchAllOrdersAsync } from "../slices/orderSlice";
 import { getProductsAsync, Product } from "../slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
-// import { useProductContext } from "../contexts/ProductContext";
-// import { useAppDispatch } from "../store/store";
-// import { logOutUserAsync } from "../store/userSlice";
 
 export default function AdminProducts() {
   const navigate = useNavigate();
@@ -18,6 +14,11 @@ export default function AdminProducts() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const dispatch = useAppDispatch();
 
+  useEffect(() => {
+    dispatch(getProductsAsync());
+  }, []);
+
+  
   function handleAction(product: Product) {
     setSelectedProduct(product);
     setIsPopupOpen(true);
@@ -26,10 +27,6 @@ export default function AdminProducts() {
   function handleRemoveProduct() {
     setIsPopupOpen(false);
   }
-
-  useEffect(() => {
-    dispatch(getProductsAsync());
-  }, []);
 
   const handleLogOut = () => {
     dispatch(logOutUserAsync());

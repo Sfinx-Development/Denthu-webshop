@@ -3,8 +3,8 @@ import {
   PaymentOrderIn,
   PaymentOrderIncoming,
   ValidPaymentOrder,
+  PaymentOrderOutgoing
 } from "../../swedbankTypes";
-import { PaymentOrderOutgoing } from "../../types";
 
 export async function PostPaymentOrder(paymentOrder: PaymentOrderOutgoing) {
   const uri = "/psp/paymentorders";
