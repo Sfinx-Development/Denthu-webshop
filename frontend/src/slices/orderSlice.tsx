@@ -105,7 +105,6 @@ function getShippingCost(order: Order, products: Product[]) {
     }, 0);
 
     const cost = availableShippingOptions(productWeightTogether);
-    console.log("COST: ", cost);
     return cost;
   }
 }
@@ -127,8 +126,8 @@ const availableShippingOptions = (weight: number): number => {
   } else if (weight > 15000 && weight <= 20000) {
     return 308;
   } else {
-    // Hantera vikter över 20 kg eller om vikten är ogiltig
-    return -1; // -1 indikerar att vikten är för stor eller ogiltig
+    //hanteras senare -> kanske dennis fylla i själv??
+    return 0; 
   }
 };
 
