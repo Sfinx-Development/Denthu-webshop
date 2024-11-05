@@ -13,7 +13,7 @@ export default defineConfig({
     // },
     proxy: {
       "/psp": {
-        target: "https://api.externalintegration.payex.com",
+        // target: "https://api.externalintegration.payex.com",
         changeOrigin: true,
         secure: true,
       },
