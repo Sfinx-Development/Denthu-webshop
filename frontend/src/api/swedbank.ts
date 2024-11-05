@@ -3,11 +3,11 @@ import {
   PaymentOrderIn,
   PaymentOrderIncoming,
   ValidPaymentOrder,
-  PaymentOrderOutgoing
+  PaymentOrderOutgoing,
 } from "../../swedbankTypes";
 
 export async function PostPaymentOrder(paymentOrder: PaymentOrderOutgoing) {
-  const uri = "/psp/paymentorders";
+  const uri = "https://api.externalintegration.payex.com/psp/paymentorders";
   const requestBody = {
     paymentOrder,
   };
