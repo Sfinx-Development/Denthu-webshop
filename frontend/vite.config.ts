@@ -7,10 +7,10 @@ import { defineConfig } from "vite";
 export default defineConfig({
   plugins: [react()],
   server: {
-    https: {
-      key: fs.readFileSync(path.resolve(__dirname, "certs/localhost.key")),
-      cert: fs.readFileSync(path.resolve(__dirname, "certs/localhost.cert")),
-    },
+    // https: {
+    //   key: fs.readFileSync(path.resolve(__dirname, "certs/localhost.key")),
+    //   cert: fs.readFileSync(path.resolve(__dirname, "certs/localhost.cert")),
+    // },
     proxy: {
       "/psp": {
         target: "https://api.externalintegration.payex.com",
