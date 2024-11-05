@@ -2,8 +2,8 @@ import {
   CancelRequestOutgoing,
   PaymentOrderIn,
   PaymentOrderIncoming,
-  ValidPaymentOrder,
   PaymentOrderOutgoing,
+  ValidPaymentOrder,
 } from "../../swedbankTypes";
 
 export async function PostPaymentOrder(paymentOrder: PaymentOrderOutgoing) {
@@ -21,6 +21,8 @@ export async function PostPaymentOrder(paymentOrder: PaymentOrderOutgoing) {
       "Content-Type": "application/json;version=3.1",
       Authorization: `Bearer ${bearer}`,
       Host: "api.externalintegration.payex.com",
+      Accept: "application/problem+json; q=1.0, application/json; q=0.9",
+      // "Session-Id": sessionId,
     },
     body: JSON.stringify(requestBody),
   })
