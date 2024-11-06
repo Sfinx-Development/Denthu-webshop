@@ -13,7 +13,7 @@ export async function PostPaymentOrder(paymentOrder: PaymentOrderOutgoing) {
   };
   const bearer = import.meta.env.VITE_SWEDBANK_BEARER;
   console.log(bearer);
-  // const sessionId = import.meta.env.VITE_SWEDBANK_SESSIONID;
+  const sessionId = import.meta.env.VITE_SWEDBANK_SESSIONID;
   console.log(bearer);
   return fetch(uri, {
     method: "POST",
@@ -21,7 +21,7 @@ export async function PostPaymentOrder(paymentOrder: PaymentOrderOutgoing) {
       "Content-Type": "application/json;version=3.1",
       Authorization: `Bearer ${bearer}`,
       Host: "api.externalintegration.payex.com",
-      // "Session-Id": sessionId,
+      "Session-Id": sessionId,
     },
     body: JSON.stringify(requestBody),
   })
