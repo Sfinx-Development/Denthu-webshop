@@ -59,16 +59,6 @@ export default function Checkout() {
   const postalCodePattern = /^\d{5}$/;
   const streetPattern = /^[A-Za-zåäöÅÄÖ\s]+\s\d+[A-Za-z]?$/;
 
-  const [fieldErrors, setFieldErrors] = useState({
-    firstName: false,
-    lastName: false,
-    phone: false,
-    email: false,
-    street: false,
-    postalCode: false,
-    city: false,
-  });
-
   const validateForm = () => {
     const emailIsValid = emailPattern.test(email);
     const phoneIsValid = phonePattern.test(phone);
@@ -158,6 +148,9 @@ export default function Checkout() {
   }, [products, dispatch]);
 
   const handleShippingMethodChange = (method: string) => {
+    //KÖR INTE UPDATE HÄR - ANROPA BARA METODEN SOM RÄKNAS UT PRISET FÖR SHIPPING OCH SÄTT ETT STATE:
+    //SHIPPINGCOST OCH SÄTT DÄR PÅ TOTALPRICE + SHIPINGCOST I VYN. SEN NÄR MAN KÖR TILL BETALNING DÅ
+    //GÖR MAN UPDATEORDERFRAKT OM MAN HAR VALT MED FRAKT INNAN DISPLAYEN KOMMER UPP
     setSelectedShippingMethod(method);
     localStorage.setItem(
       "selectedShippingMethod",
