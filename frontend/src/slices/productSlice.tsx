@@ -25,6 +25,7 @@ export interface Product {
   // in_store: boolean;
   vat_amount: number;
   weight: number;
+  isCompanyProduct: boolean;
 }
 
 export interface ProductWithDate {
@@ -40,6 +41,7 @@ export interface ProductWithDate {
   //gram
   vat_amount: number;
   weight: number;
+  isCompanyProduct: boolean;
 }
 
 interface ProductState {
