@@ -1,7 +1,9 @@
 import {
   Box,
   Button,
+  Checkbox,
   FormControl,
+  FormControlLabel,
   InputLabel,
   MenuItem,
   Paper,
@@ -46,6 +48,10 @@ export default function AdminAddAndEdit() {
   );
   const [quantity, setQuantity] = useState(
     productToEdit ? productToEdit.amount : ""
+  );
+
+  const [isCompanyProduct, setIsCompanyProduct] = useState(
+    productToEdit ? productToEdit.isCompanyProduct : false
   );
 
   const [imageUrl, setImageUrl] = useState<string | null>(
@@ -96,6 +102,7 @@ export default function AdminAddAndEdit() {
         discount: Number(discount),
         vat_amount: Number(vatAmount),
         weight: Number(weight),
+        isCompanyProduct,
       };
 
       if (productToEdit) {
@@ -123,6 +130,16 @@ export default function AdminAddAndEdit() {
         width: "100%",
       }}
     >
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={isCompanyProduct}
+            onChange={(e) => setIsCompanyProduct(e.target.checked)}
+          />
+        }
+        label="Företagsprodukt"
+      />
+
       <form
         // onSubmit={handleOnSubmit}
         style={{
@@ -133,9 +150,17 @@ export default function AdminAddAndEdit() {
           flexDirection: "column",
         }}
       >
-        <Typography variant="h4" gutterBottom>
+        {/* <Typography variant="h4" gutterBottom>
           {productToEdit ? "Redigera produkt" : "Lägg till ny produkt"}
+        </Typography> */}
+        <Typography variant="h4" gutterBottom>
+          {productToEdit
+            ? "Redigera produkt"
+            : isCompanyProduct
+            ? "Lägg till företagsprodukt"
+            : "Lägg till ny produkt"}
         </Typography>
+
         {!preview && (
           <Box
             sx={{
@@ -201,12 +226,12 @@ export default function AdminAddAndEdit() {
                 "& input[type=number]": {
                   MozAppearance: "textfield", // ändra från "-moz-appearance" till "MozAppearance"
                 },
-                "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button": {
-                  WebkitAppearance: "none", // ändra från "-webkit-appearance" till "WebkitAppearance"
-                  margin: 0,
-                },
+                "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
+                  {
+                    WebkitAppearance: "none", // ändra från "-webkit-appearance" till "WebkitAppearance"
+                    margin: 0,
+                  },
               }}
-              
               onChange={(e) => setQuantity(e.target.value)}
             />
 
@@ -220,12 +245,12 @@ export default function AdminAddAndEdit() {
                 "& input[type=number]": {
                   MozAppearance: "textfield", // ändra från "-moz-appearance" till "MozAppearance"
                 },
-                "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button": {
-                  WebkitAppearance: "none", // ändra från "-webkit-appearance" till "WebkitAppearance"
-                  margin: 0,
-                },
+                "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
+                  {
+                    WebkitAppearance: "none", // ändra från "-webkit-appearance" till "WebkitAppearance"
+                    margin: 0,
+                  },
               }}
-              
               onChange={(e) => setDiscount(e.target.value)}
             />
 
