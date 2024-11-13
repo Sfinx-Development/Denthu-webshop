@@ -12,15 +12,16 @@ export async function PostPaymentOrder(paymentOrder: PaymentOrderOutgoing) {
     paymentOrder,
   };
   const bearer = import.meta.env.VITE_SWEDBANK_BEARER;
-  // const sessionId = import.meta.env.VITE_SWEDBANK_SESSIONID;
+  const sessionId = import.meta.env.VITE_SWEDBANK_SESSIONID;
   console.log("PAYMENT ORDER REQUEST: ", requestBody);
   return fetch(uri, {
     method: "POST",
     headers: {
-      ContentType: "application/json;version=3.1",
+      "Content-Type": "application/json;version=3.1",
       Authorization: `Bearer ${bearer}`,
       Host: "api.externalintegration.payex.com",
-      // "Session-Id": sessionId,
+      "Session-Id": sessionId,
+      "User-Agent": "swedbankpay-sdk-dotnet/3.0.1",
     },
     body: JSON.stringify(requestBody),
   })
