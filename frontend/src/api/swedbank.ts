@@ -17,7 +17,7 @@ export async function PostPaymentOrder(paymentOrder: PaymentOrderOutgoing) {
   return fetch(uri, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json;version=3.1;charset=utf-8",
+      "Content-Type": "application/json; charset=utf-8; version=3.1",
       Authorization: `Bearer ${bearer}`,
       Host: "api.externalintegration.payex.com",
     },
