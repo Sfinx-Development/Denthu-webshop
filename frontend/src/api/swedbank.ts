@@ -7,7 +7,7 @@ import {
 } from "../../swedbankTypes";
 
 export async function PostPaymentOrder(paymentOrder: PaymentOrderOutgoing) {
-  const uri = "https://api.payex.com/psp/paymentorders";
+  const uri = "https://api.externalintegration.payex.com/psp/paymentorders";
   const requestBody = {
     paymentOrder,
   };
@@ -19,7 +19,7 @@ export async function PostPaymentOrder(paymentOrder: PaymentOrderOutgoing) {
     headers: {
       "Content-Type": "application/json;version=3.1",
       Authorization: `Bearer ${bearer}`,
-      Host: "api.payex.com",
+      Host: "api.externalintegration.payex.com",
       "User-Agent": "swedbankpay-sdk-dotnet/3.0.1",
     },
     body: JSON.stringify(requestBody),
