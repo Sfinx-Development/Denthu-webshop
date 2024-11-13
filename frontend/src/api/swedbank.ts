@@ -20,6 +20,7 @@ export async function PostPaymentOrder(paymentOrder: PaymentOrderOutgoing) {
       "Content-Type": "application/json;version=3.1;charset=utf-8",
       Authorization: `Bearer ${bearer}`,
       Host: "api.externalintegration.payex.com",
+      Referer: "https://denthuwebshop.netlify.app/checkout",
     },
     body: JSON.stringify(requestBody),
   })
