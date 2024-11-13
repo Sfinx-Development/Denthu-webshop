@@ -13,6 +13,7 @@ export async function PostPaymentOrder(paymentOrder: PaymentOrderOutgoing) {
   };
   const bearer = import.meta.env.VITE_SWEDBANK_BEARER;
   // const sessionId = import.meta.env.VITE_SWEDBANK_SESSIONID;
+  console.log("PAYMENT ORDER REQUEST: ", requestBody);
   return fetch(uri, {
     method: "POST",
     headers: {
