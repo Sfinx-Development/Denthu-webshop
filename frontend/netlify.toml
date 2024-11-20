@@ -8,3 +8,7 @@
   to = "/index.html"
   status = 200
 
+[[headers]]
+  for = "/api/paymentorders"
+  [headers.values]
+    Content-Type = "application/json;version=3.1"
