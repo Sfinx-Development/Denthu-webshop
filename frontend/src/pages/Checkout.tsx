@@ -55,9 +55,9 @@ export default function Checkout() {
   const [streetError, setStreetError] = useState(false);
 
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const phonePattern = /^(\+46|0)(7[02369])(\d{7})$/; 
-  const postalCodePattern = /^\d{5}$/; 
-  const streetPattern = /^[A-Za-zåäöÅÄÖ\s]+\s\d+[A-Za-z]?$/; 
+  const phonePattern = /^(\+46|0)(7[02369])(\d{7})$/;
+  const postalCodePattern = /^\d{5}$/;
+  const streetPattern = /^[A-Za-zåäöÅÄÖ\s]+\s\d+[A-Za-z]?$/;
 
   const [fieldErrors, setFieldErrors] = useState({
     firstName: false,
@@ -266,10 +266,10 @@ export default function Checkout() {
           userAgent: "Mozilla/5.0...",
           language: "sv-SE",
           urls: {
-            hostUrls: ["https://localhost:5173/checkout"], //Seamless View only
-            paymentUrl: "https://localhost:5173/checkout", //Seamless View only
-            completeUrl: "https://localhost:5173/confirmation",
-            cancelUrl: "https://localhost:5173/checkout", //Redirect only
+            hostUrls: ["https://denthuwebshop.netlify.app//checkout"], //Seamless View only
+            paymentUrl: "https://denthuwebshop.netlify.app/checkout", //Seamless View only
+            completeUrl: "https://denthuwebshop.netlify.app/confirmation",
+            cancelUrl: "https://denthuwebshop.netlify.app/checkout", //Redirect only
             callbackUrl:
               "https://swedbankpay-gad0dfg6fha9bpfh.swedencentral-01.azurewebsites.net/swedbankpay/callbackDenthu",
             logoUrl: "", //Redirect only
@@ -303,10 +303,10 @@ export default function Checkout() {
         userAgent: "Mozilla/5.0...",
         language: "sv-SE",
         urls: {
-          hostUrls: ["https://localhost:5173/checkout"], //Seamless View only
-          paymentUrl: "https://localhost:5173/checkout", //Seamless View only
-          completeUrl: "https://localhost:5173/confirmation",
-          cancelUrl: "https://localhost:5173/checkout", //Redirect only
+          hostUrls: ["https://denthuwebshop.netlify.app/checkout"], //Seamless View only
+          paymentUrl: "https://denthuwebshop.netlify.app/checkout", //Seamless View only
+          completeUrl: "https://denthuwebshop.netlify.app/confirmation",
+          cancelUrl: "https://denthuwebshop.netlify.app/checkout", //Redirect only
           callbackUrl:
             "https://swedbankpay-gad0dfg6fha9bpfh.swedencentral-01.azurewebsites.net/swedbankpay/callbackDenthu",
           logoUrl: "", //Redirect only
