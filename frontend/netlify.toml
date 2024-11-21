@@ -8,6 +8,7 @@
   to = "https://api.externalintegration.payex.com/psp:splat"
   status = 200
   force = true
+  headers = {Origin = "https://denthuwebshop.netlify.app"}
 
 [[redirects]]
   from = "/*"
