@@ -18,13 +18,14 @@ export async function PostPaymentOrder(paymentOrder: PaymentOrderOutgoing) {
     headers: {
       "Content-Type": "application/json;version=3.1",
       Authorization: `Bearer ${bearer}`,
-      Host: "api.externalintegration.payex.com",
+      // Host: "api.externalintegration.payex.com",
       // "User-Agent": "swedbankpay-sdk-dotnet/3.0.1",
       // Accept: "application/problem+json; q=1.0, application/json; q=0.9",
       // Forwarded:
       //   "for=82.115.151.177; host=denthuwebshop.netlify.app; proto=https",
     },
     body: JSON.stringify(requestBody),
+    mode: "cors",
   })
     .then((response) => {
       if (!response.ok) {
