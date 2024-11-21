@@ -8,6 +8,13 @@
   to = "/index.html"
   status = 200
 
+[[redirects]]
+  from = "/psp/paymentorders"
+  to = "https://api.externalintegration.payex.com/psp/paymentorders"
+  status = 200
+  force = true
+
+
 [[headers]]
   for = "/api/paymentorders"
   [headers.values]
