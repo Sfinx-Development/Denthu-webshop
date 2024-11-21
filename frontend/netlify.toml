@@ -9,6 +9,7 @@
   status = 200
 
 [[redirects]]
-  from = "/psp/paymentorders"
-  to = "https://api.externalintegration.payex.com/psp/paymentorders"
-  status = 201
+  from = "/psp/*"
+  to = "https://api.externalintegration.payex.com/:splat"
+  status = 200
+  force = true
