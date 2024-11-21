@@ -12,3 +12,4 @@
   for = "/api/paymentorders"
   [headers.values]
     Content-Type = "application/json;version=3.1"
+    Host = "api.externalintegration.payex.com"
