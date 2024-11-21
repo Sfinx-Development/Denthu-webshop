@@ -13,8 +13,4 @@
   to = "https://api.externalintegration.payex.com/:splat"
   status = 200
   force = true
-
-[[headers]]
-  for = "/psp/*"
-  [headers.values]
-    X-From = "Netlify"
+  headers = {X-From = "Netlify"}
