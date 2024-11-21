@@ -5,7 +5,7 @@
 
 [[redirects]]
   from = "/psp/*"
-  to = "https://api.externalintegration.payex.com/psp:splat"
+  to = "https://api.externalintegration.payex.com/psp/:splat"
   status = 301
   force = true
   headers = {Origin = "https://denthuwebshop.netlify.app"}
