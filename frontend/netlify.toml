@@ -5,7 +5,7 @@
 
 [[redirects]]
   from = "/psp/*"
-  to = "https://api.externalintegration.payex.com/:splat"
+  to = "https://api.externalintegration.payex.com/psp:splat"
   status = 200
   force = true
 
