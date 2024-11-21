@@ -1,0 +1,14 @@
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = "dist"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/psp/paymentorders"
+  to = "https://api.externalintegration.payex.com/psp/paymentorders"
+  status = 201
