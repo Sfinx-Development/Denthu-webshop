@@ -7,8 +7,8 @@ import {
 } from "../../swedbankTypes";
 
 export async function PostPaymentOrder(paymentOrder: PaymentOrderOutgoing) {
-  // const uri = "https://api.externalintegration.payex.com/psp/paymentorders";
-  const uri = "psp/paymentorders";
+  const uri = "https://api.externalintegration.payex.com/psp/paymentorders";
+  // const uri = "psp/paymentorders";
   const requestBody = {
     paymentOrder,
   };
