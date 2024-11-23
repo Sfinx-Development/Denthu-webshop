@@ -4,7 +4,7 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { Box, Button, IconButton, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
-import { useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { CartItem, updateItem } from "../slices/cartSlice";
 import { addOrderAsync, Order, OrderItem } from "../slices/orderSlice";
@@ -127,8 +127,8 @@ export default function Cart() {
         vat_amount: 0,
         created_date: new Date().toISOString(),
         status: "Waiting for payment",
-        isShipped:false,
-        isPickedUp:false
+        isShipped: false,
+        isPickedUp: false,
       };
       dispatch(addOrderAsync([newOrder, products]));
       navigate("/checkout");
@@ -287,7 +287,10 @@ export default function Cart() {
           sx={{
             backgroundColor: "#f8f8f8",
             width: { xs: "100%", md: "30%" },
-            padding: 4,
+            padding: { xs: 0, md: 4 },
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
           }}
         >
           <Typography sx={{ fontSize: 24, marginBottom: 2 }}>
