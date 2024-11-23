@@ -6,12 +6,7 @@ import {
   sendOrderConfirmationWithLink,
 } from "../emailTemplates";
 import { clearCart } from "../slices/cartSlice";
-import {
-  clearOrder,
-  Order,
-  setEmailSent,
-  updateOrderAsync,
-} from "../slices/orderSlice";
+import { Order, setEmailSent, updateOrderAsync } from "../slices/orderSlice";
 import {
   clearCallbackData,
   clearCapture,
@@ -97,13 +92,20 @@ export default function Confirmation() {
       dispatch(setEmailSent(true));
       dispatch(clearCart());
       dispatch(clearPaymentInfo());
-      dispatch(clearOrder());
+      // dispatch(clearOrder());
       dispatch(clearPaymentOrder());
       dispatch(clearCapture());
       dispatch(clearCallbackData());
       localStorage.removeItem("isShipping");
     }
   }, [order]);
+
+  useEffect(() => {
+    // När sidan har laddats och order är visad
+    return () => {
+      localStorage.removeItem("currentOrder");
+    };
+  }, []);
 
   emailjs.init("C8CxNnxZg6mg-d2tq");
 
