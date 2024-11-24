@@ -11,6 +11,7 @@ import { PaymentOrderOutgoing } from "../../swedbankTypes";
 import { generatePayeeReference } from "../../utils";
 import SeamlessCheckout from "../components/SeamlessCheckout";
 import {
+  clearOrder,
   Order,
   OrderItem,
   updateOrderAsync,
@@ -455,11 +456,18 @@ export default function Checkout() {
           flex: 1,
         }}
       >
-        <Typography
-          variant="h4"
-          sx={{ fontWeight: 600, textAlign: "center", marginBottom: 3 }}
-        >
+        <Typography variant="h4" sx={{ fontWeight: 600, textAlign: "center" }}>
           Betalning
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{ fontWeight: 400, textAlign: "center", marginBottom: 2 }}
+        >
+          Vi hanterar dina personuppgifter i enlighet med vår{" "}
+          <a href="/privacy-policy" target="_blank" rel="noopener noreferrer">
+            integritetspolicy
+          </a>
+          .
         </Typography>
         {incomingPaymentOrder && incomingPaymentOrder.operations && (
           <SeamlessCheckout />

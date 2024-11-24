@@ -47,6 +47,7 @@ export default function Confirmation() {
 
   useEffect(() => {
     if (paymentInfo && order) {
+      //denna uppdaterar INTE till Paid vid swish
       const orderUpdatedPayment: Order = {
         ...order,
         status:
@@ -92,20 +93,12 @@ export default function Confirmation() {
       dispatch(setEmailSent(true));
       dispatch(clearCart());
       dispatch(clearPaymentInfo());
-      // dispatch(clearOrder());
       dispatch(clearPaymentOrder());
       dispatch(clearCapture());
       dispatch(clearCallbackData());
       localStorage.removeItem("isShipping");
     }
   }, [order]);
-
-  useEffect(() => {
-    // När sidan har laddats och order är visad
-    return () => {
-      localStorage.removeItem("currentOrder");
-    };
-  }, []);
 
   emailjs.init("C8CxNnxZg6mg-d2tq");
 
