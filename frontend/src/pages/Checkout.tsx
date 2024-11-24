@@ -11,7 +11,6 @@ import { PaymentOrderOutgoing } from "../../swedbankTypes";
 import { generatePayeeReference } from "../../utils";
 import SeamlessCheckout from "../components/SeamlessCheckout";
 import {
-  clearOrder,
   Order,
   OrderItem,
   updateOrderAsync,
@@ -58,17 +57,7 @@ export default function Checkout() {
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const phonePattern = /^(\+46|0)(7[02369])(\d{7})$/;
   const postalCodePattern = /^\d{5}$/;
-  const streetPattern = /^[A-Za-zåäöÅÄÖ\s]+\s\d+[A-Za-z]?$/;
-
-  const [fieldErrors, setFieldErrors] = useState({
-    firstName: false,
-    lastName: false,
-    phone: false,
-    email: false,
-    street: false,
-    postalCode: false,
-    city: false,
-  });
+  const streetPattern = /^[A-Za-zåäöÅÄÖ\s'-]+(?:\s\d+[A-Za-z]?)?$/;
 
   const validateForm = () => {
     const emailIsValid = emailPattern.test(email);
