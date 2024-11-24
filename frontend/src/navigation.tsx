@@ -20,6 +20,7 @@ import {
 } from "./pages/ProductDetail";
 import RootLayout from "./pages/Rootlayout";
 import ProtectedRoute from "./protectedRoute";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 const Navigation = () => {
   return (
@@ -29,6 +30,7 @@ const Navigation = () => {
         <Route path="product" element={<Product />}></Route>
         <Route path="checkout" element={<Checkout />}></Route>
         <Route path="confirmation" element={<Confirmation />}></Route>
+        <Route path="privacy-policy" element={<PrivacyPolicy />}></Route>
 
         <Route path="/category/:id" element={<CategoryProducts />}></Route>
         <Route path="cart" element={<Cart />}></Route>
