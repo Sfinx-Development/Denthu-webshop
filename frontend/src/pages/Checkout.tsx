@@ -11,6 +11,7 @@ import { PaymentOrderOutgoing } from "../../swedbankTypes";
 import { generatePayeeReference } from "../../utils";
 import SeamlessCheckout from "../components/SeamlessCheckout";
 import {
+  clearOrder,
   Order,
   OrderItem,
   updateOrderAsync,

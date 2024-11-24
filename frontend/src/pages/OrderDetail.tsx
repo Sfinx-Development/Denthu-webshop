@@ -11,8 +11,8 @@ import {
   ListItemText,
   ListSubheader,
   Snackbar,
+  TextField,
   Typography,
-  TextField
 } from "@mui/material";
 import emailjs from "emailjs-com";
 import { useEffect, useState } from "react";
@@ -85,7 +85,6 @@ export default function OrderDetail() {
 
     fetchPaymentOrder();
   }, [order, incomingPaymentOrder, dispatch]);
-
 
   const capturePayment = async () => {
     if (
@@ -166,31 +165,28 @@ export default function OrderDetail() {
 
   const handleShippingOrder = async () => {
     try {
-      if(!trackingLink ||trackingLink == ""){
+      if (!trackingLink || trackingLink == "") {
         setSnackbarOpen(true);
-        setSnackBarMessage("Fyll i spårningslänk!")
-      }else{
+        setSnackBarMessage("Fyll i spårningslänk!");
+      } else {
         if (order?.paymentInfo?.instrument != "Swish") {
           await capturePayment();
         }
         if (order) {
-          
-            const updatedOrder: Order = {
-              ...order,
-              isShipped: true,
-            };
-            dispatch(updateOrderAsync(updatedOrder));
-    
-            sendOrderConfirmationShipped(updatedOrder, products);
-            setSnackbarOpen(true);
-            setSnackBarMessage("Ordern uppdateras som skickad!");
-            setTimeout(() => {
-              navigate("/admin/ordersForShipping");
-            }, 1500);
-          
+          const updatedOrder: Order = {
+            ...order,
+            isShipped: true,
+          };
+          dispatch(updateOrderAsync(updatedOrder));
+
+          sendOrderConfirmationShipped(updatedOrder, products);
+          setSnackbarOpen(true);
+          setSnackBarMessage("Ordern uppdateras som skickad!");
+          setTimeout(() => {
+            navigate("/admin/ordersForShipping");
+          }, 1500);
         }
       }
-     
     } catch (error) {
       console.error("Error in capturePayment:", error);
     }
@@ -225,28 +221,37 @@ export default function OrderDetail() {
         Order Details: {order.id}
       </Typography>
 
-      <Box mb={2} sx={{width:"100%", display:"flex", alignItems:"center", flex:1, backgroundColor:"white"}}>
-        <Box sx={{width:"100%"}}>     
+      <Box
+        mb={2}
+        sx={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          flex: 1,
+          backgroundColor: "white",
+        }}
+      >
+        <Box sx={{ width: "100%" }}>
           <Typography variant="body1">
-          <strong>Kund:</strong> {order.guestFirstName} {order.guestLastName}
-        </Typography>
-        <Typography variant="body1">
-          <strong>Telefon:</strong> {order.guestPhone}
-        </Typography>
-        <Typography variant="body1">
-          <strong>E-post:</strong> {order.guestEmail}
-        </Typography></Box>
-        <Box sx={{width:"100%"}}>  
-   <TextField
-              label="Spårningslänk"
-              variant="outlined"
-              fullWidth
-              rows={1}
-              value={trackingLink}
-              onChange={(e) => setTrackingLink(e.target.value)}
-            />
-
-   </Box>
+            <strong>Kund:</strong> {order.guestFirstName} {order.guestLastName}
+          </Typography>
+          <Typography variant="body1">
+            <strong>Telefon:</strong> {order.guestPhone}
+          </Typography>
+          <Typography variant="body1">
+            <strong>E-post:</strong> {order.guestEmail}
+          </Typography>
+        </Box>
+        <Box sx={{ width: "100%" }}>
+          <TextField
+            label="Spårningslänk"
+            variant="outlined"
+            fullWidth
+            rows={1}
+            value={trackingLink}
+            onChange={(e) => setTrackingLink(e.target.value)}
+          />
+        </Box>
       </Box>
 
       <ListSubheader>Produkter:</ListSubheader>
@@ -265,15 +270,15 @@ export default function OrderDetail() {
                       <Typography variant="body2">
                         Pris: {item.price / 100} SEK
                       </Typography>
-                      <Typography variant="body2">
-                        Total summa: {order.total_amount / 100} kr
-                      </Typography>
                     </Box>
                   }
                 />
               </ListItem>
             );
           })}
+        <Typography variant="body2">
+          Total summa: {order.total_amount / 100} kr
+        </Typography>
       </List>
 
       <Box display="flex" justifyContent="space-between" mt="auto" p={2}>
