@@ -178,6 +178,7 @@ export default function OrderDetail() {
           const updatedOrder: Order = {
             ...order,
             isShipped: true,
+            trackingLink: trackingLink,
           };
           dispatch(updateOrderAsync(updatedOrder));
 
