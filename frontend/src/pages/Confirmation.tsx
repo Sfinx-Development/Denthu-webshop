@@ -6,12 +6,7 @@ import {
   sendOrderConfirmationWithLink,
 } from "../emailTemplates";
 import { clearCart } from "../slices/cartSlice";
-import {
-  clearOrder,
-  Order,
-  setEmailSent,
-  updateOrderAsync,
-} from "../slices/orderSlice";
+import { Order, setEmailSent, updateOrderAsync } from "../slices/orderSlice";
 import {
   clearCallbackData,
   clearCapture,
@@ -97,7 +92,6 @@ export default function Confirmation() {
       dispatch(setEmailSent(true));
       dispatch(clearCart());
       dispatch(clearPaymentInfo());
-      dispatch(clearOrder());
       dispatch(clearPaymentOrder());
       dispatch(clearCapture());
       dispatch(clearCallbackData());
@@ -120,13 +114,17 @@ export default function Confirmation() {
         <Typography sx={{ fontSize: 26, fontWeight: 600 }}>
           Tack för ditt köp!
         </Typography>
-        <Typography>
-          Dina varor är nu reserverade och redo att hämtas på DenThu
-          skadeverkstad.
-        </Typography>
-        <Typography>
-          Om du har betalat med kort dras inte pengarna förrän ordern är hämtad.
-        </Typography>
+        {order?.isPickedUp && (
+          <Typography>
+            Dina varor är nu reserverade och redo att hämtas på DenThu
+            skadeverkstad.
+          </Typography>
+        )}
+        {order?.isShipped && (
+          <Typography>
+            Du kommer få ett mail när dina varor skickas från vårt lager.
+          </Typography>
+        )}
         <Typography sx={{ paddingY: 2 }}>
           Vi skickar ett mail med en orderbekräftelse till {order?.guestEmail}.
         </Typography>

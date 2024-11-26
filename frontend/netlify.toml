@@ -1,0 +1,21 @@
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = "dist"
+
+[[redirects]]
+  from = "/psp/*"
+  to = "https://api.externalintegration.payex.com/psp/:splat"
+  status = 200
+  force = true
+  headers = {Origin = "https://denthuwebshop.netlify.app"}
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/psp/paymentorders"
+  [headers.values]
+    Content-Type = "application/json;version=3.1"

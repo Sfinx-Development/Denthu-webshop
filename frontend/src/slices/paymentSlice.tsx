@@ -10,11 +10,11 @@ import {
   PaymentFailed,
   PaymentOrderIn,
   PaymentOrderIncoming,
+  PaymentOrderOutgoing,
   PaymentOrderResponse,
   ReverseRequestOutgoing,
   ValidPaymentOrder,
 } from "../../swedbankTypes";
-import { PaymentOrderOutgoing } from "../../swedbankTypes";
 import { getCallbackFromDb } from "../api/callback";
 import { PostCancelToInternalApiDB } from "../api/cancel";
 import { getCaptureFromDb, PostCaptureToInternalApiDB } from "../api/capture";
@@ -29,6 +29,7 @@ import {
   PostPaymentOrder,
   PostUpdatePaymentOrder,
 } from "../api/swedbank";
+import { Order, updateOrderAsync } from "./orderSlice";
 
 interface PaymentState {
   paymentOrderOutgoing: PaymentOrderOutgoing | null;
@@ -349,51 +350,72 @@ export const getCaptureAsync = createAsyncThunk<
 // CANCEL
 export const makeCancelRequest = createAsyncThunk<
   PaymentOrderIn,
-  { cancelRequest: CancelRequestOutgoing; cancelUrl: string },
+  { cancelRequest: CancelRequestOutgoing; cancelUrl: string; order: Order },
   { rejectValue: string }
->("payments/makeCancel", async ({ cancelRequest, cancelUrl }, thunkAPI) => {
-  try {
-    const response = await PostCancelToInternalApiDB({
-      transaction: cancelRequest,
-      cancelUrl,
-    });
-    if (response) {
-      console.log(response);
-      savePaymentCancelledToLS(response);
-      return response as PaymentOrderIn;
-    } else {
-      return thunkAPI.rejectWithValue("failed to get cancelled payment");
+>(
+  "payments/makeCancel",
+  async ({ cancelRequest, cancelUrl, order }, thunkAPI) => {
+    try {
+      const response = await PostCancelToInternalApiDB({
+        transaction: cancelRequest,
+        cancelUrl,
+      });
+      if (response) {
+        console.log("CANCEL RESPONSE: ", response);
+        const orderUpdatedPayment: Order = {
+          ...order,
+          status: "Cancelled",
+          // status: response.status
+          // paymentInfo: paymentInfo.paymentOrder.paid,
+        };
+        updateOrderAsync(orderUpdatedPayment);
+        savePaymentCancelledToLS(response);
+        return response as PaymentOrderIn;
+      } else {
+        return thunkAPI.rejectWithValue("failed to get cancelled payment");
+      }
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        "Något gick fel vid hämtning av avbruten betalning."
+      );
     }
-  } catch (error) {
-    return thunkAPI.rejectWithValue(
-      "Något gick fel vid hämtning av avbruten betalning."
-    );
   }
-});
+);
 
 // REVERSE
 export const makeReverseRequest = createAsyncThunk<
   PaymentOrderIn,
-  { reverseRequest: ReverseRequestOutgoing; reverseUrl: string },
+  { reverseRequest: ReverseRequestOutgoing; reverseUrl: string; order: Order },
   { rejectValue: string }
->("payments/makeReverse", async ({ reverseRequest, reverseUrl }, thunkAPI) => {
-  try {
-    const response = await PostReverseToInternalApiDB({
-      transaction: reverseRequest,
-      reverseUrl,
-    });
-    if (response) {
-      savePaymentReversedToLS(response);
-      return response as PaymentOrderIn;
-    } else {
-      return thunkAPI.rejectWithValue("failed to get reversed payment");
+>(
+  "payments/makeReverse",
+  async ({ reverseRequest, reverseUrl, order }, thunkAPI) => {
+    try {
+      const response = await PostReverseToInternalApiDB({
+        transaction: reverseRequest,
+        reverseUrl,
+      });
+      console.log("RESPONSE REVERSAL: ", response);
+      if (response) {
+        const orderUpdatedPayment: Order = {
+          ...order,
+          status: "Reversed",
+          // status: response.status
+          // paymentInfo: paymentInfo.paymentOrder.paid,
+        };
+        await updateOrderAsync(orderUpdatedPayment);
+        savePaymentReversedToLS(response);
+        return response as PaymentOrderIn;
+      } else {
+        return thunkAPI.rejectWithValue("failed to get reversed payment");
+      }
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        "Något gick fel vid hämtning av återkallad betalning."
+      );
     }
-  } catch (error) {
-    return thunkAPI.rejectWithValue(
-      "Något gick fel vid hämtning av återkallad betalning."
-    );
   }
-});
+);
 
 const paymentSlice = createSlice({
   name: "payments",
