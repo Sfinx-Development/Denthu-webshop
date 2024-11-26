@@ -28,7 +28,7 @@ export interface Order {
   incomingPaymentOrderId?: string;
   isShipped: boolean;
   isPickedUp: boolean;
-  trackingLink?: string;
+  trackingLink?:string;
 }
 
 export interface OrderItem {
@@ -46,7 +46,6 @@ interface OrderState {
   order: Order | null;
   emailSent: boolean;
   error: string | null;
-  isLoading: boolean;
 }
 
 const getInitialOrderState = (): OrderState => {
@@ -59,14 +58,12 @@ const getInitialOrderState = (): OrderState => {
         error: null,
         emailSent: storedEmailSent ? true : false,
         orders: storedOrders ? (JSON.parse(storedOrders) as Order[]) : [],
-        isLoading: false,
       }
     : {
         order: null,
         error: null,
         emailSent: false,
         orders: storedOrders ? (JSON.parse(storedOrders) as Order[]) : [],
-        isLoading: false,
       };
 };
 
@@ -101,11 +98,11 @@ function getShippingCost(order: Order, products: Product[]) {
   } else {
     const productWeightTogether = order.items.reduce((total, item) => {
       const product = getProduct(item.product_id, products);
-      if (product) {
-        return total + product.weight * item.quantity;
-      } else {
-        return 0;
-      }
+    if(product){
+      return total + product.weight * item.quantity;
+    }else{
+      return 0;
+    }
     }, 0);
 
     const cost = availableShippingOptions(productWeightTogether);
@@ -131,7 +128,7 @@ const availableShippingOptions = (weight: number): number => {
     return 308;
   } else {
     //hanteras senare -> kanske dennis fylla i själv??
-    return 0;
+    return 0; 
   }
 };
 
@@ -419,17 +416,6 @@ const orderSlice = createSlice({
       .addCase(updateOrderAsync.rejected, (state) => {
         state.error =
           "Något gick fel när ordern uppdaterades. Försök igen senare.";
-      })
-      .addCase(fetchAllOrdersAsync.pending, (state) => {
-        state.isLoading = true;
-      })
-      .addCase(fetchAllOrdersAsync.fulfilled, (state, action) => {
-        state.orders = action.payload;
-        state.isLoading = false;
-      })
-      .addCase(fetchAllOrdersAsync.rejected, (state, action) => {
-        state.isLoading = false;
-        state.orders = [];
       });
   },
 });

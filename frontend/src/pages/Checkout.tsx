@@ -55,9 +55,19 @@ export default function Checkout() {
   const [streetError, setStreetError] = useState(false);
 
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const phonePattern = /^(\+46|0)(7[02369])(\d{7})$/;
-  const postalCodePattern = /^\d{5}$/;
-  const streetPattern = /^[A-Za-zåäöÅÄÖ\s'-]+(?:\s\d+[A-Za-z]?)?$/;
+  const phonePattern = /^(\+46|0)(7[02369])(\d{7})$/; 
+  const postalCodePattern = /^\d{5}$/; 
+  const streetPattern = /^[A-Za-zåäöÅÄÖ\s]+\s\d+[A-Za-z]?$/; 
+
+  const [fieldErrors, setFieldErrors] = useState({
+    firstName: false,
+    lastName: false,
+    phone: false,
+    email: false,
+    street: false,
+    postalCode: false,
+    city: false,
+  });
 
   const validateForm = () => {
     const emailIsValid = emailPattern.test(email);
@@ -256,10 +266,10 @@ export default function Checkout() {
           userAgent: "Mozilla/5.0...",
           language: "sv-SE",
           urls: {
-            hostUrls: ["https://denthuwebshop.netlify.app//checkout"], //Seamless View only
-            paymentUrl: "https://denthuwebshop.netlify.app/checkout", //Seamless View only
-            completeUrl: "https://denthuwebshop.netlify.app/confirmation",
-            cancelUrl: "https://denthuwebshop.netlify.app/checkout", //Redirect only
+            hostUrls: ["https://localhost:5173/checkout"], //Seamless View only
+            paymentUrl: "https://localhost:5173/checkout", //Seamless View only
+            completeUrl: "https://localhost:5173/confirmation",
+            cancelUrl: "https://localhost:5173/checkout", //Redirect only
             callbackUrl:
               "https://swedbankpay-gad0dfg6fha9bpfh.swedencentral-01.azurewebsites.net/swedbankpay/callbackDenthu",
             logoUrl: "", //Redirect only
@@ -293,10 +303,10 @@ export default function Checkout() {
         userAgent: "Mozilla/5.0...",
         language: "sv-SE",
         urls: {
-          hostUrls: ["https://denthuwebshop.netlify.app/checkout"], //Seamless View only
-          paymentUrl: "https://denthuwebshop.netlify.app/checkout", //Seamless View only
-          completeUrl: "https://denthuwebshop.netlify.app/confirmation",
-          cancelUrl: "https://denthuwebshop.netlify.app/checkout", //Redirect only
+          hostUrls: ["https://localhost:5173/checkout"], //Seamless View only
+          paymentUrl: "https://localhost:5173/checkout", //Seamless View only
+          completeUrl: "https://localhost:5173/confirmation",
+          cancelUrl: "https://localhost:5173/checkout", //Redirect only
           callbackUrl:
             "https://swedbankpay-gad0dfg6fha9bpfh.swedencentral-01.azurewebsites.net/swedbankpay/callbackDenthu",
           logoUrl: "", //Redirect only
@@ -348,22 +358,18 @@ export default function Checkout() {
         margin: "0 auto",
         padding: "20px",
         display: "flex",
-        flexDirection: { xs: "column", md: "row" },
+        flexDirection: "row",
         borderRadius: "10px",
         boxShadow: "0 6px 15px rgba(0, 0, 0, 0.1)",
-        gap: { xs: 2, md: 4 },
       }}
     >
-      {/* Vänster kolumn */}
-      <Box sx={{ display: "flex", flexDirection: "column", flex: 1 }}>
+      <Box sx={{ display: "flex", flexDirection: "column", flex: 1 / 2 }}>
         {order && order.total_amount && (
           <>
-            <Typography variant="h6" textAlign={{ xs: "center", sm: "left" }}>
+            <Typography variant="h6">
               Totalbelopp: {order.total_amount / 100} kr
             </Typography>
-            <Typography
-              sx={{ fontSize: 14, textAlign: { xs: "center", sm: "left" } }}
-            >
+            <Typography sx={{ fontSize: 14, marginBottom: "" }}>
               Inkl. moms
             </Typography>
           </>
@@ -381,62 +387,104 @@ export default function Checkout() {
                   display: "flex",
                   flexDirection: { xs: "column", sm: "row" },
                   alignItems: "center",
-                  padding: 2,
-                  marginY: 2,
+                  padding: 1,
+                  marginY: 4,
                   borderRadius: "8px",
-                  // boxShadow: "0 3px 6px rgba(0, 0, 0, 0.1)",
-                  gap: 2,
+                  boxShadow: "0 3px 6px rgba(0, 0, 0, 0.1)",
+                  marginX: 2,
                 }}
               >
-                {/* <img
+                <img
                   src={product?.imageUrl}
                   alt={product?.name}
                   style={{
-                    height: "80px",
-                    width: "80px",
+                    height: 100,
+                    width: 80,
                     objectFit: "cover",
                     borderRadius: "4px",
                   }}
-                /> */}
+                />
                 <Box
                   sx={{
-                    paddingX: { xs: 1, sm: 2 },
+                    paddingX: { xs: 2, sm: 4 },
                     width: "100%",
-                    textAlign: { xs: "left", sm: "left" },
+                    textAlign: { xs: "center", sm: "left" },
+                    marginBottom: { xs: 1, sm: 0 },
                   }}
                 >
-                  <Typography
-                    sx={{ fontSize: { xs: 16, sm: 18 }, fontWeight: 600 }}
-                  >
+                  <Typography sx={{ fontSize: 18, fontWeight: 600 }}>
                     {product?.name}
                   </Typography>
-                  <Typography sx={{ fontSize: 14, color: "#555" }}>
+                  <Typography sx={{ fontSize: 16, color: "#555" }}>
                     Antal: {item.quantity}
                   </Typography>
                   <Typography
-                    sx={{ fontSize: { xs: 16, sm: 18 }, fontWeight: 600 }}
+                    sx={{
+                      marginLeft: "auto",
+                      fontSize: 18,
+                      fontWeight: 600,
+                    }}
                   >
                     {(item.price * item.quantity) / 100} kr
+                  </Typography>
+                  <Typography sx={{ fontSize: 18, fontWeight: 600 }}>
+                    Totalt: {(item.price * item.quantity) / 100} kr
                   </Typography>
                 </Box>
               </Box>
             );
           })}
-
         {isShipping && (
-          <Typography
-            sx={{
-              fontSize: 16,
-              color: "#555",
-              textAlign: { xs: "center", sm: "left" },
-            }}
-          >
+          <Typography sx={{ fontSize: 16, color: "#555" }}>
             Fraktkostnad: {order?.shippingCost} kr
           </Typography>
         )}
+        {productsRemoved &&
+          productsRemoved.map((item) => {
+            return (
+              <Box>
+                <Typography>Produkter som är slut i lager</Typography>
+                <Box
+                  key={item.id}
+                  sx={{
+                    backgroundColor: "lightgrey",
+                    display: "flex",
+                    flexDirection: { xs: "column", sm: "row" },
+                    alignItems: "center",
+                    padding: 1,
+                    marginY: 4,
+                    borderRadius: "8px",
+                    boxShadow: "0 3px 6px rgba(0, 0, 0, 0.1)",
+                    marginX: 2,
+                  }}
+                >
+                  <img
+                    src={item?.imageUrl}
+                    alt={item?.name}
+                    style={{
+                      height: 100,
+                      width: 80,
+                      objectFit: "cover",
+                      borderRadius: "4px",
+                    }}
+                  />
+                  <Box
+                    sx={{
+                      paddingX: { xs: 2, sm: 4 },
+                      width: "100%",
+                      textAlign: { xs: "center", sm: "left" },
+                      marginBottom: { xs: 1, sm: 0 },
+                    }}
+                  >
+                    <Typography sx={{ fontSize: 18, fontWeight: 600 }}>
+                      {item?.name}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+            );
+          })}
       </Box>
-
-      {/* Höger kolumn */}
       <Box
         sx={{
           display: "flex",
@@ -445,33 +493,24 @@ export default function Checkout() {
           flex: 1,
         }}
       >
-        <Typography variant="h4" sx={{ fontWeight: 600, textAlign: "center" }}>
-          Betalning
-        </Typography>
         <Typography
-          variant="body2"
-          sx={{ fontWeight: 400, textAlign: "center", marginBottom: 2 }}
+          variant="h4"
+          sx={{ fontWeight: 600, marginBottom: 3, textAlign: "center" }}
         >
-          Vi hanterar dina personuppgifter i enlighet med vår{" "}
-          <a href="/privacy-policy" target="_blank" rel="noopener noreferrer">
-            integritetspolicy
-          </a>
-          .
+          Betalning
         </Typography>
         {incomingPaymentOrder && incomingPaymentOrder.operations && (
           <SeamlessCheckout />
         )}
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: { xs: "column", sm: "row" },
-            gap: 2,
-          }}
-        >
+        <Box sx={{ display: "flex", gap: 1 }}>
           <TextField
             label="Förnamn"
             variant="outlined"
             fullWidth
+            // error={fieldErrors.firstName}
+            // helperText={fieldErrors.firstName ? "Förnamn är obligatoriskt" : ""}
+            // onChange={(event) => setFirstName(event.target.value)}
+            // onBlur={() => handleBlur("firstName")}
             error={!firstName}
             helperText={!firstName ? "Förnamn är obligatoriskt" : ""}
             onChange={(event) => setFirstName(event.target.value)}
@@ -481,6 +520,9 @@ export default function Checkout() {
             label="Efternamn"
             variant="outlined"
             fullWidth
+            // error={fieldErrors.lastName}
+            // helperText={fieldErrors.lastName ? "Efternamn är obligatoriskt" : ""}
+            // onChange={(event) => setLastName(event.target.value)}
             error={!lastName}
             helperText={!lastName ? "Efternamn är obligatoriskt" : ""}
             onChange={(event) => setLastName(event.target.value)}
@@ -491,6 +533,9 @@ export default function Checkout() {
           label="Telefonnummer"
           variant="outlined"
           fullWidth
+          // error={fieldErrors.phone}
+          // helperText={fieldErrors.phone ? "Telefonnummer är obligatoriskt" : ""}
+          // onChange={(event) => setPhone(event.target.value)}
           error={phoneError}
           helperText={phoneError ? "Ange ett giltigt svenskt mobilnummer" : ""}
           onChange={(event) => setPhone(event.target.value)}
@@ -500,6 +545,9 @@ export default function Checkout() {
           label="Email"
           variant="outlined"
           fullWidth
+          // error={fieldErrors.email}
+          // helperText={fieldErrors.email ? "Ogiltig e-postadress" : ""}
+          // onChange={(event) => setEmail(event.target.value)}
           error={emailError}
           helperText={emailError ? "Ange en giltig e-postadress" : ""}
           onChange={(event) => setEmail(event.target.value)}
@@ -540,6 +588,10 @@ export default function Checkout() {
               label="Gata"
               variant="outlined"
               fullWidth
+              // error={shippingError && !street}
+              // error={fieldErrors.street}
+              // helperText={fieldErrors.street ? "Gata är obligatoriskt" : ""}
+              // onChange={(event) => setStreet(event.target.value)}
               error={streetError}
               helperText={
                 streetError ? "Ange en giltig adress (t.ex. Storgatan 5)" : ""
@@ -551,6 +603,10 @@ export default function Checkout() {
               label="Postnummer"
               variant="outlined"
               fullWidth
+              // error={shippingError && !postalCode}
+              // error={fieldErrors.postalCode}
+              // helperText={fieldErrors.postalCode ? "Postnummer är obligatoriskt" : ""}
+              // onChange={(event) => setPostalCode(event.target.value)}
               error={postalCodeError}
               helperText={
                 postalCodeError ? "Ange ett giltigt postnummer (5 siffror)" : ""
@@ -562,6 +618,10 @@ export default function Checkout() {
               label="Stad"
               variant="outlined"
               fullWidth
+              // error={shippingError && !city}
+              // error={fieldErrors.city}
+              // helperText={fieldErrors.city ? "Stad är obligatoriskt" : ""}
+              // onChange={(event) => setCity(event.target.value)}
               error={!city}
               helperText={!city ? "Stad är obligatoriskt" : ""}
               onChange={(event) => setCity(event.target.value)}
@@ -569,6 +629,13 @@ export default function Checkout() {
             />
           </>
         )}
+        {/* <Button
+          variant="contained"
+          onClick={handleAddToOrder}
+          sx={{ marginTop: 2 }}
+        >
+          Fortsätt
+        </Button> */}
         <Button
           variant="contained"
           onClick={() => handleMakeOrder()}
