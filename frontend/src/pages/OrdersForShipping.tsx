@@ -41,18 +41,25 @@ export default function OrdersForShipping() {
         (order) =>
           order.shippingMethod == "shipping" &&
           !order.isShipped &&
-          order.status != "Waiting for payment"
+          order.status != "Waiting for payment" &&
+          order.status != "Reversed" &&
+          order.status != "Cancelled"
       );
       const pickup = orders.filter(
         (order) =>
           order.shippingMethod == "pickup" &&
           !order.isPickedUp &&
-          order.status != "Waiting for payment"
+          order.status != "Waiting for payment" &&
+          order.status != "Reversed" &&
+          order.status != "Cancelled"
       );
       const handled = orders.filter(
         (order) =>
           order.isShipped ||
-          (order.isPickedUp && order.status != "Waiting for payment")
+          (order.isPickedUp &&
+            order.status != "Waiting for payment" &&
+            order.status != "Reversed" &&
+            order.status != "Cancelled")
       );
 
       const cancelled = orders.filter((order) => order.status == "Cancelled");

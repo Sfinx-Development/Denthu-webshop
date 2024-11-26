@@ -341,7 +341,14 @@ export default function OrderDetail() {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenCancelDialog(false)} color="primary">
+          <Button
+            disabled={
+              order.paymentInfo?.instrument == "Swish" ||
+              order.status == "Paid/Captured"
+            }
+            onClick={() => setOpenCancelDialog(false)}
+            color="primary"
+          >
             Avbryt
           </Button>
           <Button onClick={handleCancelPayment} color="secondary">
