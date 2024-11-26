@@ -1,11 +1,4 @@
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Dialog, DialogContent, DialogTitle } from "@mui/material";
 import { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import TableMUI from "../components/TableMUIComponent";
@@ -25,6 +18,7 @@ export default function AdminProducts() {
     dispatch(getProductsAsync());
   }, []);
 
+  
   function handleAction(product: Product) {
     setSelectedProduct(product);
     setIsPopupOpen(true);
@@ -156,12 +150,10 @@ export default function AdminProducts() {
         <DialogContent sx={{ display: "flex" }}>
           {selectedProduct && (
             <Box>
-              <Typography>ID: {selectedProduct.id}</Typography>
-              <Typography>Title: {selectedProduct.name}</Typography>
-              <Typography>
-                Description: {selectedProduct.description}
-              </Typography>
-              <Typography>Price: {selectedProduct.price}</Typography>
+              <p>ID: {selectedProduct.id}</p>
+              <p>Title: {selectedProduct.name}</p>
+              <p>Description: {selectedProduct.description}</p>
+              <p>Price: {selectedProduct.price}</p>
               {
                 <Button
                   variant="contained"
