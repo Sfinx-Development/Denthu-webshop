@@ -31,17 +31,18 @@ export async function PostCancelToInternalApiDB({
     console.log("Response Status: ", response.status);
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Nätverksfel - ${response.status}: ${errorText}`);
+      // const errorText = await response.text();
+      // throw new Error(`Nätverksfel - ${response.status}: ${errorText}`);
+      return false;
     }
 
-    const data = (await response.json()) as PaymentOrderIn;
-    console.log("Response Data From cancellation: ", data);
-    // ev spara till DATABASEN?
+    // const data = (await response.json()) as PaymentOrderIn;
+    // console.log("Response Data From cancellation: ", data);
+    // // ev spara till DATABASEN?
 
-    return data;
+    return true;
   } catch (error) {
     console.error("Error in cancel payment: ", error);
-    return null;
+    return false;
   }
 }

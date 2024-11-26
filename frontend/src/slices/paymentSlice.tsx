@@ -350,19 +350,18 @@ export const getCaptureAsync = createAsyncThunk<
 
 // CANCEL
 export const makeCancelRequest = createAsyncThunk<
-  PaymentOrderIn,
+  Order,
   { cancelRequest: CancelRequestOutgoing; cancelUrl: string; order: Order },
   { rejectValue: string }
 >(
   "payments/makeCancel",
   async ({ cancelRequest, cancelUrl, order }, thunkAPI) => {
     try {
-      const response = await PostCancelToInternalApiDB({
+      const isReversed = await PostCancelToInternalApiDB({
         transaction: cancelRequest,
         cancelUrl,
       });
-      if (response) {
-        console.log("CANCEL RESPONSE: ", response);
+      if (isReversed) {
         const orderUpdatedPayment: Order = {
           ...order,
           status: "Cancelled",
@@ -370,8 +369,8 @@ export const makeCancelRequest = createAsyncThunk<
           // paymentInfo: paymentInfo.paymentOrder.paid,
         };
         await editOrderInDB(orderUpdatedPayment);
-        savePaymentCancelledToLS(response);
-        return response as PaymentOrderIn;
+        // savePaymentCancelledToLS(response);
+        return order;
       } else {
         return thunkAPI.rejectWithValue("failed to get cancelled payment");
       }
@@ -385,19 +384,18 @@ export const makeCancelRequest = createAsyncThunk<
 
 // REVERSE
 export const makeReverseRequest = createAsyncThunk<
-  PaymentOrderIn,
+  Order,
   { reverseRequest: ReverseRequestOutgoing; reverseUrl: string; order: Order },
   { rejectValue: string }
 >(
   "payments/makeReverse",
   async ({ reverseRequest, reverseUrl, order }, thunkAPI) => {
     try {
-      const response = await PostReverseToInternalApiDB({
+      const isReversed = await PostReverseToInternalApiDB({
         transaction: reverseRequest,
         reverseUrl,
       });
-      console.log("RESPONSE REVERSAL: ", response);
-      if (response) {
+      if (isReversed) {
         const orderUpdatedPayment: Order = {
           ...order,
           status: "Reversed",
@@ -405,8 +403,8 @@ export const makeReverseRequest = createAsyncThunk<
           // paymentInfo: paymentInfo.paymentOrder.paid,
         };
         await editOrderInDB(orderUpdatedPayment);
-        savePaymentReversedToLS(response);
-        return response as PaymentOrderIn;
+        // savePaymentReversedToLS(response);
+        return order;
       } else {
         return thunkAPI.rejectWithValue("failed to get reversed payment");
       }
