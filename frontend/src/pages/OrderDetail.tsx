@@ -121,6 +121,7 @@ export default function OrderDetail() {
           makeCancelRequest({
             cancelRequest: cancelRequest,
             cancelUrl: operation.href,
+            order: order,
           })
         );
         sendOrderCancelledWithLink(order, products);
@@ -150,6 +151,7 @@ export default function OrderDetail() {
           makeReverseRequest({
             reverseRequest: reverseRequest,
             reverseUrl: operation.href,
+            order: order,
           })
         );
         sendOrderReversedWithLink(order, products);
@@ -241,6 +243,9 @@ export default function OrderDetail() {
           <Typography variant="body1">
             <strong>E-post:</strong> {order.guestEmail}
           </Typography>
+          <Typography variant="body1">
+            <strong>Order status:</strong> {order.status}
+          </Typography>
         </Box>
         <Box sx={{ width: "100%" }}>
           <TextField
@@ -300,7 +305,12 @@ export default function OrderDetail() {
           variant="contained"
           color="primary"
           onClick={handlePickupOrder}
-          disabled={order.shippingMethod != "pickup" || order.isPickedUp}
+          disabled={
+            order.shippingMethod != "pickup" ||
+            order.status == "Reversed" ||
+            order.status == "Cancelled" ||
+            order.isPickedUp
+          }
         >
           Order hämtad
         </Button>
@@ -308,7 +318,12 @@ export default function OrderDetail() {
           variant="contained"
           color="primary"
           onClick={handleShippingOrder}
-          disabled={order.shippingMethod != "shipping" || order.isShipped}
+          disabled={
+            order.shippingMethod != "shipping" ||
+            order.status == "Reversed" ||
+            order.status == "Cancelled" ||
+            order.isShipped
+          }
         >
           Order skickad
         </Button>

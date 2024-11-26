@@ -47,7 +47,6 @@ export default function Confirmation() {
 
   useEffect(() => {
     if (paymentInfo && order) {
-      //denna uppdaterar INTE till Paid vid swish
       const orderUpdatedPayment: Order = {
         ...order,
         status:
