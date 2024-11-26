@@ -18,6 +18,7 @@ import {
 import { getCallbackFromDb } from "../api/callback";
 import { PostCancelToInternalApiDB } from "../api/cancel";
 import { getCaptureFromDb, PostCaptureToInternalApiDB } from "../api/capture";
+import { editOrderInDB } from "../api/order";
 import {
   addPaymentOrderIncomingToDB,
   getPaymentOrderFromDB,
@@ -29,7 +30,7 @@ import {
   PostPaymentOrder,
   PostUpdatePaymentOrder,
 } from "../api/swedbank";
-import { Order, updateOrderAsync } from "./orderSlice";
+import { Order } from "./orderSlice";
 
 interface PaymentState {
   paymentOrderOutgoing: PaymentOrderOutgoing | null;
@@ -368,7 +369,7 @@ export const makeCancelRequest = createAsyncThunk<
           // status: response.status
           // paymentInfo: paymentInfo.paymentOrder.paid,
         };
-        updateOrderAsync(orderUpdatedPayment);
+        await editOrderInDB(orderUpdatedPayment);
         savePaymentCancelledToLS(response);
         return response as PaymentOrderIn;
       } else {
@@ -403,7 +404,7 @@ export const makeReverseRequest = createAsyncThunk<
           // status: response.status
           // paymentInfo: paymentInfo.paymentOrder.paid,
         };
-        await updateOrderAsync(orderUpdatedPayment);
+        await editOrderInDB(orderUpdatedPayment);
         savePaymentReversedToLS(response);
         return response as PaymentOrderIn;
       } else {
