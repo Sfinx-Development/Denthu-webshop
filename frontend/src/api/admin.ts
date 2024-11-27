@@ -1,7 +1,7 @@
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { Admin, LogIn } from "../../data/types";
 import { auth } from "./config";
-//kommentar
+//kommentartttttt
 
 export const signInWithAPI = async (logInUser: LogIn) => {
   const userCredential = await signInWithEmailAndPassword(
