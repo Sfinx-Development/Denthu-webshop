@@ -256,7 +256,7 @@ export default function Checkout() {
           userAgent: "Mozilla/5.0...",
           language: "sv-SE",
           urls: {
-            hostUrls: ["https://denthuwebshop.netlify.app//checkout"], //Seamless View only
+            hostUrls: ["https://denthuwebshop.netlify.app/checkout"], //Seamless View only
             paymentUrl: "https://denthuwebshop.netlify.app/checkout", //Seamless View only
             completeUrl: "https://denthuwebshop.netlify.app/confirmation",
             cancelUrl: "https://denthuwebshop.netlify.app/checkout", //Redirect only
