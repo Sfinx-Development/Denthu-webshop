@@ -243,6 +243,8 @@ export default function Checkout() {
   const handleMakeOrder = () => {
     //göra denna asyjc?
     if (validateForm()) {
+      //Kolla så att alla produkter finns i database ninnan köp:
+      //dkdjdjdd
       handleAddToOrder();
       if (order && !shippingError && !emailError) {
         const payeeId = import.meta.env.VITE_SWEDBANK_PAYEEID;
