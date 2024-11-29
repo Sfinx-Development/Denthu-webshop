@@ -209,14 +209,13 @@ export const sendOrderReversedWithLink = (
     message: receipt,
   };
 
-  emailjs
-    .send("service_9phhhzn", "template_d2buzz5", templateParams)
-    .then((response) => {
-      console.log("Email sent successfully!", response);
-    })
-    .catch((error) => {
-      console.error("Failed to send email. Error: ", error);
-    });
+  emailjs.send("service_9phhhzn", "template_d2buzz5", templateParams);
+  // .then((response) => {
+  //   console.log("Email sent successfully!", response);
+  // })
+  // .catch((error) => {
+  //   console.error("Failed to send email. Error: ", error);
+  // });
 };
 
 export const sendOrderConfirmationShipped = (

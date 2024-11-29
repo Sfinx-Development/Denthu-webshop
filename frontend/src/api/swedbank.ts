@@ -2,25 +2,24 @@ import {
   CancelRequestOutgoing,
   PaymentOrderIn,
   PaymentOrderIncoming,
+  PaymentOrderOutgoing,
   ValidPaymentOrder,
-  PaymentOrderOutgoing
 } from "../../swedbankTypes";
 
 export async function PostPaymentOrder(paymentOrder: PaymentOrderOutgoing) {
-  const uri = "/psp/paymentorders";
+  const uri = "https://api.externalintegration.payex.com/psp/paymentorders";
   const requestBody = {
     paymentOrder,
   };
   const bearer = import.meta.env.VITE_SWEDBANK_BEARER;
-  console.log(bearer);
   // const sessionId = import.meta.env.VITE_SWEDBANK_SESSIONID;
-  console.log(bearer);
   return fetch(uri, {
     method: "POST",
     headers: {
       "Content-Type": "application/json;version=3.1",
       Authorization: `Bearer ${bearer}`,
       Host: "api.externalintegration.payex.com",
+      // "Session-Id": sessionId,
     },
     body: JSON.stringify(requestBody),
   })
@@ -31,7 +30,6 @@ export async function PostPaymentOrder(paymentOrder: PaymentOrderOutgoing) {
       return response.json();
     })
     .then((data) => {
-      console.log("RESPONSE PÅ PAYMENT ORDER: ", data);
       return data as PaymentOrderIncoming;
     })
     .catch((error) => {
@@ -49,9 +47,7 @@ export async function PostUpdatePaymentOrder(
     paymentOrder,
   };
   const bearer = import.meta.env.VITE_SWEDBANK_BEARER;
-  console.log(bearer);
   // const sessionId = import.meta.env.VITE_SWEDBANK_SESSIONID;
-  console.log(bearer);
   return fetch(uri, {
     method: "POST",
     headers: {
@@ -68,7 +64,6 @@ export async function PostUpdatePaymentOrder(
       return response.json();
     })
     .then((data) => {
-      console.log("RESPONSE PÅ PAYMENT ORDER: ", data);
       return data as PaymentOrderIncoming;
     })
     .catch((error) => {
@@ -101,7 +96,6 @@ export async function GetPaymentPaidValidation(paidUrl: string) {
       return response.json();
     })
     .then((data) => {
-      console.log("DATA SOM GES SOM VALIDPAYMENTODEr: ", data);
       return data as ValidPaymentOrder;
     })
     .catch((error) => {
@@ -129,7 +123,6 @@ export async function GetPaymentById(urlId: string) {
       return response.json();
     })
     .then((data) => {
-      console.log("DATA MED ID URLEN:: ", data);
       return data as PaymentOrderIncoming;
     })
     .catch((error) => {

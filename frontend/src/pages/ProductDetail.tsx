@@ -1,6 +1,6 @@
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
-import { Box, CardMedia, IconButton, Typography } from "@mui/material";
+import { Box, Button, CardMedia, IconButton, Typography } from "@mui/material";
 import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -87,6 +87,11 @@ export default function ProductDetails() {
     }
   };
 
+  const handleEmailClick = () => {
+    // Replace with the actual email address to send to
+    window.location.href = "mailto:info@example.com?subject=Företagsprodukt";
+  };
+
   if (loading) {
     return <Typography>Loading...</Typography>;
   }
@@ -116,21 +121,46 @@ export default function ProductDetails() {
         {product.price} SEK
       </Typography>
 
-      {/* Show + and - buttons only if the product has been added to the cart */}
-      {isProductAdded && (
-        <Box sx={{ display: "flex", alignItems: "center", marginTop: 2 }}>
-          <IconButton onClick={handleRemoveFromCart} disabled={quantity <= 0}>
-            <RemoveIcon />
-          </IconButton>
-          <Typography sx={{ marginX: 2 }}>{quantity}</Typography>
-          <IconButton onClick={handleAddToCart}>
-            <AddIcon />
-          </IconButton>
-        </Box>
-      )}
+      {product.isCompanyProduct ? (
+        <Box mt={2}>
+          <Typography variant="body1" component="p">
+            För intresse av denna produkt{" "}
+            <span style={{ fontWeight: "bold", fontStyle: "italic" }}>
+              mejla företagsuppgifter
+            </span>{" "}
+            till oss för att gå vidare! Vi svarar inom kort.
+          </Typography>
 
-      {/* AddtoCartButton manages adding product to cart */}
-      <AddtoCartButton product={product} />
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleEmailClick}
+          >
+            Mejla nu
+          </Button>
+        </Box>
+      ) : (
+        <>
+          {/* Show + and - buttons only if the product has been added to the cart */}
+          {isProductAdded && (
+            <Box sx={{ display: "flex", alignItems: "center", marginTop: 2 }}>
+              <IconButton
+                onClick={handleRemoveFromCart}
+                disabled={quantity <= 0}
+              >
+                <RemoveIcon />
+              </IconButton>
+              <Typography sx={{ marginX: 2 }}>{quantity}</Typography>
+              <IconButton onClick={handleAddToCart}>
+                <AddIcon />
+              </IconButton>
+            </Box>
+          )}
+
+          {/* AddtoCartButton manages adding product to cart */}
+          <AddtoCartButton product={product} />
+        </>
+      )}
     </Box>
   );
 }
