@@ -11,18 +11,14 @@ import {
 } from "../api/product";
 
 export interface Product {
-  // sizes: any;
-  // sizes: any;
   id: string;
   name: string;
   description: string;
   price: number;
   categoryId: string;
   discount: number;
-  // launch_date: string;
   imageUrl: string;
   amount: number;
-  // in_store: boolean;
   vat_amount: number;
   weight: number;
 }
@@ -34,10 +30,8 @@ export interface ProductWithDate {
   price: number;
   categoryId: string;
   discount: number;
-  // launch_date: Date;
   imageUrl: string;
-  amount: number; 
-  //gram
+  amount: number;
   vat_amount: number;
   weight: number;
 }
@@ -53,6 +47,7 @@ interface ProductState {
 const storedProducts = localStorage.getItem("products");
 const storedActiveProduct = localStorage.getItem("activeProduct");
 const filteredProducts = localStorage.getItem("categoryProducts");
+// const productsNotInStore = localStorage.getItem("productsNotInStore");
 
 export const initialState: ProductState = {
   products: storedProducts ? JSON.parse(storedProducts) : [],
@@ -71,7 +66,7 @@ export const getProductsByCategoryAsync = createAsyncThunk<
 >("products/getProductsByCategory", async (categoryId, thunkAPI) => {
   try {
     const products = await getProductsByCategoryFromDB(categoryId);
-    
+
     if (products) {
       localStorage.setItem("categoryProducts", JSON.stringify(products));
       return products;
