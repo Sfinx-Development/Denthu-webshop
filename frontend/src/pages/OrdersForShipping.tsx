@@ -57,7 +57,7 @@ export default function OrdersForShipping() {
         (order) =>
           order.isShipped ||
           (order.isPickedUp &&
-            order.status != "Waiting for payment" &&
+            order.status != "Waiting for payment" ||
             order.status != "Reversed" &&
             order.status != "Cancelled")
       );

@@ -1,4 +1,5 @@
 import {
+  Alert,
   Box,
   Button,
   Checkbox,
@@ -7,9 +8,11 @@ import {
   Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { PaymentOrderOutgoing } from "../../swedbankTypes";
 import { generatePayeeReference } from "../../utils";
 import SeamlessCheckout from "../components/SeamlessCheckout";
+import { CartItem, setCart } from "../slices/cartSlice";
 import {
   Order,
   OrderItem,
@@ -28,7 +31,9 @@ export default function Checkout() {
     (state) => state.paymentSlice.paymentOrderIncoming
   );
   const order = useAppSelector((state) => state.orderSlice.order);
+  const navigate = useNavigate();
   const products = useAppSelector((state) => state.productSlice.products);
+  const cart = useAppSelector((state) => state.cartSlice.cart);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
@@ -37,6 +42,9 @@ export default function Checkout() {
   const [isOrderUpdated, setIsOrderUpdated] = useState(false);
   const dispatch = useAppDispatch();
   const paymentInfo = useAppSelector((state) => state.paymentSlice.paymentInfo);
+  const [productsNotInStore, setProductsNotInStore] = useState<
+    Product[] | null
+  >();
   const [isPickup, setIsPickup] = useState(false);
   const [isShipping, setIsShipping] = useState(
     localStorage.getItem("isShipping") ? true : false
@@ -77,6 +85,12 @@ export default function Checkout() {
     );
   };
 
+  useEffect(() => {
+    if (!order?.items || order?.items.length == 0) {
+      navigate("/cart");
+    }
+  }, [order]);
+
   const isFormComplete = () => {
     if (isShipping) {
       return (
@@ -98,18 +112,19 @@ export default function Checkout() {
   }, []);
 
   useEffect(() => {
-    //kolla om produkterna (order items) och antalen fortfarande finns i lager
-    //annars gråmarkera dessa och uppdatera ordern - text slut i lager
-    //och uppdatera paymentorder till swedbank
     if (order) {
+      //varje produkt i ordern
       const updatedItems = order.items.map((o) => {
+        //se om den finns i lager
         const productInOrder = products.find((p) => p.id === o.product_id);
 
         if (productInOrder) {
+          //om den finns och om det finns fler i ordern än i lagret
           if (o.quantity > productInOrder.amount) {
-            if (productsRemoved.find((p) => p.id != productInOrder.id)) {
-              productsRemoved.push(productInOrder);
-              setProductsRemoved([productInOrder, ...productsRemoved]);
+            if (!productsRemoved.some((p) => p.id === productInOrder.id)) {
+              //sätt i products not i store
+              setProductsRemoved((prev) => [...prev, productInOrder]);
+              setProductsNotInStore(productsRemoved);
             }
             return {
               ...o,
@@ -117,35 +132,77 @@ export default function Checkout() {
             };
           }
           if (productInOrder.amount === 0) {
-            if (productsRemoved.find((p) => p.id != productInOrder.id)) {
-              productsRemoved.push(productInOrder);
-              setProductsRemoved([productInOrder, ...productsRemoved]);
+            if (!productsRemoved.some((p) => p.id === productInOrder.id)) {
+              setProductsRemoved((prev) => [...prev, productInOrder]);
+              setProductsNotInStore(productsRemoved);
             }
-
             return null;
           }
         }
         return o;
       });
 
+      // Filtrera bort null-objekt och skapa den uppdaterade ordern
       const filteredItems: OrderItem[] = updatedItems.filter(
         (item): item is OrderItem => item !== null
       );
 
+      const totalPrice =
+        filteredItems?.reduce(
+          (acc, item) => acc + item.price * item.quantity,
+          0
+        ) || 0;
+      console.log("UPPDATERADE ITEMS BLIR DÅ: ", filteredItems);
       const updatedOrder: Order = {
         ...order,
         items: filteredItems,
+        total_amount: totalPrice,
       };
+
+      // Dispatcha den uppdaterade ordern
       dispatch(updateOrderAsync(updatedOrder));
 
+      // Uppdatera kundvagnen
+      if (cart?.items) {
+        const updatedCartItems = cart.items.map((cartItem) => {
+          const matchingOrderItem = filteredItems.find(
+            (orderItem) => orderItem.product_id === cartItem.product_id
+          );
+
+          if (matchingOrderItem) {
+            return {
+              ...cartItem,
+              quantity: matchingOrderItem.quantity, // Justera kvantitet
+            };
+          }
+
+          // Ta bort objekt som inte längre finns i ordern
+          if (!matchingOrderItem) {
+            return null;
+          }
+
+          return cartItem;
+        });
+
+        // Filtrera bort null-objekt
+        const filteredCartItems = updatedCartItems.filter(
+          (item): item is CartItem => item !== null
+        );
+
+        // Uppdatera cart state
+        dispatch(setCart({ ...cart, items: filteredCartItems }));
+        // localStorage.setItem(
+        //   "cart",
+        //   JSON.stringify({ ...cart, items: filteredCartItems })
+        // );
+      }
+
+      // Uppdatera betalningsorder till Swedbank
       if (incomingPaymentOrder) {
         handleUpdateOrderToSwedbank();
       }
-
-      //och uppdatera CART med items.
-      //vad göra med dom som tog slut i lager under tiden? spara med boolean slut i lager?
     }
-  }, [products, dispatch]);
+  }, []);
 
   const handleShippingMethodChange = (method: string) => {
     setSelectedShippingMethod(method);
@@ -371,8 +428,80 @@ export default function Checkout() {
           </>
         )}
 
+        {productsNotInStore && (
+          <Box
+            sx={{
+              backgroundColor: "#fff6f6",
+              padding: 3,
+              borderRadius: "8px",
+              boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)",
+              marginY: 2,
+            }}
+          >
+            <Alert
+              severity="warning"
+              sx={{
+                marginBottom: 2,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+            >
+              Vissa produkter har tagit slut och tagits bort från din varukorg!
+            </Alert>
+            {productsNotInStore.map((product) => (
+              <Box
+                key={product.id}
+                sx={{
+                  display: "flex",
+                  flexDirection: { xs: "column", sm: "row" },
+                  alignItems: "center",
+                  backgroundColor: "#fff",
+                  padding: 2,
+                  marginBottom: 2,
+                  borderRadius: "8px",
+                  border: "1px solid #ffcccc",
+                  gap: 2,
+                }}
+              >
+                <Box
+                  sx={{
+                    flex: 1,
+                    textAlign: "left",
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontSize: { xs: 16, sm: 18 },
+                      fontWeight: 600,
+                      color: "#ff0000",
+                    }}
+                  >
+                    {product.name}
+                  </Typography>
+                  <Typography sx={{ fontSize: 14, color: "#555" }}>
+                    Antal: {product.amount}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: 16,
+                      fontWeight: 600,
+                      color: "#333",
+                    }}
+                  >
+                    Totalt:{" "}
+                    {((product.price * product.amount) / 100).toFixed(2)} kr
+                  </Typography>
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        )}
+
         {products &&
           order &&
+          order.items &&
+          order?.items.length > 0 &&
           order.items.map((item) => {
             const product = getProduct(item.product_id);
             return (
@@ -438,148 +567,156 @@ export default function Checkout() {
         )}
       </Box>
 
-      {/* Höger kolumn */}
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 2,
-          flex: 1,
-        }}
-      >
-        <Typography variant="h4" sx={{ fontWeight: 600, textAlign: "center" }}>
-          Betalning
-        </Typography>
-        <Typography
-          variant="body2"
-          sx={{ fontWeight: 400, textAlign: "center", marginBottom: 2 }}
-        >
-          Vi hanterar dina personuppgifter i enlighet med vår{" "}
-          <a href="/privacy-policy" target="_blank" rel="noopener noreferrer">
-            integritetspolicy
-          </a>
-          .
-        </Typography>
-        {incomingPaymentOrder && incomingPaymentOrder.operations && (
-          <SeamlessCheckout />
-        )}
+      {products && order && order.items && order?.items.length > 0 && (
         <Box
           sx={{
             display: "flex",
-            flexDirection: { xs: "column", sm: "row" },
+            flexDirection: "column",
             gap: 2,
+            flex: 1,
           }}
         >
+          <Typography
+            variant="h4"
+            sx={{ fontWeight: 600, textAlign: "center" }}
+          >
+            Betalning
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{ fontWeight: 400, textAlign: "center", marginBottom: 2 }}
+          >
+            Vi hanterar dina personuppgifter i enlighet med vår{" "}
+            <a href="/privacy-policy" target="_blank" rel="noopener noreferrer">
+              integritetspolicy
+            </a>
+            .
+          </Typography>
+          {incomingPaymentOrder && incomingPaymentOrder.operations && (
+            <SeamlessCheckout />
+          )}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              gap: 2,
+            }}
+          >
+            <TextField
+              label="Förnamn"
+              variant="outlined"
+              fullWidth
+              error={!firstName}
+              helperText={!firstName ? "Förnamn är obligatoriskt" : ""}
+              onChange={(event) => setFirstName(event.target.value)}
+              onBlur={() => handleBlur("firstName")}
+            />
+            <TextField
+              label="Efternamn"
+              variant="outlined"
+              fullWidth
+              error={!lastName}
+              helperText={!lastName ? "Efternamn är obligatoriskt" : ""}
+              onChange={(event) => setLastName(event.target.value)}
+              onBlur={() => handleBlur("lastName")}
+            />
+          </Box>
           <TextField
-            label="Förnamn"
+            label="Telefonnummer"
             variant="outlined"
             fullWidth
-            error={!firstName}
-            helperText={!firstName ? "Förnamn är obligatoriskt" : ""}
-            onChange={(event) => setFirstName(event.target.value)}
-            onBlur={() => handleBlur("firstName")}
+            error={phoneError}
+            helperText={
+              phoneError ? "Ange ett giltigt svenskt mobilnummer" : ""
+            }
+            onChange={(event) => setPhone(event.target.value)}
+            onBlur={() => handleBlur("phone")}
           />
           <TextField
-            label="Efternamn"
+            label="Email"
             variant="outlined"
             fullWidth
-            error={!lastName}
-            helperText={!lastName ? "Efternamn är obligatoriskt" : ""}
-            onChange={(event) => setLastName(event.target.value)}
-            onBlur={() => handleBlur("lastName")}
+            error={emailError}
+            helperText={emailError ? "Ange en giltig e-postadress" : ""}
+            onChange={(event) => setEmail(event.target.value)}
+            onBlur={() => handleBlur("email")}
           />
-        </Box>
-        <TextField
-          label="Telefonnummer"
-          variant="outlined"
-          fullWidth
-          error={phoneError}
-          helperText={phoneError ? "Ange ett giltigt svenskt mobilnummer" : ""}
-          onChange={(event) => setPhone(event.target.value)}
-          onBlur={() => handleBlur("phone")}
-        />
-        <TextField
-          label="Email"
-          variant="outlined"
-          fullWidth
-          error={emailError}
-          helperText={emailError ? "Ange en giltig e-postadress" : ""}
-          onChange={(event) => setEmail(event.target.value)}
-          onBlur={() => handleBlur("email")}
-        />
 
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={isPickup}
-              onChange={(event) => {
-                setIsPickup(event.target.checked);
-                setIsShipping(false);
-                localStorage.removeItem("isShipping");
-                handleShippingMethodChange("pickup");
-              }}
-            />
-          }
-          label="Hämta upp"
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={isShipping}
-              onChange={(event) => {
-                setIsShipping(event.target.checked);
-                localStorage.setItem("isShipping", JSON.stringify("true"));
-                setIsPickup(false);
-                handleShippingMethodChange("shipping");
-              }}
-            />
-          }
-          label="Leverans"
-        />
-        {isShipping && (
-          <>
-            <TextField
-              label="Gata"
-              variant="outlined"
-              fullWidth
-              error={streetError}
-              helperText={
-                streetError ? "Ange en giltig adress (t.ex. Storgatan 5)" : ""
-              }
-              onChange={(event) => setStreet(event.target.value)}
-              onBlur={() => handleBlur("street")}
-            />
-            <TextField
-              label="Postnummer"
-              variant="outlined"
-              fullWidth
-              error={postalCodeError}
-              helperText={
-                postalCodeError ? "Ange ett giltigt postnummer (5 siffror)" : ""
-              }
-              onChange={(event) => setPostalCode(event.target.value)}
-              onBlur={() => handleBlur("postalCode")}
-            />
-            <TextField
-              label="Stad"
-              variant="outlined"
-              fullWidth
-              error={!city}
-              helperText={!city ? "Stad är obligatoriskt" : ""}
-              onChange={(event) => setCity(event.target.value)}
-              onBlur={() => handleBlur("city")}
-            />
-          </>
-        )}
-        <Button
-          variant="contained"
-          onClick={() => handleMakeOrder()}
-          sx={{ marginTop: 2 }}
-          disabled={!isFormComplete()}
-        >
-          Till betalning
-        </Button>
-      </Box>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={isPickup}
+                onChange={(event) => {
+                  setIsPickup(event.target.checked);
+                  setIsShipping(false);
+                  localStorage.removeItem("isShipping");
+                  handleShippingMethodChange("pickup");
+                }}
+              />
+            }
+            label="Hämta upp"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={isShipping}
+                onChange={(event) => {
+                  setIsShipping(event.target.checked);
+                  localStorage.setItem("isShipping", JSON.stringify("true"));
+                  setIsPickup(false);
+                  handleShippingMethodChange("shipping");
+                }}
+              />
+            }
+            label="Leverans"
+          />
+          {isShipping && (
+            <>
+              <TextField
+                label="Gata"
+                variant="outlined"
+                fullWidth
+                error={streetError}
+                helperText={
+                  streetError ? "Ange en giltig adress (t.ex. Storgatan 5)" : ""
+                }
+                onChange={(event) => setStreet(event.target.value)}
+                onBlur={() => handleBlur("street")}
+              />
+              <TextField
+                label="Postnummer"
+                variant="outlined"
+                fullWidth
+                error={postalCodeError}
+                helperText={
+                  postalCodeError
+                    ? "Ange ett giltigt postnummer (5 siffror)"
+                    : ""
+                }
+                onChange={(event) => setPostalCode(event.target.value)}
+                onBlur={() => handleBlur("postalCode")}
+              />
+              <TextField
+                label="Stad"
+                variant="outlined"
+                fullWidth
+                error={!city}
+                helperText={!city ? "Stad är obligatoriskt" : ""}
+                onChange={(event) => setCity(event.target.value)}
+                onBlur={() => handleBlur("city")}
+              />
+            </>
+          )}
+          <Button
+            variant="contained"
+            onClick={() => handleMakeOrder()}
+            sx={{ marginTop: 2 }}
+            disabled={!isFormComplete()}
+          >
+            Till betalning
+          </Button>
+        </Box>
+      )}
     </Box>
   );
 }
