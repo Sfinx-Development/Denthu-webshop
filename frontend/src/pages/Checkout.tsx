@@ -258,10 +258,10 @@ export default function Checkout() {
           userAgent: "Mozilla/5.0...",
           language: "sv-SE",
           urls: {
-            hostUrls: ["https://denthuwebshop.netlify.app/checkout"], //Seamless View only
-            paymentUrl: "https://denthuwebshop.netlify.app/checkout", //Seamless View only
-            completeUrl: "https://denthuwebshop.netlify.app/confirmation",
-            cancelUrl: "https://denthuwebshop.netlify.app/checkout", //Redirect only
+            hostUrls: ["http://localhost:5173/checkout"], //Seamless View only
+            paymentUrl: "http://localhost:5173/checkout", //Seamless View only
+            completeUrl: "http://localhost:5173/confirmation",
+            cancelUrl: "http://localhost:5173/checkout", //Redirect only
             callbackUrl:
               "https://swedbankpay-gad0dfg6fha9bpfh.swedencentral-01.azurewebsites.net/swedbankpay/callbackDenthu",
             logoUrl: "", //Redirect only
@@ -281,7 +281,6 @@ export default function Checkout() {
       }
     }
   };
-
   const handleUpdateOrderToSwedbank = () => {
     if (order && !shippingError && !emailError) {
       const payeeId = import.meta.env.VITE_SWEDBANK_PAYEEID;
@@ -295,10 +294,10 @@ export default function Checkout() {
         userAgent: "Mozilla/5.0...",
         language: "sv-SE",
         urls: {
-          hostUrls: ["https://denthuwebshop.netlify.app/checkout"], //Seamless View only
-          paymentUrl: "https://denthuwebshop.netlify.app/checkout", //Seamless View only
-          completeUrl: "https://denthuwebshop.netlify.app/confirmation",
-          cancelUrl: "https://denthuwebshop.netlify.app/checkout", //Redirect only
+          hostUrls: ["http://localhost:5173/checkout"], //Seamless View only
+          paymentUrl: "http://localhost:5173/checkout", //Seamless View only
+          completeUrl: "http://localhost:5173/confirmation",
+          cancelUrl: "http://localhost:5173/checkout", //Redirect only
           callbackUrl:
             "https://swedbankpay-gad0dfg6fha9bpfh.swedencentral-01.azurewebsites.net/swedbankpay/callbackDenthu",
           logoUrl: "", //Redirect only
