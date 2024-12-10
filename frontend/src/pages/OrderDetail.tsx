@@ -170,7 +170,12 @@ export default function OrderDetail() {
       if (!trackingLink || trackingLink == "") {
         setSnackbarOpen(true);
         setSnackBarMessage("Fyll i spårningslänk!");
-      } else {
+        return;
+      }
+      // } else {
+        // Skapa PostNord-länken
+    const postNordTrackingUrl = `https://www.postnord.se/track-and-trace#dynamicloading=true&shipmentId=${trackingLink}`;
+
         if (order?.paymentInfo?.instrument != "Swish") {
           await capturePayment();
         }
@@ -178,22 +183,22 @@ export default function OrderDetail() {
           const updatedOrder: Order = {
             ...order,
             isShipped: true,
-            trackingLink: trackingLink,
+            trackingLink: postNordTrackingUrl,
           };
-          dispatch(updateOrderAsync(updatedOrder));
+           // Uppdatera order och skicka mejl
+      dispatch(updateOrderAsync(updatedOrder));
+      sendOrderConfirmationShipped(updatedOrder, products);
 
-          sendOrderConfirmationShipped(updatedOrder, products);
-          setSnackbarOpen(true);
-          setSnackBarMessage("Ordern uppdateras som skickad!");
-          setTimeout(() => {
-            navigate("/admin/ordersForShipping");
-          }, 1500);
-        }
-      }
-    } catch (error) {
-      console.error("Error in capturePayment:", error);
+      setSnackbarOpen(true);
+      setSnackBarMessage("Ordern uppdateras som skickad!");
+      setTimeout(() => {
+        navigate("/admin/ordersForShipping");
+      }, 1500);
     }
-  };
+  } catch (error) {
+    console.error("Error in handleShippingOrder:", error);
+  }
+};
 
   const handlePickupOrder = async () => {
     if (order?.paymentInfo?.instrument != "Swish") {

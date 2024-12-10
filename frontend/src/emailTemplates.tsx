@@ -286,6 +286,7 @@ export const sendOrderConfirmationShipped = (
         <h4 style="color: #007BFF;">Din order har skickats!</h4>
         <p><strong>Beställning nr:</strong> ${order.reference}</p>
         ${addressSection}
+        
         <p><strong>Spårningslänk:</strong> 
           <a href="${
             order.trackingLink
