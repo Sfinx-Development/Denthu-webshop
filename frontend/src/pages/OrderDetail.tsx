@@ -58,6 +58,10 @@ export default function OrderDetail() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackBarMessage, setSnackBarMessage] = useState("");
   const [trackingLink, setTrackingLink] = useState("");
+  const isValidTrackingLink = (link: string): boolean => {
+    return link.startsWith("https://");
+  };
+  
 
   emailjs.init("C8CxNnxZg6mg-d2tq");
   const navigate = useNavigate();
@@ -167,7 +171,8 @@ export default function OrderDetail() {
 
   const handleShippingOrder = async () => {
     try {
-      if (!trackingLink || trackingLink == "") {
+      if (!isValidTrackingLink(trackingLink) || trackingLink == "") {
+      // if (!trackingLink || trackingLink == "") {
         setSnackbarOpen(true);
         setSnackBarMessage("Fyll i spårningslänk!");
       } else {
