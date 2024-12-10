@@ -58,6 +58,10 @@ export default function OrderDetail() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackBarMessage, setSnackBarMessage] = useState("");
   const [trackingLink, setTrackingLink] = useState("");
+  const isValidTrackingLink = (link: string): boolean => {
+    return link.startsWith("https://");
+  };
+  
 
   emailjs.init("C8CxNnxZg6mg-d2tq");
   const navigate = useNavigate();
@@ -167,15 +171,11 @@ export default function OrderDetail() {
 
   const handleShippingOrder = async () => {
     try {
-      if (!trackingLink || trackingLink == "") {
+      if (!isValidTrackingLink(trackingLink) || trackingLink == "") {
+      // if (!trackingLink || trackingLink == "") {
         setSnackbarOpen(true);
         setSnackBarMessage("Fyll i spårningslänk!");
-        return;
-      }
-      // } else {
-        // Skapa PostNord-länken
-    const postNordTrackingUrl = `https://www.postnord.se/track-and-trace#dynamicloading=true&shipmentId=${trackingLink}`;
-
+      } else {
         if (order?.paymentInfo?.instrument != "Swish") {
           await capturePayment();
         }
@@ -183,22 +183,22 @@ export default function OrderDetail() {
           const updatedOrder: Order = {
             ...order,
             isShipped: true,
-            trackingLink: postNordTrackingUrl,
+            trackingLink: trackingLink,
           };
-           // Uppdatera order och skicka mejl
-      dispatch(updateOrderAsync(updatedOrder));
-      sendOrderConfirmationShipped(updatedOrder, products);
+          dispatch(updateOrderAsync(updatedOrder));
 
-      setSnackbarOpen(true);
-      setSnackBarMessage("Ordern uppdateras som skickad!");
-      setTimeout(() => {
-        navigate("/admin/ordersForShipping");
-      }, 1500);
+          sendOrderConfirmationShipped(updatedOrder, products);
+          setSnackbarOpen(true);
+          setSnackBarMessage("Ordern uppdateras som skickad!");
+          setTimeout(() => {
+            navigate("/admin/ordersForShipping");
+          }, 1500);
+        }
+      }
+    } catch (error) {
+      console.error("Error in capturePayment:", error);
     }
-  } catch (error) {
-    console.error("Error in handleShippingOrder:", error);
-  }
-};
+  };
 
   const handlePickupOrder = async () => {
     if (order?.paymentInfo?.instrument != "Swish") {
