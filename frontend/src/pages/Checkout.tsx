@@ -28,7 +28,7 @@ import {
   updatePaymentOrderOutgoing,
 } from "../slices/paymentSlice";
 import { getProductsAsync, Product } from "../slices/productSlice";
-import { useAppDispatch, useAppSelector } from "../slices/store";
+import store, { useAppDispatch, useAppSelector } from "../slices/store";
 
 export default function Checkout() {
   const incomingPaymentOrder = useAppSelector(
@@ -325,12 +325,23 @@ export default function Checkout() {
       }
     }
   };
-
+  const waitForOrderUpdate = async () => {
+    return new Promise<void>((resolve) => {
+      const unsubscribe = store.subscribe(() => {
+        const currentOrder = store.getState().orderSlice.order;
+        if (currentOrder !== order) {
+          unsubscribe();
+          resolve();
+        }
+      });
+    });
+  };
   const handleMakeOrder = async () => {
     //göra denna asyjc?
-    await checkIfProductsInStore().then(async () => {
-      await handleAddToOrder();
-    });
+    await checkIfProductsInStore();
+    await waitForOrderUpdate();
+    //denna verkar hinna köras med gamla ordern:
+    await handleAddToOrder();
     if (validateForm() && order?.items && order.items.length > 0) {
       //Kolla så att alla produkter finns i database ninnan köp:
       //dkdjdjdd
