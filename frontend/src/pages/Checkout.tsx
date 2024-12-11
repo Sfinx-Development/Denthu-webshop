@@ -7,6 +7,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { unwrapResult } from "@reduxjs/toolkit";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PaymentOrderOutgoing } from "../../swedbankTypes";
@@ -216,94 +217,103 @@ export default function Checkout() {
 
   const checkIfProductsInStore = async () => {
     if (order && products) {
-      //varje produkt i ordern
-      const updatedItems = order.items.map((o) => {
-        //se om den finns i lager
-        const productInOrder = products.find((p) => p.id === o.product_id);
+      //hämta färsta produkter
+      const resultAction = await dispatch(getProductsAsync());
 
-        if (productInOrder) {
-          //om den finns och om det finns fler i ordern än i lagret
-          if (o.quantity > productInOrder.amount) {
-            if (!productsRemoved.some((p) => p.id === productInOrder.id)) {
-              //sätt i products not i store
-              setProductsRemoved((prev) => [...prev, productInOrder]);
-              setProductsNotInStore(productsRemoved);
-            }
-            return {
-              ...o,
-              quantity: productInOrder.amount,
-            };
-          }
-          if (productInOrder.amount === 0) {
-            if (!productsRemoved.some((p) => p.id === productInOrder.id)) {
-              setProductsRemoved((prev) => [...prev, productInOrder]);
-              setProductsNotInStore(productsRemoved);
-            }
-            return null;
-          }
-        }
-        return o;
-      });
+      if (resultAction.meta.requestStatus === "fulfilled") {
+        const freshProducts = unwrapResult(resultAction) as Product[];
 
-      // Filtrera bort null-objekt och skapa den uppdaterade ordern
-      const filteredItems: OrderItem[] = updatedItems.filter(
-        (item): item is OrderItem => item !== null
-      );
-
-      if (filteredItems) {
-        const totalPrice =
-          filteredItems?.reduce(
-            (acc, item) => acc + item.price * item.quantity,
-            0
-          ) || 0;
-        console.log("UPPDATERADE ITEMS BLIR DÅ: ", filteredItems);
-        const updatedOrder: Order = {
-          ...order,
-          items: filteredItems,
-          total_amount: totalPrice,
-        };
-
-        // Dispatcha den uppdaterade ordern
-        await dispatch(updateOrderAsync(updatedOrder));
-
-        // Uppdatera kundvagnen
-        if (cart?.items) {
-          const updatedCartItems = cart.items.map((cartItem) => {
-            const matchingOrderItem = filteredItems.find(
-              (orderItem) => orderItem.product_id === cartItem.product_id
-            );
-
-            if (matchingOrderItem) {
-              return {
-                ...cartItem,
-                quantity: matchingOrderItem.quantity, // Justera kvantitet
-              };
-            }
-
-            // Ta bort objekt som inte längre finns i ordern
-            if (!matchingOrderItem) {
-              return null;
-            }
-
-            return cartItem;
-          });
-
-          // Filtrera bort null-objekt
-          const filteredCartItems = updatedCartItems.filter(
-            (item): item is CartItem => item !== null
+        //varje produkt i ordern
+        const updatedItems = order.items.map((o) => {
+          //se om den finns i lager
+          const productInOrder = freshProducts.find(
+            (p) => p.id === o.product_id
           );
 
-          // Uppdatera cart state
-          dispatch(setCart({ ...cart, items: filteredCartItems }));
-          // localStorage.setItem(
-          //   "cart",
-          //   JSON.stringify({ ...cart, items: filteredCartItems })
-          // );
-        }
+          if (productInOrder) {
+            //om den finns och om det finns fler i ordern än i lagret
+            if (o.quantity > productInOrder.amount) {
+              if (!productsRemoved.some((p) => p.id === productInOrder.id)) {
+                //sätt i products not i store
+                setProductsRemoved((prev) => [...prev, productInOrder]);
+                setProductsNotInStore(productsRemoved);
+              }
+              return {
+                ...o,
+                quantity: productInOrder.amount,
+              };
+            }
+            if (productInOrder.amount === 0) {
+              if (!productsRemoved.some((p) => p.id === productInOrder.id)) {
+                setProductsRemoved((prev) => [...prev, productInOrder]);
+                setProductsNotInStore(productsRemoved);
+              }
+              return null;
+            }
+          }
+          return o;
+        });
 
-        // Uppdatera betalningsorder till Swedbank
-        if (incomingPaymentOrder) {
-          await handleUpdateOrderToSwedbank();
+        // Filtrera bort null-objekt och skapa den uppdaterade ordern
+        const filteredItems: OrderItem[] = updatedItems.filter(
+          (item): item is OrderItem => item !== null
+        );
+
+        if (filteredItems) {
+          const totalPrice =
+            filteredItems?.reduce(
+              (acc, item) => acc + item.price * item.quantity,
+              0
+            ) || 0;
+          console.log("UPPDATERADE ITEMS BLIR DÅ: ", filteredItems);
+          const updatedOrder: Order = {
+            ...order,
+            items: filteredItems,
+            total_amount: totalPrice,
+          };
+
+          // Dispatcha den uppdaterade ordern
+          await dispatch(updateOrderAsync(updatedOrder));
+
+          // Uppdatera kundvagnen
+          if (cart?.items) {
+            const updatedCartItems = cart.items.map((cartItem) => {
+              const matchingOrderItem = filteredItems.find(
+                (orderItem) => orderItem.product_id === cartItem.product_id
+              );
+
+              if (matchingOrderItem) {
+                return {
+                  ...cartItem,
+                  quantity: matchingOrderItem.quantity, // Justera kvantitet
+                };
+              }
+
+              // Ta bort objekt som inte längre finns i ordern
+              if (!matchingOrderItem) {
+                return null;
+              }
+
+              return cartItem;
+            });
+
+            // Filtrera bort null-objekt
+            const filteredCartItems = updatedCartItems.filter(
+              (item): item is CartItem => item !== null
+            );
+
+            // Uppdatera cart state
+            dispatch(setCart({ ...cart, items: filteredCartItems }));
+            // localStorage.setItem(
+            //   "cart",
+            //   JSON.stringify({ ...cart, items: filteredCartItems })
+            // );
+          }
+
+          // Uppdatera betalningsorder till Swedbank
+          if (incomingPaymentOrder) {
+            await handleUpdateOrderToSwedbank();
+          }
         }
       }
     }
