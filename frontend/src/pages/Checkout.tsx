@@ -152,6 +152,7 @@ export default function Checkout() {
     setShippingError(false);
 
     if (order && firstName && lastName && phone && email) {
+      console.log("ORDERN JUST NU : ", order);
       const emailIsValid = email.includes("@") && email.includes(".");
 
       if (emailIsValid) {
