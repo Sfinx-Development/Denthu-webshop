@@ -122,22 +122,23 @@ export default function Checkout() {
     checkIfProductsInStore();
   }, []);
 
-  const handleShippingMethodChange = (method: string) => {
+  const handleShippingMethodChange = async (method: string) => {
     setSelectedShippingMethod(method);
     localStorage.setItem(
       "selectedShippingMethod",
       JSON.stringify(selectedShippingMethod)
     );
     if (order) {
+      console.log("USEEFFECT MED SHIPPING METHOD UPPDATERAR ORDERN");
       if (method == "pickup") {
-        dispatch(updateOrderAsync(order));
+        await dispatch(updateOrderAsync(order));
         if (incomingPaymentOrder) {
-          handleUpdateOrderToSwedbank();
+          await handleUpdateOrderToSwedbank();
         }
       } else {
-        dispatch(updateOrderFrakt([order, products, method]));
+        await dispatch(updateOrderFrakt([order, products, method]));
         if (incomingPaymentOrder) {
-          handleUpdateOrderToSwedbank();
+          await handleUpdateOrderToSwedbank();
         }
       }
     }
@@ -156,7 +157,7 @@ export default function Checkout() {
         const fullShippingAddress = isShipping
           ? `${street}, ${postalCode}, ${city}`
           : "";
-
+        console.log("USEEFFECT MED ADD TO ORDER UPPDATERAR ORDERN");
         const updatedOrder: Order = {
           ...order,
           guestFirstName: firstName,
@@ -201,6 +202,7 @@ export default function Checkout() {
         ...order,
         incomingPaymentOrderId: incomingPaymentOrder.id,
       };
+      console.log("USEEFFECT MED INCOMINGPAYMENTORDER UPPDATERAR ORDERN");
       // if (isShipping) {
       //   dispatch(
       //     updateOrderFrakt([
