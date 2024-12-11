@@ -6,9 +6,13 @@ import { Box, Button, IconButton, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
-import { CartItem, updateItem } from "../slices/cartSlice";
+import { CartItem, setCart, updateItem } from "../slices/cartSlice";
 import { addOrderAsync, Order, OrderItem } from "../slices/orderSlice";
-import { Product, updateProductAsync } from "../slices/productSlice";
+import {
+  getProductsAsync,
+  Product,
+  updateProductAsync,
+} from "../slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
 
 const fadeIn = keyframes`
@@ -32,6 +36,83 @@ export default function Cart() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [groupedItems, setGroupedItems] = useState<GroupedCartItem[]>([]);
+  const [productsRemoved, setProductsRemoved] = useState<Product[]>([]);
+
+  useEffect(() => {
+    dispatch(getProductsAsync());
+  }, []);
+  useEffect(() => {
+    checkIfProductsInStore();
+  }, [products]);
+
+  const checkIfProductsInStore = async () => {
+    if (cart) {
+      const updatedItems = cart.items.map((o) => {
+        const productInOrder = products.find((p) => p.id === o.product_id);
+        if (productInOrder) {
+          //om den finns och om det finns fler i ordern än i lagret
+          if (o.quantity > productInOrder.amount) {
+            if (!productsRemoved.some((p) => p.id === productInOrder.id)) {
+              //sätt i products not i store
+              setProductsRemoved((prev) => [...prev, productInOrder]);
+              // setProductsNotInStore(productsRemoved);
+            }
+            return {
+              ...o,
+              quantity: productInOrder.amount,
+            };
+          }
+          if (productInOrder.amount === 0) {
+            if (!productsRemoved.some((p) => p.id === productInOrder.id)) {
+              setProductsRemoved((prev) => [...prev, productInOrder]);
+              // setProductsNotInStore(productsRemoved);
+            }
+            return null;
+          }
+        }
+        return o;
+      });
+
+      const filteredItems: CartItem[] = updatedItems.filter(
+        (item): item is CartItem => item !== null
+      );
+
+      // Uppdatera kundvagnen
+      if (cart?.items) {
+        const updatedCartItems = cart.items.map((cartItem) => {
+          const matchingOrderItem = filteredItems.find(
+            (orderItem) => orderItem.product_id === cartItem.product_id
+          );
+
+          if (matchingOrderItem) {
+            return {
+              ...cartItem,
+              quantity: matchingOrderItem.quantity, // Justera kvantitet
+            };
+          }
+
+          // Ta bort objekt som inte längre finns i ordern
+          if (!matchingOrderItem) {
+            return null;
+          }
+
+          return cartItem;
+        });
+
+        // Filtrera bort null-objekt
+        const filteredCartItems = updatedCartItems.filter(
+          (item): item is CartItem => item !== null
+        );
+
+        // Uppdatera cart state
+        dispatch(setCart({ ...cart, items: filteredCartItems }));
+        // localStorage.setItem(
+        //   "cart",
+        //   JSON.stringify({ ...cart, items: filteredCartItems })
+        // );
+      }
+    }
+  };
 
   useEffect(() => {
     if (cart) {
@@ -214,6 +295,43 @@ export default function Cart() {
             marginBottom: 2,
           }}
         >
+          {productsRemoved.map((item) => {
+            const product = getProduct(item.id);
+            return (
+              <Box
+                key={`${item.id}`}
+                sx={{
+                  backgroundColor: "lightgrey",
+                  display: "flex",
+                  flexDirection: { xs: "column", sm: "row" },
+                  padding: 2,
+                  width: "90%",
+                  alignItems: "center",
+                  marginBottom: 2,
+                  boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                  borderRadius: 2,
+                }}
+              >
+                <img
+                  src={product?.imageUrl}
+                  alt={`Product ${product?.name}`}
+                  style={{ height: 100, width: 80, objectFit: "cover" }}
+                />
+                <Box
+                  sx={{
+                    paddingX: { xs: 2, sm: 4 },
+                    width: { xs: "100%", sm: "auto" },
+                    textAlign: { xs: "center", sm: "left" },
+                    marginBottom: { xs: 1, sm: 0 },
+                  }}
+                >
+                  <Typography sx={{ fontSize: 20, marginY: 1 }}>
+                    {product?.name} {/* - {item.size} */}
+                  </Typography>
+                </Box>
+              </Box>
+            );
+          })}
           {groupedItems.map((item) => {
             const product = getProduct(item.product_id);
             return (
