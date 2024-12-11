@@ -120,7 +120,7 @@ export default function Checkout() {
 
   useEffect(() => {
     checkIfProductsInStore();
-  }, [products]);
+  }, []);
 
   const handleShippingMethodChange = (method: string) => {
     setSelectedShippingMethod(method);
