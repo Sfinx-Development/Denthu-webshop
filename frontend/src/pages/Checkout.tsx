@@ -10,7 +10,10 @@ import {
 import { unwrapResult } from "@reduxjs/toolkit";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { PaymentOrderOutgoing } from "../../swedbankTypes";
+import {
+  PaymentOrderIncoming,
+  PaymentOrderOutgoing,
+} from "../../swedbankTypes";
 import { generatePayeeReference } from "../../utils";
 import SeamlessCheckout from "../components/SeamlessCheckout";
 import { CartItem, setCart } from "../slices/cartSlice";
@@ -196,26 +199,26 @@ export default function Checkout() {
     }
   }, [order]);
 
-  useEffect(() => {
-    if (order && incomingPaymentOrder) {
-      const updatedOrder: Order = {
-        ...order,
-        incomingPaymentOrderId: incomingPaymentOrder.id,
-      };
-      console.log("USEEFFECT MED INCOMINGPAYMENTORDER UPPDATERAR ORDERN");
-      // if (isShipping) {
-      //   dispatch(
-      //     updateOrderFrakt([
-      //       updatedOrder,
-      //       products,
-      //       selectedShippingMethod || "pickup",
-      //     ])
-      //   );
-      // } else {
-      dispatch(updateOrderAsync(updatedOrder));
-      // }
-    }
-  }, [incomingPaymentOrder]);
+  // useEffect(() => {
+  //   if (order && incomingPaymentOrder) {
+  //     const updatedOrder: Order = {
+  //       ...order,
+  //       incomingPaymentOrderId: incomingPaymentOrder.id,
+  //     };
+  //     console.log("USEEFFECT MED INCOMINGPAYMENTORDER UPPDATERAR ORDERN");
+  //     // if (isShipping) {
+  //     //   dispatch(
+  //     //     updateOrderFrakt([
+  //     //       updatedOrder,
+  //     //       products,
+  //     //       selectedShippingMethod || "pickup",
+  //     //     ])
+  //     //   );
+  //     // } else {
+  //     dispatch(updateOrderAsync(updatedOrder));
+  //     // }
+  //   }
+  // }, [incomingPaymentOrder]);
 
   const checkIfProductsInStore = async () => {
     if (order && products) {
@@ -356,9 +359,37 @@ export default function Checkout() {
           },
         };
         if (isShipping) {
-          dispatch(addPaymentOrderOutgoing(paymentOrder));
+          const incomingPaymentResult = await dispatch(
+            addPaymentOrderOutgoing(paymentOrder)
+          );
+          if (incomingPaymentResult.meta.requestStatus === "fulfilled") {
+            const incomingPayment = unwrapResult(
+              incomingPaymentResult
+            ) as PaymentOrderIncoming;
+            if (order && incomingPayment) {
+              const updatedOrder: Order = {
+                ...order,
+                incomingPaymentOrderId: incomingPayment.id,
+              };
+              dispatch(updateOrderAsync(updatedOrder));
+            }
+          }
         } else {
-          dispatch(addPaymentOrderOutgoing(paymentOrder));
+          const incomingPaymentResult = await dispatch(
+            addPaymentOrderOutgoing(paymentOrder)
+          );
+          if (incomingPaymentResult.meta.requestStatus === "fulfilled") {
+            const incomingPayment = unwrapResult(
+              incomingPaymentResult
+            ) as PaymentOrderIncoming;
+            if (order && incomingPayment) {
+              const updatedOrder: Order = {
+                ...order,
+                incomingPaymentOrderId: incomingPayment.id,
+              };
+              dispatch(updateOrderAsync(updatedOrder));
+            }
+          }
         }
       }
     }
