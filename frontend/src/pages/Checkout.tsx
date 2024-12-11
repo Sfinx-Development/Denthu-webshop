@@ -311,11 +311,11 @@ export default function Checkout() {
 
   const handleMakeOrder = async () => {
     //göra denna asyjc?
-    checkIfProductsInStore();
+    await checkIfProductsInStore();
     if (validateForm() && order?.items && order.items.length > 0) {
       //Kolla så att alla produkter finns i database ninnan köp:
       //dkdjdjdd
-      handleAddToOrder();
+      await handleAddToOrder();
       if (order && !shippingError && !emailError) {
         const payeeId = import.meta.env.VITE_SWEDBANK_PAYEEID;
         const payeeName = import.meta.env.VITE_SWEDBANK_PAYEENAME;
@@ -728,80 +728,6 @@ export default function Checkout() {
             onChange={(event) => setEmail(event.target.value)}
             onBlur={() => handleBlur("email")}
           />
-
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={isPickup}
-                onChange={(event) => {
-                  setIsPickup(event.target.checked);
-                  setIsShipping(false);
-                  localStorage.removeItem("isShipping");
-                  handleShippingMethodChange("pickup");
-                }}
-              />
-            }
-            label="Hämta upp"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={isShipping}
-                onChange={(event) => {
-                  setIsShipping(event.target.checked);
-                  localStorage.setItem("isShipping", JSON.stringify("true"));
-                  setIsPickup(false);
-                  handleShippingMethodChange("shipping");
-                }}
-              />
-            }
-            label="Leverans"
-          />
-          {isShipping && (
-            <>
-              <TextField
-                label="Gata"
-                variant="outlined"
-                fullWidth
-                error={streetError}
-                helperText={
-                  streetError ? "Ange en giltig adress (t.ex. Storgatan 5)" : ""
-                }
-                onChange={(event) => setStreet(event.target.value)}
-                onBlur={() => handleBlur("street")}
-              />
-              <TextField
-                label="Postnummer"
-                variant="outlined"
-                fullWidth
-                error={postalCodeError}
-                helperText={
-                  postalCodeError
-                    ? "Ange ett giltigt postnummer (5 siffror)"
-                    : ""
-                }
-                onChange={(event) => setPostalCode(event.target.value)}
-                onBlur={() => handleBlur("postalCode")}
-              />
-              <TextField
-                label="Stad"
-                variant="outlined"
-                fullWidth
-                error={!city}
-                helperText={!city ? "Stad är obligatoriskt" : ""}
-                onChange={(event) => setCity(event.target.value)}
-                onBlur={() => handleBlur("city")}
-              />
-            </>
-          )}
-          <Button
-            variant="contained"
-            onClick={() => handleMakeOrder()}
-            sx={{ marginTop: 2 }}
-            disabled={!isFormComplete()}
-          >
-            Till betalning
-          </Button>
         </Box>
       )}
       <FormControlLabel
