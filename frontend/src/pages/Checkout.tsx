@@ -270,12 +270,13 @@ export default function Checkout() {
               (acc, item) => acc + item.price * item.quantity,
               0
             ) || 0;
-          console.log("UPPDATERADE ITEMS BLIR DÅ: ", filteredItems);
+
           const updatedOrder: Order = {
             ...order,
             items: filteredItems,
             total_amount: totalPrice,
           };
+          console.log("UPPDATERADE ORDERN BLIR I CHECK: ", updatedOrder);
 
           // Dispatcha den uppdaterade ordern
           await dispatch(updateOrderAsync(updatedOrder));
@@ -326,11 +327,13 @@ export default function Checkout() {
 
   const handleMakeOrder = async () => {
     //göra denna asyjc?
-    await checkIfProductsInStore();
+    await checkIfProductsInStore().then(async () => {
+      await handleAddToOrder();
+    });
     if (validateForm() && order?.items && order.items.length > 0) {
       //Kolla så att alla produkter finns i database ninnan köp:
       //dkdjdjdd
-      await handleAddToOrder();
+
       if (order && !shippingError && !emailError) {
         const payeeId = import.meta.env.VITE_SWEDBANK_PAYEEID;
         const payeeName = import.meta.env.VITE_SWEDBANK_PAYEENAME;
