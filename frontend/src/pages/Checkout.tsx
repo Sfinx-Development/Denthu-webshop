@@ -838,7 +838,7 @@ export default function Checkout() {
       )}
       <Button
         variant="contained"
-        onClick={() => handleMakeOrder()}
+        onClick={async () => await handleMakeOrder()}
         sx={{ marginTop: 2 }}
         disabled={!isFormComplete()}
       >
