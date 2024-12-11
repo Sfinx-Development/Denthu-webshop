@@ -132,7 +132,6 @@ export default function Checkout() {
       JSON.stringify(selectedShippingMethod)
     );
     if (order) {
-      console.log("USEEFFECT MED SHIPPING METHOD UPPDATERAR ORDERN");
       if (method == "pickup") {
         await dispatch(updateOrderAsync(order));
         if (incomingPaymentOrder) {
