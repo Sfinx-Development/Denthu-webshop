@@ -297,6 +297,9 @@ export default function OrderDetail() {
           variant="contained"
           color="secondary"
           onClick={() => setOpenCancelDialog(true)} // Open cancel confirmation dialog
+          disabled={
+            order.paymentInfo?.instrument == "Swish" 
+          }
         >
           Avbryt betalning
         </Button>
@@ -348,10 +351,6 @@ export default function OrderDetail() {
         </DialogContent>
         <DialogActions>
           <Button
-            disabled={
-              order.paymentInfo?.instrument == "Swish" ||
-              order.status == "Paid/Captured"
-            }
             onClick={() => setOpenCancelDialog(false)}
             color="primary"
           >
