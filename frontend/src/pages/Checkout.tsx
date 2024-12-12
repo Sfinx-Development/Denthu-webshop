@@ -223,11 +223,19 @@ export default function Checkout() {
     }
   };
 
-  const handleAddToOrder = async () => {
+  const handleAddToOrder = async (updatedOrder?: Order) => {
     setEmailError(false);
     setShippingError(false);
-
-    if (order && firstName && lastName && phone && email) {
+    let currentOrder = updatedOrder ?? order;
+    console.log("ORDER SOM SKA ADDAS: ", currentOrder);
+    if (
+      currentOrder &&
+      firstName &&
+      lastName &&
+      phone &&
+      email &&
+      currentOrder.items.length > 0
+    ) {
       const emailIsValid = email.includes("@") && email.includes(".");
 
       if (emailIsValid) {
@@ -236,16 +244,16 @@ export default function Checkout() {
         const fullShippingAddress = isShipping
           ? `${street}, ${postalCode}, ${city}`
           : "";
-        console.log("USEEFFECT MED ADD TO ORDER UPPDATERAR ORDERN");
+        console.log("ADD TO ORDER UPPDATERAR ORDERN");
         const updatedOrder: Order = {
-          ...order,
+          ...currentOrder,
           guestFirstName: firstName,
           guestLastName: lastName,
           guestEmail: email,
           guestPhone: phone,
           shippingMethod: isShipping ? "shipping" : "pickup",
           shippingAddress: isShipping ? fullShippingAddress : "",
-          shippingCost: isShipping ? order.shippingCost : 0,
+          shippingCost: isShipping ? currentOrder.shippingCost : 0,
         };
 
         dispatch(updateOrderAsync(updatedOrder));
@@ -298,6 +306,7 @@ export default function Checkout() {
 
   const checkIfProductsInStore = async () => {
     if (!order || !products) return;
+    let orderToReturn = order;
 
     try {
       console.log("Hämtar färska produkter...");
@@ -352,7 +361,10 @@ export default function Checkout() {
       console.log("Slutför uppdatering av order och kundvagn.");
 
       // Dispatcha den uppdaterade ordern
-      await dispatch(updateOrderAsync(updatedOrder));
+      const updatedOrderResult = await dispatch(updateOrderAsync(updatedOrder));
+      if (updatedOrderResult.meta.requestStatus === "fulfilled") {
+        orderToReturn = unwrapResult(updatedOrderResult) as Order;
+      }
 
       // Uppdatera kundvagnen
       if (cart?.items) {
@@ -378,6 +390,7 @@ export default function Checkout() {
     } catch (error) {
       console.error("Ett fel inträffade i checkIfProductsInStore:", error);
     }
+    return orderToReturn;
   };
 
   const waitForOrderUpdate = async (previousTimestamp: string | undefined) => {
@@ -397,13 +410,13 @@ export default function Checkout() {
       console.log("Startar handleMakeOrder");
 
       // Kontrollera produkter och vänta på att ordern uppdateras
-      await checkIfProductsInStore();
+      const updatedOrder = await checkIfProductsInStore();
       // await waitForOrderUpdate(order?.updateTimestamp);
 
-      console.log("Startar addtoorder");
+      console.log("Startar addtoorder med order, ", updatedOrder);
 
       // Lägg till ytterligare information till ordern
-      await handleAddToOrder();
+      await handleAddToOrder(updatedOrder);
       // await waitForOrderUpdate(order?.updateTimestamp);
 
       console.log("Startar skapa betalningsorder");

@@ -184,7 +184,13 @@ export const updateOrderAsync = createAsyncThunk<
   { rejectValue: string }
 >("orders/updateOrder", async (order, thunkAPI) => {
   try {
-    const response = await editOrderInDB(order);
+    const updatedItems = order.items.filter((i) => i.quantity > 0);
+
+    const updatedOrder: Order = {
+      ...order,
+      items: updatedItems,
+    };
+    const response = await editOrderInDB(updatedOrder);
     if (response) {
       localStorage.setItem("order", JSON.stringify(response));
       return response;
