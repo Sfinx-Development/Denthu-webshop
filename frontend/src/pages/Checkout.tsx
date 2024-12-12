@@ -25,6 +25,7 @@ import {
 } from "../slices/orderSlice";
 import {
   addPaymentOrderOutgoing,
+  setPaymentOrderReady,
   updatePaymentOrderOutgoing,
 } from "../slices/paymentSlice";
 import { getProductsAsync, Product } from "../slices/productSlice";
@@ -46,6 +47,9 @@ export default function Checkout() {
   const [isOrderUpdated, setIsOrderUpdated] = useState(false);
   const dispatch = useAppDispatch();
   const paymentInfo = useAppSelector((state) => state.paymentSlice.paymentInfo);
+  const isPaymentOrderReady = useAppSelector(
+    (state) => state.paymentSlice.isPaymentOrderReady
+  );
   const [productsNotInStore, setProductsNotInStore] = useState<
     Product[] | null
   >();
@@ -65,6 +69,7 @@ export default function Checkout() {
   const [phoneError, setPhoneError] = useState(false);
   const [postalCodeError, setPostalCodeError] = useState(false);
   const [streetError, setStreetError] = useState(false);
+  const [orderUpdatedForPayment, setOrderUpdatedForPayment] = useState(false);
 
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const phonePattern = /^(\+46|0)(7[02369])(\d{7})$/;
@@ -100,6 +105,78 @@ export default function Checkout() {
       navigate("/cart");
     }
   }, [order]);
+
+  const makePaymentOrder = async () => {
+    if (
+      validateForm() &&
+      order?.items &&
+      order.items.length > 0 &&
+      order.total_amount > 0
+    ) {
+      if (order && !shippingError && !emailError) {
+        const payeeId = import.meta.env.VITE_SWEDBANK_PAYEEID;
+        const payeeName = import.meta.env.VITE_SWEDBANK_PAYEENAME;
+        const paymentOrder: PaymentOrderOutgoing = {
+          operation: "Purchase",
+          currency: "SEK",
+          amount: order.total_amount,
+          vatAmount: order.vat_amount,
+          description: "Test Purchase",
+          userAgent: "Mozilla/5.0...",
+          language: "sv-SE",
+          urls: {
+            hostUrls: ["https://denthuwebshop.netlify.app/checkout"], //Seamless View only
+            paymentUrl: "https://denthuwebshop.netlify.app/checkout", //Seamless View only
+            completeUrl: "https://denthuwebshop.netlify.app/confirmation",
+            cancelUrl: "https://denthuwebshop.netlify.app/checkout", //Redirect only
+            callbackUrl:
+              "https://swedbankpay-gad0dfg6fha9bpfh.swedencentral-01.azurewebsites.net/swedbankpay/callbackDenthu",
+            logoUrl: "", //Redirect only
+          },
+          payeeInfo: {
+            payeeId: payeeId,
+            payeeReference: generatePayeeReference(true),
+            payeeName: payeeName,
+            orderReference: order.reference,
+          },
+        };
+        if (isShipping) {
+          const incomingPaymentResult = await dispatch(
+            addPaymentOrderOutgoing(paymentOrder)
+          );
+          if (incomingPaymentResult.meta.requestStatus === "fulfilled") {
+            const incomingPayment = unwrapResult(
+              incomingPaymentResult
+            ) as PaymentOrderIncoming;
+            if (order && incomingPayment) {
+              const updatedOrder: Order = {
+                ...order,
+                incomingPaymentOrderId: incomingPayment.id,
+              };
+              await dispatch(updateOrderAsync(updatedOrder));
+              dispatch(setPaymentOrderReady(true));
+            }
+          }
+        } else {
+          const incomingPaymentResult = await dispatch(
+            addPaymentOrderOutgoing(paymentOrder)
+          );
+          if (incomingPaymentResult.meta.requestStatus === "fulfilled") {
+            const incomingPayment = unwrapResult(
+              incomingPaymentResult
+            ) as PaymentOrderIncoming;
+            if (order && incomingPayment) {
+              const updatedOrder: Order = {
+                ...order,
+                incomingPaymentOrderId: incomingPayment.id,
+              };
+              await dispatch(updateOrderAsync(updatedOrder));
+            }
+          }
+        }
+      }
+    }
+  };
 
   const isFormComplete = () => {
     if (isShipping) {
@@ -151,7 +228,6 @@ export default function Checkout() {
     setShippingError(false);
 
     if (order && firstName && lastName && phone && email) {
-      console.log("ORDERN JUST NU : ", order);
       const emailIsValid = email.includes("@") && email.includes(".");
 
       if (emailIsValid) {
@@ -221,193 +297,124 @@ export default function Checkout() {
   // }, [incomingPaymentOrder]);
 
   const checkIfProductsInStore = async () => {
-    if (order && products) {
-      //hämta färsta produkter
+    if (!order || !products) return;
+
+    try {
+      console.log("Hämtar färska produkter...");
       const resultAction = await dispatch(getProductsAsync());
 
-      if (resultAction.meta.requestStatus === "fulfilled") {
-        const freshProducts = unwrapResult(resultAction) as Product[];
+      if (resultAction.meta.requestStatus !== "fulfilled") {
+        console.error("Misslyckades att hämta produkter");
+        return;
+      }
 
-        //varje produkt i ordern
-        const updatedItems = order.items.map((o) => {
-          //se om den finns i lager
-          const productInOrder = freshProducts.find(
-            (p) => p.id === o.product_id
-          );
+      const freshProducts = unwrapResult(resultAction) as Product[];
+      console.log("Färska produkter:", freshProducts);
 
-          if (productInOrder) {
-            //om den finns och om det finns fler i ordern än i lagret
-            if (o.quantity > productInOrder.amount) {
-              if (!productsRemoved.some((p) => p.id === productInOrder.id)) {
-                //sätt i products not i store
-                setProductsRemoved((prev) => [...prev, productInOrder]);
-                setProductsNotInStore(productsRemoved);
-              }
-              return {
-                ...o,
-                quantity: productInOrder.amount,
-              };
-            }
-            if (productInOrder.amount === 0) {
-              if (!productsRemoved.some((p) => p.id === productInOrder.id)) {
-                setProductsRemoved((prev) => [...prev, productInOrder]);
-                setProductsNotInStore(productsRemoved);
-              }
-              return null;
-            }
-          }
-          return o;
-        });
+      const updatedItems: OrderItem[] = [];
+      const outOfStockProducts: Product[] = [];
+      console.log("Uppdaterade items:", updatedItems);
+      order.items.forEach((o) => {
+        const productInOrder = freshProducts.find((p) => p.id === o.product_id);
 
-        // Filtrera bort null-objekt och skapa den uppdaterade ordern
-        const filteredItems: OrderItem[] = updatedItems.filter(
-          (item): item is OrderItem => item !== null
-        );
-
-        if (filteredItems) {
-          const totalPrice =
-            filteredItems?.reduce(
-              (acc, item) => acc + item.price * item.quantity,
-              0
-            ) || 0;
-
-          const updatedOrder: Order = {
-            ...order,
-            items: filteredItems,
-            total_amount: totalPrice,
-          };
-          console.log("UPPDATERADE ORDERN BLIR I CHECK: ", updatedOrder);
-
-          // Dispatcha den uppdaterade ordern
-          await dispatch(updateOrderAsync(updatedOrder));
-
-          // Uppdatera kundvagnen
-          if (cart?.items) {
-            const updatedCartItems = cart.items.map((cartItem) => {
-              const matchingOrderItem = filteredItems.find(
-                (orderItem) => orderItem.product_id === cartItem.product_id
-              );
-
-              if (matchingOrderItem) {
-                return {
-                  ...cartItem,
-                  quantity: matchingOrderItem.quantity, // Justera kvantitet
-                };
-              }
-
-              // Ta bort objekt som inte längre finns i ordern
-              if (!matchingOrderItem) {
-                return null;
-              }
-
-              return cartItem;
+        if (productInOrder) {
+          if (o.quantity > productInOrder.amount) {
+            outOfStockProducts.push(productInOrder);
+            updatedItems.push({
+              ...o,
+              quantity: productInOrder.amount,
             });
-
-            // Filtrera bort null-objekt
-            const filteredCartItems = updatedCartItems.filter(
-              (item): item is CartItem => item !== null
-            );
-
-            // Uppdatera cart state
-            dispatch(setCart({ ...cart, items: filteredCartItems }));
-            // localStorage.setItem(
-            //   "cart",
-            //   JSON.stringify({ ...cart, items: filteredCartItems })
-            // );
-          }
-
-          // Uppdatera betalningsorder till Swedbank
-          if (incomingPaymentOrder) {
-            await handleUpdateOrderToSwedbank();
+          } else if (productInOrder.amount === 0) {
+            outOfStockProducts.push(productInOrder);
+          } else {
+            updatedItems.push(o);
           }
         }
+      });
+      console.log("Produkter som är slut i lager:", outOfStockProducts);
+
+      setProductsRemoved(outOfStockProducts);
+      setProductsNotInStore(outOfStockProducts);
+
+      // Skapa den uppdaterade ordern
+      const totalPrice = updatedItems.reduce(
+        (acc, item) => acc + item.price * item.quantity,
+        0
+      );
+
+      const updatedOrder: Order = {
+        ...order,
+        items: updatedItems,
+        total_amount: totalPrice,
+        updateTimestamp: new Date().toISOString(),
+      };
+
+      console.log("Slutför uppdatering av order och kundvagn.");
+
+      // Dispatcha den uppdaterade ordern
+      await dispatch(updateOrderAsync(updatedOrder));
+
+      // Uppdatera kundvagnen
+      if (cart?.items) {
+        const updatedCartItems = cart.items
+          .map((cartItem) => {
+            const matchingOrderItem = updatedItems.find(
+              (orderItem) => orderItem.product_id === cartItem.product_id
+            );
+            return matchingOrderItem
+              ? { ...cartItem, quantity: matchingOrderItem.quantity }
+              : null;
+          })
+          .filter((item): item is CartItem => item !== null);
+
+        dispatch(setCart({ ...cart, items: updatedCartItems }));
       }
+
+      // Uppdatera betalningsorder till Swedbank om det finns en incomingPaymentOrder
+      if (incomingPaymentOrder) {
+        console.log("uppdaterar till swedbank");
+        handleUpdateOrderToSwedbank();
+      }
+    } catch (error) {
+      console.error("Ett fel inträffade i checkIfProductsInStore:", error);
     }
   };
-  const waitForOrderUpdate = async () => {
+
+  const waitForOrderUpdate = async (previousTimestamp: string | undefined) => {
     return new Promise<void>((resolve) => {
       const unsubscribe = store.subscribe(() => {
         const currentOrder = store.getState().orderSlice.order;
-        if (currentOrder !== order) {
+        if (currentOrder?.updateTimestamp !== previousTimestamp) {
           unsubscribe();
           resolve();
         }
       });
     });
   };
-  const handleMakeOrder = async () => {
-    //göra denna asyjc?
-    await checkIfProductsInStore();
-    await waitForOrderUpdate();
-    //denna verkar hinna köras med gamla ordern:
-    await handleAddToOrder();
-    if (validateForm() && order?.items && order.items.length > 0) {
-      //Kolla så att alla produkter finns i database ninnan köp:
-      //dkdjdjdd
 
-      if (order && !shippingError && !emailError) {
-        const payeeId = import.meta.env.VITE_SWEDBANK_PAYEEID;
-        const payeeName = import.meta.env.VITE_SWEDBANK_PAYEENAME;
-        const paymentOrder: PaymentOrderOutgoing = {
-          operation: "Purchase",
-          currency: "SEK",
-          amount: order.total_amount,
-          vatAmount: order.vat_amount,
-          description: "Test Purchase",
-          userAgent: "Mozilla/5.0...",
-          language: "sv-SE",
-          urls: {
-            hostUrls: ["https://denthuwebshop.netlify.app/checkout"], //Seamless View only
-            paymentUrl: "https://denthuwebshop.netlify.app/checkout", //Seamless View only
-            completeUrl: "https://denthuwebshop.netlify.app/confirmation",
-            cancelUrl: "https://denthuwebshop.netlify.app/checkout", //Redirect only
-            callbackUrl:
-              "https://swedbankpay-gad0dfg6fha9bpfh.swedencentral-01.azurewebsites.net/swedbankpay/callbackDenthu",
-            logoUrl: "", //Redirect only
-          },
-          payeeInfo: {
-            payeeId: payeeId,
-            payeeReference: generatePayeeReference(true),
-            payeeName: payeeName,
-            orderReference: order.reference,
-          },
-        };
-        if (isShipping) {
-          const incomingPaymentResult = await dispatch(
-            addPaymentOrderOutgoing(paymentOrder)
-          );
-          if (incomingPaymentResult.meta.requestStatus === "fulfilled") {
-            const incomingPayment = unwrapResult(
-              incomingPaymentResult
-            ) as PaymentOrderIncoming;
-            if (order && incomingPayment) {
-              const updatedOrder: Order = {
-                ...order,
-                incomingPaymentOrderId: incomingPayment.id,
-              };
-              dispatch(updateOrderAsync(updatedOrder));
-            }
-          }
-        } else {
-          const incomingPaymentResult = await dispatch(
-            addPaymentOrderOutgoing(paymentOrder)
-          );
-          if (incomingPaymentResult.meta.requestStatus === "fulfilled") {
-            const incomingPayment = unwrapResult(
-              incomingPaymentResult
-            ) as PaymentOrderIncoming;
-            if (order && incomingPayment) {
-              const updatedOrder: Order = {
-                ...order,
-                incomingPaymentOrderId: incomingPayment.id,
-              };
-              dispatch(updateOrderAsync(updatedOrder));
-            }
-          }
-        }
-      }
+  const handleMakeOrder = async () => {
+    try {
+      console.log("Startar handleMakeOrder");
+
+      // Kontrollera produkter och vänta på att ordern uppdateras
+      await checkIfProductsInStore();
+      // await waitForOrderUpdate(order?.updateTimestamp);
+
+      console.log("Startar addtoorder");
+
+      // Lägg till ytterligare information till ordern
+      await handleAddToOrder();
+      // await waitForOrderUpdate(order?.updateTimestamp);
+
+      console.log("Startar skapa betalningsorder");
+
+      // Skapa betalningsorder
+      await makePaymentOrder();
+
+      console.log("Klar med handleMakeOrder");
+    } catch (error) {
+      console.error("Ett fel inträffade i handleMakeOrder:", error);
     }
-    // });
   };
 
   const handleUpdateOrderToSwedbank = () => {
@@ -499,7 +506,7 @@ export default function Checkout() {
           </>
         )}
 
-        {productsNotInStore && (
+        {productsNotInStore && productsNotInStore.length > 0 && (
           <Box
             sx={{
               backgroundColor: "#fff6f6",
@@ -551,77 +558,11 @@ export default function Checkout() {
                     {product.name}
                   </Typography>
                   <Typography sx={{ fontSize: 14, color: "#555" }}>
-                    Antal: {product.amount}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontSize: 16,
-                      fontWeight: 600,
-                      color: "#333",
-                    }}
-                  >
-                    Totalt:{" "}
-                    {((product.price * product.amount) / 100).toFixed(2)} kr
-                  </Typography>
-                </Box>
-              </Box>
-            ))}
-          </Box>
-        )}
-
-        {productsNotInStore && (
-          <Box
-            sx={{
-              backgroundColor: "#fff6f6",
-              padding: 3,
-              borderRadius: "8px",
-              boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)",
-              marginY: 2,
-            }}
-          >
-            <Alert
-              severity="warning"
-              sx={{
-                marginBottom: 2,
-                fontWeight: "bold",
-                textAlign: "center",
-              }}
-            >
-              Vissa produkter har tagit slut och tagits bort från din varukorg!
-            </Alert>
-            {productsNotInStore.map((product) => (
-              <Box
-                key={product.id}
-                sx={{
-                  display: "flex",
-                  flexDirection: { xs: "column", sm: "row" },
-                  alignItems: "center",
-                  backgroundColor: "#fff",
-                  padding: 2,
-                  marginBottom: 2,
-                  borderRadius: "8px",
-                  border: "1px solid #ffcccc",
-                  gap: 2,
-                }}
-              >
-                <Box
-                  sx={{
-                    flex: 1,
-                    textAlign: "left",
-                  }}
-                >
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      fontSize: { xs: 16, sm: 18 },
-                      fontWeight: 600,
-                      color: "#ff0000",
-                    }}
-                  >
-                    {product.name}
-                  </Typography>
-                  <Typography sx={{ fontSize: 14, color: "#555" }}>
-                    Antal: {product.amount}
+                    Antal:{" "}
+                    {
+                      productsNotInStore.filter((p) => p.id == product.id)
+                        .length
+                    }
                   </Typography>
                   <Typography
                     sx={{
@@ -641,8 +582,6 @@ export default function Checkout() {
 
         {products &&
           order &&
-          order.items &&
-          order?.items.length > 0 &&
           order.items &&
           order?.items.length > 0 &&
           order.items.map((item) => {
@@ -735,10 +674,9 @@ export default function Checkout() {
             </a>
             .
           </Typography>
-          {incomingPaymentOrder &&
-            incomingPaymentOrder.operations &&
-            order &&
-            order.items.length > 0 && <SeamlessCheckout />}
+          {order && order?.items.length > 0 && incomingPaymentOrder && (
+            <SeamlessCheckout />
+          )}
           <Box
             sx={{
               display: "flex",

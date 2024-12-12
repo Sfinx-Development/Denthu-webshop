@@ -29,6 +29,7 @@ export interface Order {
   isShipped: boolean;
   isPickedUp: boolean;
   trackingLink?: string;
+  updateTimestamp?: string;
 }
 
 export interface OrderItem {
@@ -114,7 +115,6 @@ function getShippingCost(order: Order, products: Product[]) {
 }
 
 const availableShippingOptions = (weight: number): number => {
-  console.log("IN  MED VIKTEN: ", weight);
   if (weight > 0 && weight <= 1000) {
     return 80;
   } else if (weight > 1000 && weight <= 2000) {
@@ -229,7 +229,6 @@ export const updateOrderFrakt = createAsyncThunk<
   try {
     const cost = getShippingCost(order, products);
     const totalShippingCost = cost * 100;
-    console.log("SHIPPPING COST BLEV", totalShippingCost);
     const updatedOrder: Order = {
       ...order,
       total_amount: order.total_amount + totalShippingCost,

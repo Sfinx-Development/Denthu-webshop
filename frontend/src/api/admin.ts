@@ -8,7 +8,6 @@ export const signInWithAPI = async (logInUser: LogIn) => {
     logInUser.email,
     logInUser.password
   );
-  console.log(userCredential);
   return {
     uid: userCredential.user.uid,
     email: logInUser.email,

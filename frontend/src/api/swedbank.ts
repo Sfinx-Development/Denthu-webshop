@@ -3,7 +3,7 @@ import {
   PaymentOrderIn,
   PaymentOrderIncoming,
   ValidPaymentOrder,
-  PaymentOrderOutgoing
+  PaymentOrderOutgoing,
 } from "../../swedbankTypes";
 
 export async function PostPaymentOrder(paymentOrder: PaymentOrderOutgoing) {
@@ -12,9 +12,6 @@ export async function PostPaymentOrder(paymentOrder: PaymentOrderOutgoing) {
     paymentOrder,
   };
   const bearer = import.meta.env.VITE_SWEDBANK_BEARER;
-  console.log(bearer);
-  // const sessionId = import.meta.env.VITE_SWEDBANK_SESSIONID;
-  console.log(bearer);
   return fetch(uri, {
     method: "POST",
     headers: {
@@ -31,7 +28,6 @@ export async function PostPaymentOrder(paymentOrder: PaymentOrderOutgoing) {
       return response.json();
     })
     .then((data) => {
-      console.log("RESPONSE PÅ PAYMENT ORDER: ", data);
       return data as PaymentOrderIncoming;
     })
     .catch((error) => {
@@ -49,9 +45,6 @@ export async function PostUpdatePaymentOrder(
     paymentOrder,
   };
   const bearer = import.meta.env.VITE_SWEDBANK_BEARER;
-  console.log(bearer);
-  // const sessionId = import.meta.env.VITE_SWEDBANK_SESSIONID;
-  console.log(bearer);
   return fetch(uri, {
     method: "POST",
     headers: {
@@ -68,7 +61,6 @@ export async function PostUpdatePaymentOrder(
       return response.json();
     })
     .then((data) => {
-      console.log("RESPONSE PÅ PAYMENT ORDER: ", data);
       return data as PaymentOrderIncoming;
     })
     .catch((error) => {
@@ -101,7 +93,6 @@ export async function GetPaymentPaidValidation(paidUrl: string) {
       return response.json();
     })
     .then((data) => {
-      console.log("DATA SOM GES SOM VALIDPAYMENTODEr: ", data);
       return data as ValidPaymentOrder;
     })
     .catch((error) => {
@@ -129,7 +120,6 @@ export async function GetPaymentById(urlId: string) {
       return response.json();
     })
     .then((data) => {
-      console.log("DATA MED ID URLEN:: ", data);
       return data as PaymentOrderIncoming;
     })
     .catch((error) => {
@@ -215,7 +205,6 @@ export async function CancelRequest({
     body: JSON.stringify(requestBody),
   })
     .then((response) => {
-      console.log("Response Status: ", response.status);
       if (!response.ok) {
         return response.text().then((text) => {
           throw new Error(`Nätverksfel - ${response.status}: ${text}`);
@@ -224,7 +213,6 @@ export async function CancelRequest({
       return response.json();
     })
     .then((data) => {
-      console.log("Response Data: ", data);
       return data as PaymentOrderIn;
     })
     .catch((error) => {
