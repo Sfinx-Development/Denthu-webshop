@@ -43,6 +43,7 @@ interface PaymentState {
   paymentCapture: PaymentOrderResponse | null;
   callbackData: CallbackData | null;
   capture: CaptureResponse | null;
+  isPaymentOrderReady: boolean;
   error: string | null;
 }
 
@@ -57,6 +58,7 @@ export const initialState: PaymentState = {
   paymentCapture: null,
   callbackData: null,
   capture: getCaptureFromLocalStorage(),
+  isPaymentOrderReady: false,
   error: null,
 };
 
@@ -239,7 +241,6 @@ export const getPaymentOrderIncoming = createAsyncThunk<
     const response = await getPaymentOrderFromDB(id);
     if (response) {
       localStorage.setItem("paymentOrderIncoming", JSON.stringify(response));
-      console.log("PAYMENT ORDER: ", response);
       return response;
     } else {
       return thunkAPI.rejectWithValue("failed to get payment order");
@@ -258,7 +259,6 @@ export const getPaymentPaidValidation = createAsyncThunk<
 >("payments/getPaymentValidation", async (order, thunkAPI) => {
   try {
     const response = await GetPaymentPaidValidation(order.paymentOrder.paid.id);
-    console.log("RESPONSE PAYMENTINFO: ", response);
     if (response) {
       savePaymentInfoToLocalStorage(response);
       return response;
@@ -337,7 +337,6 @@ export const getCaptureAsync = createAsyncThunk<
   try {
     const response = await getCaptureFromDb(paymentOrderId);
     if (response) {
-      console.log(response);
       saveCaptureToLocalStorage(response);
       return response as CaptureResponse;
     } else {
@@ -436,6 +435,9 @@ const paymentSlice = createSlice({
       state.capture = null;
       localStorage.removeItem("capture");
     },
+    setPaymentOrderReady(state, action) {
+      state.isPaymentOrderReady = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -493,5 +495,6 @@ export const {
   clearPaymentInfo,
   clearCallbackData,
   clearCapture,
+  setPaymentOrderReady,
 } = paymentSlice.actions;
 export const PaymentReducer = paymentSlice.reducer;

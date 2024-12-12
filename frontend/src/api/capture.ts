@@ -64,8 +64,6 @@ export async function PostCaptureToInternalApiDB({
       body: JSON.stringify(transactionNoUrl),
     });
 
-    console.log("Response Status: ", response.status);
-
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`Nätverksfel - ${response.status}: ${errorText}`);

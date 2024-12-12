@@ -17,28 +17,17 @@ export async function PostCancelToInternalApiDB({
   )}&customerId=denthuab`;
 
   try {
-    console.log("URL: ", fullUrl, " DATA: ", transaction);
     const response = await fetch(fullUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json;version=3.1",
-        // Lägg till Authorization-header om behövs
-        // "Authorization": `Bearer ${bearerToken}`,
       },
       body: JSON.stringify(transaction),
     });
 
-    console.log("Response Status: ", response.status);
-
     if (!response.ok) {
-      // const errorText = await response.text();
-      // throw new Error(`Nätverksfel - ${response.status}: ${errorText}`);
       return false;
     }
-
-    // const data = (await response.json()) as PaymentOrderIn;
-    // console.log("Response Data From cancellation: ", data);
-    // // ev spara till DATABASEN?
 
     return true;
   } catch (error) {

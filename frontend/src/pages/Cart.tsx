@@ -180,7 +180,7 @@ export default function Cart() {
     }
   };
 
-  const handleMakeOrder = () => {
+  const handleMakeOrder = async () => {
     const orderItems = cart?.items.map((item) => {
       const product = products.find((p) => p.id == item.product_id);
       const orderItem: OrderItem = {
@@ -211,14 +211,14 @@ export default function Cart() {
         isShipped: false,
         isPickedUp: false,
       };
-      dispatch(addOrderAsync([newOrder, products]));
+      await dispatch(addOrderAsync([newOrder, products]));
       navigate("/checkout");
-      products.forEach((p) => {
-        const productToUpdate: Product = {
-          ...p,
-        };
-        dispatch(updateProductAsync(productToUpdate));
-      });
+      // products.forEach((p) => {
+      //   const productToUpdate: Product = {
+      //     ...p,
+      //   };
+      //   await dispatch(updateProductAsync(productToUpdate));
+      // });
     }
   };
 
