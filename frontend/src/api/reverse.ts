@@ -38,3 +38,28 @@ export async function PostReverseToInternalApiDB({
     return false;
   }
 }
+
+// GET: Verifiera reverseringsstatus
+export async function GetReversedStatus(reversedUrl: string): Promise<PaymentOrderIn | null> {
+  try {
+    const response = await fetch(reversedUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json;version=3.1",
+        // Lägg till Authorization-header om behövs
+        // "Authorization": `Bearer ${bearerToken}`,
+      },
+    });
+
+    if (!response.ok) {
+      console.error("Failed to verify reversal status, status:", response.status);
+      return null;
+    }
+
+    const data = await response.json();
+    return data as PaymentOrderIn;
+  } catch (error) {
+    console.error("Error in verifying reversal status: ", error);
+    return null;
+  }
+}
