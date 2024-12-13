@@ -40,9 +40,16 @@ export async function PostReverseToInternalApiDB({
 }
 
 // GET: Verifiera reverseringsstatus
-export async function GetReversedStatus(reversedUrl: string): Promise<PaymentOrderIn | null> {
+export async function GetReversedStatus(reverseUrl: string): Promise<PaymentOrderIn | null> {
+  const baseUrl =
+    "https://swedbankpay-gad0dfg6fha9bpfh.swedencentral-01.azurewebsites.net/swedbankpay/reverseDenthu";
+
+  const fullUrl = `${baseUrl}?reverseUrl=${encodeURIComponent(
+    reverseUrl
+  )}&customerId=denthuab`;
+
   try {
-    const response = await fetch(reversedUrl, {
+    const response = await fetch(fullUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json;version=3.1",
@@ -59,7 +66,7 @@ export async function GetReversedStatus(reversedUrl: string): Promise<PaymentOrd
     const data = await response.json();
     return data as PaymentOrderIn;
   } catch (error) {
-    console.error("Error in verifying reversal status: ", error);
+    console.error("Error in verifying reversal status:", error);
     return null;
   }
 }
