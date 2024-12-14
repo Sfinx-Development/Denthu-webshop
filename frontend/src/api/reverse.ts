@@ -39,34 +39,27 @@ export async function PostReverseToInternalApiDB({
   }
 }
 
-// // GET: Verifiera reverseringsstatus
-// export async function GetReversedStatus(reverseUrl: string): Promise<PaymentOrderIn | null> {
-//   const baseUrl =
-//     "https://swedbankpay-gad0dfg6fha9bpfh.swedencentral-01.azurewebsites.net/swedbankpay/reverseDenthu";
+export async function GetReversedStatus(reverseUrl: string): Promise<PaymentOrderIn | null> {
+  try {
+    const bearer = import.meta.env.VITE_SWEDBANK_BEARER;
+    const response = await fetch(reverseUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json;version=3.1",
+        Authorization: `Bearer ${bearer}`,
+        Host: "api.externalintegration.payex.com",
+      },
+    });
 
-//   const fullUrl = `${baseUrl}?reverseUrl=${encodeURIComponent(
-//     reverseUrl
-//   )}&customerId=denthuab`;
+    if (!response.ok) {
+      console.error("Failed to verify reversal status, status:", response.status);
+      return null;
+    }
 
-//   try {
-//     const response = await fetch(fullUrl, {
-//       method: "GET",
-//       headers: {
-//         "Content-Type": "application/json;version=3.1",
-//         // Lägg till Authorization-header om behövs
-//         // "Authorization": `Bearer ${bearerToken}`,
-//       },
-//     });
-
-//     if (!response.ok) {
-//       console.error("Failed to verify reversal status, status:", response.status);
-//       return null;
-//     }
-
-//     const data = await response.json();
-//     return data as PaymentOrderIn;
-//   } catch (error) {
-//     console.error("Error in verifying reversal status:", error);
-//     return null;
-//   }
-// }
+    const data = await response.json();
+    return data as PaymentOrderIn;
+  } catch (error) {
+    console.error("Error in verifying reversal status:", error);
+    return null;
+  }
+}

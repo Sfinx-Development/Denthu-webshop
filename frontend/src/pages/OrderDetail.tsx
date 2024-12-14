@@ -37,8 +37,8 @@ import {
   getPaymentOrderIncoming,
   getPaymentPaidValidation,
   makeCancelRequest,
-  // reversePaymentWithVerification,
-  makeReverseRequest,
+   reversePaymentWithVerification,
+  // makeReverseRequest,
   postCaptureToInternalApi,
 } from "../slices/paymentSlice";
 import { useAppDispatch, useAppSelector } from "../slices/store";
@@ -154,7 +154,7 @@ export default function OrderDetail() {
           payeeReference: order.paymentInfo.payeeReference,
         };
         dispatch(
-          makeReverseRequest({
+          reversePaymentWithVerification({
             reverseRequest: reverseRequest,
             reverseUrl: operation.href,
             order: order,
