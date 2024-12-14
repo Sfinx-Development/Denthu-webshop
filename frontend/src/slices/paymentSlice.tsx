@@ -23,7 +23,7 @@ import {
   addPaymentOrderIncomingToDB,
   getPaymentOrderFromDB,
 } from "../api/paymentOrder";
-import { PostReverseToInternalApiDB, } from "../api/reverse";
+import { GetReversedStatus, PostReverseToInternalApiDB, } from "../api/reverse";
 import {
   GetPaymentById,
   GetPaymentPaidValidation,
@@ -382,80 +382,80 @@ export const makeCancelRequest = createAsyncThunk<
 );
 
 //REVERSE
-export const makeReverseRequest = createAsyncThunk<
-  Order,
-  { reverseRequest: ReverseRequestOutgoing; reverseUrl: string; order: Order },
-  { rejectValue: string }
->(
-  "payments/makeReverse",
-  async ({ reverseRequest, reverseUrl, order }, thunkAPI) => {
-    try {
-      const isReversed = await PostReverseToInternalApiDB({
-        transaction: reverseRequest,
-        reverseUrl,
-      });
-      if (isReversed) {
-        const orderUpdatedPayment: Order = {
-          ...order,
-          status: "Reversed",
-          // status: response.status
-          // paymentInfo: paymentInfo.paymentOrder.paid,
-        };
-        await editOrderInDB(orderUpdatedPayment);
-        // savePaymentReversedToLS(response);
-        return order;
-      } else {
-        return thunkAPI.rejectWithValue("failed to get reversed payment");
-      }
-    } catch (error) {
-      return thunkAPI.rejectWithValue(
-        "Något gick fel vid hämtning av återkallad betalning."
-      );
-    }
-  }
-);
-
-// export const reversePaymentWithVerification = createAsyncThunk<
+// export const makeReverseRequest = createAsyncThunk<
 //   Order,
 //   { reverseRequest: ReverseRequestOutgoing; reverseUrl: string; order: Order },
 //   { rejectValue: string }
 // >(
-//   "payments/reverseWithVerification",
+//   "payments/makeReverse",
 //   async ({ reverseRequest, reverseUrl, order }, thunkAPI) => {
 //     try {
-//       // Initiera reverseringen (POST)
 //       const isReversed = await PostReverseToInternalApiDB({
 //         transaction: reverseRequest,
 //         reverseUrl,
 //       });
-
-//       if (!isReversed) {
-//         return thunkAPI.rejectWithValue("Failed to initiate reversal.");
-//       }
-
-//       // Verifiera reverseringsstatus (GET)
-//       const reversedUrl = `${reverseUrl.replace("/reversal", "/reversed")}`;
-//       const reversedStatus = await GetReversedStatus(reversedUrl);
-
-//       if (reversedStatus?.status === "Reversed") {
+//       if (isReversed) {
 //         const orderUpdatedPayment: Order = {
 //           ...order,
 //           status: "Reversed",
+//           // status: response.status
+//           // paymentInfo: paymentInfo.paymentOrder.paid,
 //         };
 //         await editOrderInDB(orderUpdatedPayment);
-//         return orderUpdatedPayment;
+//         // savePaymentReversedToLS(response);
+//         return order;
 //       } else {
-//         return thunkAPI.rejectWithValue(
-//           "Reversal not completed. Please try again."
-//         );
+//         return thunkAPI.rejectWithValue("failed to get reversed payment");
 //       }
 //     } catch (error) {
 //       return thunkAPI.rejectWithValue(
-//         "An error occurred during payment reversal."
+//         "Något gick fel vid hämtning av återkallad betalning."
 //       );
 //     }
 //   }
 // );
+
+export const reversePaymentWithVerification = createAsyncThunk<
+  Order,
+  { reverseRequest: ReverseRequestOutgoing; reverseUrl: string; order: Order },
+  { rejectValue: string }
+>(
+  "payments/reverseWithVerification",
+  async ({ reverseRequest, reverseUrl, order }, thunkAPI) => {
+    try {
+      // Initiera reverseringen (POST)
+      const isReversed = await PostReverseToInternalApiDB({
+        transaction: reverseRequest,
+        reverseUrl,
+      });
+
+      if (!isReversed) {
+        return thunkAPI.rejectWithValue("Failed to initiate reversal.");
+      }
+
+      // Verifiera reverseringsstatus (GET)
+      const reversedUrl = `${reverseUrl.replace("/reversal", "/reversed")}`;
+      const reversedStatus = await GetReversedStatus(reversedUrl);
+
+      if (reversedStatus?.status === "Reversed") {
+        const orderUpdatedPayment: Order = {
+          ...order,
+          status: "Reversed",
+        };
+        await editOrderInDB(orderUpdatedPayment);
+        return orderUpdatedPayment;
+      } else {
+        return thunkAPI.rejectWithValue(
+          "Reversal not completed. Please try again."
+        );
+      }
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        "An error occurred during payment reversal."
+      );
+    }
+  }
+);
 
 
 const paymentSlice = createSlice({
