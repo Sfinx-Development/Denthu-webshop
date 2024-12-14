@@ -49,7 +49,7 @@ export async function GetReversedStatus(reverseUrl: string): Promise<PaymentOrde
       headers: {
         "Content-Type": "application/json;version=3.1",
         Authorization: `Bearer ${bearer}`, // Skicka Bearer-token
-        Host: "api.externalintegration.payex.com", // Specificera värd
+       
       },
     });
 
