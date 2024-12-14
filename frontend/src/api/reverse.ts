@@ -40,26 +40,31 @@ export async function PostReverseToInternalApiDB({
 }
 
 export async function GetReversedStatus(reverseUrl: string): Promise<PaymentOrderIn | null> {
+  const bearer = import.meta.env.VITE_SWEDBANK_BEARER; // Hämta Bearer-token från miljövariabler
+
   try {
-    const bearer = import.meta.env.VITE_SWEDBANK_BEARER;
+    // Gör GET-begäran
     const response = await fetch(reverseUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json;version=3.1",
-        Authorization: `Bearer ${bearer}`,
-        Host: "api.externalintegration.payex.com",
+        Authorization: `Bearer ${bearer}`, // Skicka Bearer-token
+        Host: "api.externalintegration.payex.com", // Specificera värd
       },
     });
 
+    // Kontrollera om svar är OK
     if (!response.ok) {
-      console.error("Failed to verify reversal status, status:", response.status);
+      console.error(`Failed to verify reversal status, status: ${response.status}`);
       return null;
     }
 
+    // Returnera JSON-data
     const data = await response.json();
-    return data as PaymentOrderIn;
+    return data as PaymentOrderIn; // Konvertera till PaymentOrderIn
   } catch (error) {
     console.error("Error in verifying reversal status:", error);
     return null;
   }
 }
+
