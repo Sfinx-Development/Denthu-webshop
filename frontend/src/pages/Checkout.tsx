@@ -188,10 +188,18 @@ export default function Checkout() {
         street &&
         postalCode &&
         city &&
+        isShipping &&
         !emailError
       );
     }
-    return firstName && lastName && phone && email && !emailError;
+    return (
+      firstName &&
+      lastName &&
+      phone &&
+      email &&
+      !emailError &&
+      (isShipping || isPickup)
+    );
   };
 
   useEffect(() => {
@@ -223,10 +231,10 @@ export default function Checkout() {
     }
   };
 
-  const handleAddToOrder = async (updatedOrder?: Order) => {
+  const handleAddToOrder = async (thisOrder?: Order) => {
     setEmailError(false);
     setShippingError(false);
-    let currentOrder = updatedOrder ?? order;
+    const currentOrder = thisOrder ?? order;
     console.log("ORDER SOM SKA ADDAS: ", currentOrder);
     if (
       currentOrder &&
@@ -244,7 +252,7 @@ export default function Checkout() {
         const fullShippingAddress = isShipping
           ? `${street}, ${postalCode}, ${city}`
           : "";
-        console.log("ADD TO ORDER UPPDATERAR ORDERN");
+        console.log("ADD TO ORDER UPPDATERAR ORDERN med");
         const updatedOrder: Order = {
           ...currentOrder,
           guestFirstName: firstName,
@@ -505,7 +513,7 @@ export default function Checkout() {
       }}
     >
       {/* Vänster kolumn */}
-      <Box sx={{ display: "flex", flexDirection: "column", flex: 1 }}>
+      <Box sx={{ display: "flex", flexDirection: "column", flex: 1 / 2 }}>
         {order && order.total_amount && (
           <>
             <Typography variant="h6" textAlign={{ xs: "center", sm: "left" }}>
@@ -736,79 +744,85 @@ export default function Checkout() {
             onChange={(event) => setEmail(event.target.value)}
             onBlur={() => handleBlur("email")}
           />
+          <Box>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={isPickup}
+                  onChange={(event) => {
+                    setIsPickup(event.target.checked);
+                    setIsShipping(false);
+                    localStorage.removeItem("isShipping");
+                    handleShippingMethodChange("pickup");
+                  }}
+                />
+              }
+              label="Hämta upp"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={isShipping}
+                  onChange={(event) => {
+                    setIsShipping(event.target.checked);
+                    localStorage.setItem("isShipping", JSON.stringify("true"));
+                    setIsPickup(false);
+                    handleShippingMethodChange("shipping");
+                  }}
+                />
+              }
+              label="Leverans"
+            />
+            {isShipping && (
+              <>
+                <TextField
+                  label="Gata"
+                  variant="outlined"
+                  fullWidth
+                  error={streetError}
+                  helperText={
+                    streetError
+                      ? "Ange en giltig adress (t.ex. Storgatan 5)"
+                      : ""
+                  }
+                  onChange={(event) => setStreet(event.target.value)}
+                  onBlur={() => handleBlur("street")}
+                />
+                <TextField
+                  label="Postnummer"
+                  variant="outlined"
+                  fullWidth
+                  error={postalCodeError}
+                  helperText={
+                    postalCodeError
+                      ? "Ange ett giltigt postnummer (5 siffror)"
+                      : ""
+                  }
+                  onChange={(event) => setPostalCode(event.target.value)}
+                  onBlur={() => handleBlur("postalCode")}
+                />
+                <TextField
+                  label="Stad"
+                  variant="outlined"
+                  fullWidth
+                  error={!city}
+                  helperText={!city ? "Stad är obligatoriskt" : ""}
+                  onChange={(event) => setCity(event.target.value)}
+                  onBlur={() => handleBlur("city")}
+                />
+              </>
+            )}
+            <Button
+              variant="contained"
+              onClick={async () => await handleMakeOrder()}
+              sx={{ marginTop: 2 }}
+              disabled={!isFormComplete()}
+            >
+              Till betalning
+            </Button>
+          </Box>
         </Box>
       )}
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={isPickup}
-            onChange={(event) => {
-              setIsPickup(event.target.checked);
-              setIsShipping(false);
-              localStorage.removeItem("isShipping");
-              handleShippingMethodChange("pickup");
-            }}
-          />
-        }
-        label="Hämta upp"
-      />
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={isShipping}
-            onChange={(event) => {
-              setIsShipping(event.target.checked);
-              localStorage.setItem("isShipping", JSON.stringify("true"));
-              setIsPickup(false);
-              handleShippingMethodChange("shipping");
-            }}
-          />
-        }
-        label="Leverans"
-      />
-      {isShipping && (
-        <>
-          <TextField
-            label="Gata"
-            variant="outlined"
-            fullWidth
-            error={streetError}
-            helperText={
-              streetError ? "Ange en giltig adress (t.ex. Storgatan 5)" : ""
-            }
-            onChange={(event) => setStreet(event.target.value)}
-            onBlur={() => handleBlur("street")}
-          />
-          <TextField
-            label="Postnummer"
-            variant="outlined"
-            fullWidth
-            error={postalCodeError}
-            helperText={
-              postalCodeError ? "Ange ett giltigt postnummer (5 siffror)" : ""
-            }
-            onChange={(event) => setPostalCode(event.target.value)}
-            onBlur={() => handleBlur("postalCode")}
-          />
-          <TextField
-            label="Stad"
-            variant="outlined"
-            fullWidth
-            error={!city}
-            helperText={!city ? "Stad är obligatoriskt" : ""}
-            onChange={(event) => setCity(event.target.value)}
-            onBlur={() => handleBlur("city")}
-          />
-        </>
-      )}
-      <Button
-        variant="contained"
-        onClick={async () => await handleMakeOrder()}
-        sx={{ marginTop: 2 }}
-        disabled={!isFormComplete()}
-      >
-        Till betalning
-      </Button>
     </Box>
   );
 }
