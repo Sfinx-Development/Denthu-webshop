@@ -106,21 +106,27 @@ export default function Checkout() {
     }
   }, [order]);
 
-  const makePaymentOrder = async () => {
+  const makePaymentOrder = async (finalOrder: Order) => {
     if (
       validateForm() &&
-      order?.items &&
-      order.items.length > 0 &&
-      order.total_amount > 0
+      finalOrder?.items &&
+      finalOrder.items.length > 0 &&
+      finalOrder.total_amount > 0
     ) {
-      if (order && !shippingError && !emailError) {
+      console.log("ORDERN ÄR HÄR: ", finalOrder);
+      if (
+        finalOrder &&
+        !shippingError &&
+        !emailError &&
+        finalOrder.guestEmail
+      ) {
         const payeeId = import.meta.env.VITE_SWEDBANK_PAYEEID;
         const payeeName = import.meta.env.VITE_SWEDBANK_PAYEENAME;
         const paymentOrder: PaymentOrderOutgoing = {
           operation: "Purchase",
           currency: "SEK",
-          amount: order.total_amount,
-          vatAmount: order.vat_amount,
+          amount: finalOrder.total_amount,
+          vatAmount: finalOrder.vat_amount,
           description: "Test Purchase",
           userAgent: "Mozilla/5.0...",
           language: "sv-SE",
@@ -137,7 +143,7 @@ export default function Checkout() {
             payeeId: payeeId,
             payeeReference: generatePayeeReference(true),
             payeeName: payeeName,
-            orderReference: order.reference,
+            orderReference: finalOrder.reference,
           },
         };
         if (isShipping) {
@@ -148,9 +154,9 @@ export default function Checkout() {
             const incomingPayment = unwrapResult(
               incomingPaymentResult
             ) as PaymentOrderIncoming;
-            if (order && incomingPayment) {
+            if (finalOrder && incomingPayment) {
               const updatedOrder: Order = {
-                ...order,
+                ...finalOrder,
                 incomingPaymentOrderId: incomingPayment.id,
               };
               await dispatch(updateOrderAsync(updatedOrder));
@@ -165,9 +171,9 @@ export default function Checkout() {
             const incomingPayment = unwrapResult(
               incomingPaymentResult
             ) as PaymentOrderIncoming;
-            if (order && incomingPayment) {
+            if (finalOrder && incomingPayment) {
               const updatedOrder: Order = {
-                ...order,
+                ...finalOrder,
                 incomingPaymentOrderId: incomingPayment.id,
               };
               await dispatch(updateOrderAsync(updatedOrder));
@@ -235,7 +241,6 @@ export default function Checkout() {
     setEmailError(false);
     setShippingError(false);
     const currentOrder = thisOrder ?? order;
-    console.log("ORDER SOM SKA ADDAS: ", currentOrder);
     if (
       currentOrder &&
       firstName &&
@@ -248,11 +253,10 @@ export default function Checkout() {
 
       if (emailIsValid) {
         setEmailError(false);
-
         const fullShippingAddress = isShipping
           ? `${street}, ${postalCode}, ${city}`
           : "";
-        console.log("ADD TO ORDER UPPDATERAR ORDERN med");
+
         const updatedOrder: Order = {
           ...currentOrder,
           guestFirstName: firstName,
@@ -263,10 +267,14 @@ export default function Checkout() {
           shippingAddress: isShipping ? fullShippingAddress : "",
           shippingCost: isShipping ? currentOrder.shippingCost : 0,
         };
-
-        dispatch(updateOrderAsync(updatedOrder));
+        console.log(
+          "ORDER MED UPPGIFTER SOM SKICKAS TILL SLICE-----: ",
+          updatedOrder
+        );
+        await dispatch(updateOrderAsync(updatedOrder));
 
         setIsOrderUpdated(true);
+        return updatedOrder;
       } else {
         setEmailError(true);
       }
@@ -317,7 +325,6 @@ export default function Checkout() {
     let orderToReturn = order;
 
     try {
-      console.log("Hämtar färska produkter...");
       const resultAction = await dispatch(getProductsAsync());
 
       if (resultAction.meta.requestStatus !== "fulfilled") {
@@ -326,11 +333,10 @@ export default function Checkout() {
       }
 
       const freshProducts = unwrapResult(resultAction) as Product[];
-      console.log("Färska produkter:", freshProducts);
 
       const updatedItems: OrderItem[] = [];
       const outOfStockProducts: Product[] = [];
-      console.log("Uppdaterade items:", updatedItems);
+
       order.items.forEach((o) => {
         const productInOrder = freshProducts.find((p) => p.id === o.product_id);
 
@@ -348,7 +354,6 @@ export default function Checkout() {
           }
         }
       });
-      console.log("Produkter som är slut i lager:", outOfStockProducts);
 
       setProductsRemoved(outOfStockProducts);
       setProductsNotInStore(outOfStockProducts);
@@ -365,8 +370,6 @@ export default function Checkout() {
         total_amount: totalPrice,
         updateTimestamp: new Date().toISOString(),
       };
-
-      console.log("Slutför uppdatering av order och kundvagn.");
 
       // Dispatcha den uppdaterade ordern
       const updatedOrderResult = await dispatch(updateOrderAsync(updatedOrder));
@@ -392,7 +395,6 @@ export default function Checkout() {
 
       // Uppdatera betalningsorder till Swedbank om det finns en incomingPaymentOrder
       if (incomingPaymentOrder) {
-        console.log("uppdaterar till swedbank");
         handleUpdateOrderToSwedbank();
       }
     } catch (error) {
@@ -424,15 +426,15 @@ export default function Checkout() {
       console.log("Startar addtoorder med order, ", updatedOrder);
 
       // Lägg till ytterligare information till ordern
-      await handleAddToOrder(updatedOrder);
-      // await waitForOrderUpdate(order?.updateTimestamp);
+      const finalOrder = await handleAddToOrder(updatedOrder);
 
       console.log("Startar skapa betalningsorder");
+      //här har inte statet order hunnit uppdaterats än från förra metoden???
+      if (finalOrder) {
+        await makePaymentOrder(finalOrder);
 
-      // Skapa betalningsorder
-      await makePaymentOrder();
-
-      console.log("Klar med handleMakeOrder");
+        console.log("Klar med handleMakeOrder");
+      }
     } catch (error) {
       console.error("Ett fel inträffade i handleMakeOrder:", error);
     }

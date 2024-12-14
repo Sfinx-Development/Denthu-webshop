@@ -185,11 +185,12 @@ export const updateOrderAsync = createAsyncThunk<
 >("orders/updateOrder", async (order, thunkAPI) => {
   try {
     const updatedItems = order.items.filter((i) => i.quantity > 0);
-
+    console.log("ORDER SOM KOMMER IN-----------, ", order);
     const updatedOrder: Order = {
       ...order,
       items: updatedItems,
     };
+    console.log("ORDER SOM SKA UPDATERAS-----------, ", updatedOrder);
     const response = await editOrderInDB(updatedOrder);
     if (response) {
       localStorage.setItem("order", JSON.stringify(response));
