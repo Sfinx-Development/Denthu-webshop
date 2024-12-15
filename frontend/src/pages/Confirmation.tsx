@@ -160,12 +160,6 @@ export default function Confirmation() {
             <Typography sx={{ fontWeight: 600 }}>Betalningsmetod</Typography>
             <Typography>{order?.paymentInfo?.instrument}</Typography>
           </Box>
-          {order?.isShipped && (
-            <Box>
-              <Typography sx={{ fontWeight: 600 }}>Fraktkostnad</Typography>
-              <Typography>{order?.shippingCost}</Typography>
-            </Box>
-          )}
           <Box>
             <Typography sx={{ fontWeight: 600 }}>Datum för order</Typography>
             <Typography>{order?.created_date}</Typography>
@@ -224,10 +218,17 @@ export default function Confirmation() {
             );
           })}
           {order && (
-            <Box>
-              <Typography sx={{ fontWeight: 600 }}>Totalt belopp</Typography>
-              <Typography>{order.total_amount / 100} kr</Typography>
-            </Box>
+            <>
+              <Box>
+                <Typography sx={{ fontWeight: 600 }}>Totalt belopp</Typography>
+                <Typography>{order.total_amount / 100} kr</Typography>
+              </Box>
+              <Box>
+                <Typography sx={{ fontSize: 16, fontWeight: 600 }}>
+                  Fraktkostnad {order.shippingCost}
+                </Typography>
+              </Box>
+            </>
           )}
         </Box>
       </Box>
