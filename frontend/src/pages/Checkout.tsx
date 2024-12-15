@@ -253,10 +253,7 @@ export default function Checkout() {
           shippingAddress: isShipping ? fullShippingAddress : "",
           shippingCost: isShipping ? currentOrder.shippingCost : 0,
         };
-        console.log(
-          "ORDER MED UPPGIFTER SOM SKICKAS TILL SLICE-----: ",
-          updatedOrder
-        );
+
         await dispatch(updateOrderAsync(updatedOrder));
 
         setIsOrderUpdated(true);
@@ -403,21 +400,10 @@ export default function Checkout() {
 
   const handleMakeOrder = async () => {
     try {
-      // Kontrollera produkter och vänta på att ordern uppdateras
       const updatedOrder = await checkIfProductsInStore();
-      // await waitForOrderUpdate(order?.updateTimestamp);
-
-      console.log("Startar addtoorder med order, ", updatedOrder);
-
-      // Lägg till ytterligare information till ordern
       const finalOrder = await handleAddToOrder(updatedOrder);
-
-      console.log("Startar skapa betalningsorder");
-      //här har inte statet order hunnit uppdaterats än från förra metoden???
       if (finalOrder) {
         await makePaymentOrder(finalOrder);
-
-        console.log("Klar med handleMakeOrder");
       }
     } catch (error) {
       console.error("Ett fel inträffade i handleMakeOrder:", error);
@@ -643,7 +629,7 @@ export default function Checkout() {
             );
           })}
 
-        {isShipping && (
+        {isShipping && order && order.shippingCost && (
           <Typography
             sx={{
               fontSize: 16,
@@ -651,7 +637,7 @@ export default function Checkout() {
               textAlign: { xs: "center", sm: "left" },
             }}
           >
-            Fraktkostnad: {order?.shippingCost} kr
+            Fraktkostnad: {order.shippingCost / 100} kr
           </Typography>
         )}
       </Box>

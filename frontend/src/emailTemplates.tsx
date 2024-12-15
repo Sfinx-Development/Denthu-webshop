@@ -542,6 +542,11 @@ export const sendNewOrderNotificationToDenthu = (
       <div style="background-color: #fff4e6; padding: 20px; border-radius: 8px; border: 1px solid #ff6600;">
         <h4 style="color: #ff6600;">Ny order mottagen!</h4>
         <p><strong>Beställning nr:</strong> ${order.reference}</p>
+           <p><strong>Kundens namn:</strong> 
+          <p style="color: #007BFF;">
+          ${order.guestFirstName} ${order.guestLastName}
+          </p>
+        </p>
         <p><strong>Kundens email:</strong> 
           <a href="mailto:${order.guestEmail}" style="color: #007BFF;">
             ${order.guestEmail}
