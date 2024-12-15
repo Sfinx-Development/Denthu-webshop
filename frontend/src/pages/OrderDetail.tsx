@@ -37,7 +37,7 @@ import {
   getPaymentOrderIncoming,
   getPaymentPaidValidation,
   makeCancelRequest,
-   reversePaymentWithVerification,
+  reversePaymentWithVerification,
   // makeReverseRequest,
   postCaptureToInternalApi,
 } from "../slices/paymentSlice";
@@ -63,7 +63,6 @@ export default function OrderDetail() {
   const isValidTrackingLink = (link: string): boolean => {
     return link.startsWith("https://");
   };
-  
 
   emailjs.init("C8CxNnxZg6mg-d2tq");
   const navigate = useNavigate();
@@ -226,9 +225,9 @@ export default function OrderDetail() {
 
   return (
     <Box display="flex" flexDirection="column" flex={1} height="100%" p={2}>
-      <Typography variant="h4" gutterBottom>
+      {/* <Typography variant="h4" gutterBottom>
         Order Details: {order.id}
-      </Typography>
+      </Typography> */}
 
       <Box
         mb={2}
@@ -252,6 +251,9 @@ export default function OrderDetail() {
           </Typography>
           <Typography variant="body1">
             <strong>Order status:</strong> {order.status}
+          </Typography>
+          <Typography variant="body1">
+            <strong>Betalat med:</strong> {order.paymentInfo?.instrument}
           </Typography>
         </Box>
         <Box sx={{ width: "100%" }}>
@@ -298,9 +300,7 @@ export default function OrderDetail() {
           variant="contained"
           color="secondary"
           onClick={() => setOpenCancelDialog(true)} // Open cancel confirmation dialog
-          disabled={
-            order.paymentInfo?.instrument == "Swish" 
-          }
+          disabled={order.paymentInfo?.instrument == "Swish"}
         >
           Avbryt betalning
         </Button>
@@ -351,10 +351,7 @@ export default function OrderDetail() {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={() => setOpenCancelDialog(false)}
-            color="primary"
-          >
+          <Button onClick={() => setOpenCancelDialog(false)} color="primary">
             Avbryt
           </Button>
           <Button onClick={handleCancelPayment} color="secondary">
