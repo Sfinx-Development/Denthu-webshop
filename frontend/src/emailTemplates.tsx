@@ -58,6 +58,9 @@ export const sendOrderConfirmationWithLink = (
         <p style="font-size: 18px; font-weight: bold;">
           Totalt belopp: ${(order.total_amount / 100).toFixed(2)} SEK
         </p>
+          <p style="font-size: 12px; font-weight: bold;">
+          Fraktkostnad: ${(order?.shippingCost ?? 0).toFixed(2)} SEK
+        </p>
         <p>
           Vid frågor, tveka inte att kontakta oss på 
           <a href="mailto:denthu.webbshop@outlook.com" style="color: #007BFF;">
