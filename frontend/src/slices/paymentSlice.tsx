@@ -23,7 +23,7 @@ import {
   addPaymentOrderIncomingToDB,
   getPaymentOrderFromDB,
 } from "../api/paymentOrder";
-import { GetReversedStatus, PostReverseToInternalApiDB, } from "../api/reverse";
+import { GetReversedStatus, PostReverseToInternalApiDB } from "../api/reverse";
 import {
   GetPaymentById,
   GetPaymentPaidValidation,
@@ -417,11 +417,16 @@ export const makeCancelRequest = createAsyncThunk<
 
 export const reversePaymentWithVerification = createAsyncThunk<
   Order,
-  { reverseRequest: ReverseRequestOutgoing; reverseUrl: string; order: Order },
+  {
+    reverseRequest: ReverseRequestOutgoing;
+    reverseUrl: string;
+    order: Order;
+    paymentOrder: PaymentOrderIncoming;
+  },
   { rejectValue: string }
 >(
   "payments/reverseWithVerification",
-  async ({ reverseRequest, reverseUrl, order }, thunkAPI) => {
+  async ({ reverseRequest, reverseUrl, order, paymentOrder }, thunkAPI) => {
     try {
       // Initiera reverseringen (POST)
       const isReversed = await PostReverseToInternalApiDB({
@@ -434,7 +439,9 @@ export const reversePaymentWithVerification = createAsyncThunk<
       }
 
       // Verifiera reverseringsstatus (GET)
-      const reversedUrl = `${reverseUrl.replace("/reversal", "/reversed")}`;
+      const reversedUrl = paymentOrder.paymentOrder.reversed.id;
+      // const reversedUrl = `${reverseUrl.replace("/reversal", "/reversed")}`;
+
       const reversedStatus = await GetReversedStatus(reversedUrl);
 
       if (reversedStatus?.status === "Reversed") {
@@ -456,7 +463,6 @@ export const reversePaymentWithVerification = createAsyncThunk<
     }
   }
 );
-
 
 const paymentSlice = createSlice({
   name: "payments",
@@ -484,21 +490,21 @@ const paymentSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-    // .addCase(reversePaymentWithVerification.fulfilled, (state, action) => {
-    //   const updatedOrder = action.payload;
-    //   if (updatedOrder) {
-    //     // Uppdatera state baserat på den reverserade ordern
-    //     state.paymentInfo = null; // Nollställ eventuell lokal paymentInfo
-    //     savePaymentReversedToLS(null); // Ta bort från localStorage
-    //     state.error = null;
-    //   }
-    // })
-    // .addCase(reversePaymentWithVerification.rejected, (state, action) => {
-    //   state.error = action.payload || "Failed to reverse the payment.";
-    // })
-    // .addCase(reversePaymentWithVerification.pending, (state) => {
-    //   state.error = null; // Rensa tidigare fel vid ny förfrågan
-    // })
+      // .addCase(reversePaymentWithVerification.fulfilled, (state, action) => {
+      //   const updatedOrder = action.payload;
+      //   if (updatedOrder) {
+      //     // Uppdatera state baserat på den reverserade ordern
+      //     state.paymentInfo = null; // Nollställ eventuell lokal paymentInfo
+      //     savePaymentReversedToLS(null); // Ta bort från localStorage
+      //     state.error = null;
+      //   }
+      // })
+      // .addCase(reversePaymentWithVerification.rejected, (state, action) => {
+      //   state.error = action.payload || "Failed to reverse the payment.";
+      // })
+      // .addCase(reversePaymentWithVerification.pending, (state) => {
+      //   state.error = null; // Rensa tidigare fel vid ny förfrågan
+      // })
 
       .addCase(addPaymentOrderOutgoing.fulfilled, (state, action) => {
         if (action.payload) {
