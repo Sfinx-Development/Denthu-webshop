@@ -152,20 +152,22 @@ export default function OrderDetail() {
           vatAmount: paymentInfo.paymentOrder.vatAmount,
           payeeReference: order.paymentInfo.payeeReference,
         };
-        dispatch(
-          reversePaymentWithVerification({
-            reverseRequest: reverseRequest,
-            reverseUrl: operation.href,
-            order: order,
-          })
-        );
-        sendOrderReversedWithLink(order, products);
-        setOpenRevokeDialog(false);
-        setSnackbarOpen(true);
-        setSnackBarMessage("Betalningen uppdateras som återkallad!");
-        setTimeout(() => {
-          navigate("/admin/ordersForShipping");
-        }, 1500);
+        if (incomingPaymentOrder) {
+          dispatch(
+            reversePaymentWithVerification({
+              reverseRequest: reverseRequest,
+              reverseUrl: operation.href,
+              order: order,
+              paymentOrder:incomingPaymentOrder
+            })
+          );          sendOrderReversedWithLink(order, products);
+          setOpenRevokeDialog(false);
+          setSnackbarOpen(true);
+          setSnackBarMessage("Betalningen uppdateras som återkallad!");
+          setTimeout(() => {
+            navigate("/admin/ordersForShipping");
+          }, 1500);
+        }
       }
     }
   };

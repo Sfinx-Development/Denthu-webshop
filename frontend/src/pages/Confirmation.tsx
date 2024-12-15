@@ -227,7 +227,7 @@ export default function Confirmation() {
                 <Typography sx={{ fontSize: 12, fontWeight: 600 }}></Typography>
                 <Typography sx={{ fontSize: 12 }}>
                   {" "}
-                  Fraktkostnad {order.shippingCost}
+                  Fraktkostnad {order.shippingCost ?? 0 / 100}
                 </Typography>
               </Box>
             </>
