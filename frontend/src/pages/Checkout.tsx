@@ -100,12 +100,6 @@ export default function Checkout() {
     }
   }, [order]);
 
-  useEffect(() => {
-    if (!order?.items || order?.items.length == 0) {
-      navigate("/cart");
-    }
-  }, [order]);
-
   const makePaymentOrder = async (finalOrder: Order) => {
     if (
       validateForm() &&
@@ -113,7 +107,6 @@ export default function Checkout() {
       finalOrder.items.length > 0 &&
       finalOrder.total_amount > 0
     ) {
-      console.log("ORDERN ÄR HÄR: ", finalOrder);
       if (
         finalOrder &&
         !shippingError &&
@@ -223,16 +216,9 @@ export default function Checkout() {
       JSON.stringify(selectedShippingMethod)
     );
     if (order) {
-      if (method == "pickup") {
-        await dispatch(updateOrderAsync(order));
-        if (incomingPaymentOrder) {
-          await handleUpdateOrderToSwedbank();
-        }
-      } else {
-        await dispatch(updateOrderFrakt([order, products, method]));
-        if (incomingPaymentOrder) {
-          await handleUpdateOrderToSwedbank();
-        }
+      await dispatch(updateOrderFrakt([order, products, method]));
+      if (incomingPaymentOrder) {
+        handleUpdateOrderToSwedbank();
       }
     }
   };
@@ -417,8 +403,6 @@ export default function Checkout() {
 
   const handleMakeOrder = async () => {
     try {
-      console.log("Startar handleMakeOrder");
-
       // Kontrollera produkter och vänta på att ordern uppdateras
       const updatedOrder = await checkIfProductsInStore();
       // await waitForOrderUpdate(order?.updateTimestamp);

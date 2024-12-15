@@ -96,8 +96,8 @@ const calculateTotalAmount = (items: OrderItem[]): number => {
   return items.reduce((total, item) => total + item.price * item.quantity, 0);
 };
 
-function getShippingCost(order: Order, products: Product[]) {
-  if (order.shippingMethod == "pickup") {
+function getShippingCost(order: Order, products: Product[], method: string) {
+  if (method == "pickup") {
     return 0;
   } else {
     const productWeightTogether = order.items.reduce((total, item) => {
@@ -185,12 +185,11 @@ export const updateOrderAsync = createAsyncThunk<
 >("orders/updateOrder", async (order, thunkAPI) => {
   try {
     const updatedItems = order.items.filter((i) => i.quantity > 0);
-    console.log("ORDER SOM KOMMER IN-----------, ", order);
+
     const updatedOrder: Order = {
       ...order,
       items: updatedItems,
     };
-    console.log("ORDER SOM SKA UPDATERAS-----------, ", updatedOrder);
     const response = await editOrderInDB(updatedOrder);
     if (response) {
       localStorage.setItem("order", JSON.stringify(response));
@@ -234,12 +233,16 @@ export const updateOrderFrakt = createAsyncThunk<
   { rejectValue: string }
 >("orders/updateOrderFrakt", async ([order, products, method], thunkAPI) => {
   try {
-    const cost = getShippingCost(order, products);
+    const cost = getShippingCost(order, products, method);
+
     const totalShippingCost = cost * 100;
     const updatedOrder: Order = {
       ...order,
-      total_amount: order.total_amount + totalShippingCost,
-      shippingCost: cost,
+      total_amount:
+        order.total_amount -
+        (order.shippingCost ?? 0 * 100) +
+        totalShippingCost,
+      shippingCost: cost * 100,
       shippingMethod: method,
     };
 
