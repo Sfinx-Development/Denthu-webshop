@@ -421,7 +421,7 @@ export const reversePaymentWithVerification = createAsyncThunk<
     reverseRequest: ReverseRequestOutgoing;
     reverseUrl: string;
     order: Order;
-    paymentOrder: PaymentOrderIncoming;
+    paymentOrder?: PaymentOrderIncoming;
   },
   { rejectValue: string }
 >(
@@ -439,12 +439,14 @@ export const reversePaymentWithVerification = createAsyncThunk<
       }
 
       // Verifiera reverseringsstatus (GET)
-      const reversedUrl = paymentOrder.paymentOrder.reversed.id;
+
+      const reversedUrl = paymentOrder?.paymentOrder.reversed.id ?? "";
       // const reversedUrl = `${reverseUrl.replace("/reversal", "/reversed")}`;
 
       const reversedStatus = await GetReversedStatus(reversedUrl);
+      console.log("STATUS ÄR: ", reversedStatus);
 
-      if (reversedStatus?.status === "Reversed") {
+      if (reversedStatus == true) {
         const orderUpdatedPayment: Order = {
           ...order,
           status: "Reversed",

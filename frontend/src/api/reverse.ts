@@ -27,7 +27,6 @@ export async function PostReverseToInternalApiDB({
       body: JSON.stringify(transaction),
     });
 
-
     if (!response.ok) {
       return false;
     }
@@ -39,7 +38,9 @@ export async function PostReverseToInternalApiDB({
   }
 }
 
-export async function GetReversedStatus(reverseUrl: string): Promise<PaymentOrderIn | null> {
+export async function GetReversedStatus(
+  reverseUrl: string
+): Promise<boolean | null> {
   const bearer = import.meta.env.VITE_SWEDBANK_BEARER; // Hämta Bearer-token från miljövariabler
 
   try {
@@ -49,22 +50,24 @@ export async function GetReversedStatus(reverseUrl: string): Promise<PaymentOrde
       headers: {
         "Content-Type": "application/json;version=3.1",
         Authorization: `Bearer ${bearer}`, // Skicka Bearer-token
-       
       },
     });
 
     // Kontrollera om svar är OK
     if (!response.ok) {
-      console.error(`Failed to verify reversal status, status: ${response.status}`);
-      return null;
+      console.error(
+        `Failed to verify reversal status, status: ${response.status}`
+      );
+      return false;
+    } else {
+      return true;
     }
 
-    // Returnera JSON-data
-    const data = await response.json();
-    return data as PaymentOrderIn; // Konvertera till PaymentOrderIn
+    // // Returnera JSON-data
+    // const data = await response.json();
+    // return data as PaymentOrderIn; // Konvertera till PaymentOrderIn
   } catch (error) {
     console.error("Error in verifying reversal status:", error);
     return null;
   }
 }
-
